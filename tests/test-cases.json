@@ -507,7 +507,7 @@
       "name": "Pattern: \"100 N⋅m\" detected",
       "type": "patternDetection",
       "input": {
-        "text": "100 N⋅m torque",
+        "text": "100 N⋅m",
         "userSettings": {
           "torqueUnit": "lbft"
         }

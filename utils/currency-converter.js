@@ -1,11 +1,9 @@
-// Currency conversion utilities using Currency-Converter-master logic
-// This file integrates the currency detection and conversion logic from Currency-Converter-master
+// Currency conversion utilities using Currency-Converter logic
 
 // Global namespace for currency converter
 window.UnitConverter = window.UnitConverter || {};
 
 // Import currency mappings from currency-mappings.js
-// The mappings are loaded globally via window object from data/currency-mappings.js
 
 
 window.UnitConverter.CurrencyConverter = class {
@@ -169,7 +167,7 @@ window.UnitConverter.CurrencyConverter = class {
     }
 
     /**
-     * Get currency rate from API (from Currency-Converter-master)
+     * Get currency rate from API (from Currency-Converter)
      */
     async getCurrencyRate(from, to) {
         const cacheKey = `${from}-${to}`;

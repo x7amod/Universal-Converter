@@ -10,6 +10,9 @@ chrome.action.onClicked.addListener((tab) => {
 chrome.runtime.onInstalled.addListener(async (details) => {
   console.log('Unit Converter extension installed');
   
+  // Create context menu
+  createContextMenu();
+  
   // Open settings page on first install
   if (details.reason === 'install') {
     chrome.tabs.create({
@@ -72,4 +75,46 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
 // Handle context menu (optional future feature)
 chrome.runtime.onStartup.addListener(() => {
   console.log('Unit Converter extension started');
+  createContextMenu();
+});
+
+/**
+ * Create context menu for the extension icon
+ */
+function createContextMenu() {
+  // Clear existing context menus first
+  chrome.contextMenus.removeAll(() => {
+    // Create Settings context menu item
+    chrome.contextMenus.create({
+      id: 'open-settings',
+      title: 'Universal Converter Settings',
+      contexts: ['action']
+    });
+    
+    // Only add Reload Extension in development mode
+    // Check if we're in development by looking for unpacked extension
+    chrome.management.getSelf((extensionInfo) => {
+      if (extensionInfo.installType === 'development') {
+        chrome.contextMenus.create({
+          id: 'reload-extension',
+          title: 'Reload Extension',
+          contexts: ['action']
+        });
+      }
+    });
+  });
+}
+
+/**
+ * Handle context menu clicks
+ */
+chrome.contextMenus.onClicked.addListener((info, tab) => {
+  if (info.menuItemId === 'open-settings') {
+    chrome.tabs.create({
+      url: chrome.runtime.getURL('settings-page/settings.html')
+    });
+  } else if (info.menuItemId === 'reload-extension') {
+    // Reload the extension
+    chrome.runtime.reload();
+  }
 });

@@ -155,15 +155,18 @@ class JSONUnitConverterTester {
 
       case 'patternDetection':
         const conversions = this.detector.findConversions(input.text, input.userSettings);
-        this.assert(conversions.length >= expected.minConversions, name, `>=${expected.minConversions} conversions`, conversions.length);
+        const hasMinConversions = conversions.length >= expected.minConversions;
+        const detectionStatus = hasMinConversions ? 'detected' : 'not detected';
+        this.assert(hasMinConversions, `${name.replace(' detected', '')} ${detectionStatus}`, `>=${expected.minConversions} conversions`, conversions.length);
         break;
 
       case 'patternDetectionType':
         const typeConversions = this.detector.findConversions(input.text, input.userSettings);
         if (typeConversions.length > 0) {
-          this.assert(typeConversions[0].type === expected, name, expected, typeConversions[0].type);
+          const detectedAs = `detected as ${typeConversions[0].type}`;
+          this.assert(typeConversions[0].type === expected, `${name.replace(' detected as ' + expected, '')} ${detectedAs}`, expected, typeConversions[0].type);
         } else {
-          this.assert(false, name, expected, 'no conversions found');
+          this.assert(false, `${name.replace(' detected as ' + expected, '')} not detected`, expected, 'no conversions found');
         }
         break;
 
@@ -388,7 +391,7 @@ class JSONUnitConverterTester {
 
   // Run all tests
   async runAllTests() {
-    console.log(`${colors.bright}${colors.yellow}[Starting JSON-Based Unit Converter Tests]${colors.reset}\n`);
+    console.log(`${colors.bright}${colors.yellow}[Starting Unit Converter Tests]${colors.reset}\n`);
     
     // Run grouped test suites from JSON
     this.runTestSuite('Detection Tests', this.testCases.Detection);

@@ -53,6 +53,11 @@ window.UnitConverterData.CONVERSION_RATIOS = {
     'kn': 0.514444,
     'mach': 343
   },
+  acceleration: {
+    'ms2': 1, // m/s²
+    'fts2': 3.28084, // ft/s²
+    'g': 9.80665 // g-force (standard gravity)
+  },
   torque: {
     'nm': 1,
     'lbft': 1.35582,
@@ -81,20 +86,21 @@ window.UnitConverterData.CONVERSION_RATIOS = {
 };
 
 window.UnitConverterData.UNIT_PATTERNS = {
-  length: /\b(\d+(?:\.\d+)?)\s*-?\s*(m|cm|mm|km|in|inch|inches|ft|foot|feet|yd|yard|yards|mi|mile|miles|meter|meters|centimeter|centimeters|millimeter|millimeters|kilometer|kilometers)\b/gi,
-  weight: /\b(\d+(?:\.\d+)?)\s*(kg|g|mg|lb(?![\s\.\-⋅\/]*(?:ft|foot|feet|in|inch|inches))|lbs|oz(?![\s\.\-⋅\/]*(?:in|inch|inches))|ounce|ounces|pound(?![\s\-]*(?:foot|feet|inch|inches))|pounds(?![\s\-]*(?:foot|feet|inch|inches))|kilogram|kilograms|gram|grams|milligram|milligrams|tonne|tonnes|t)\b/gi,
-  temperature: /\b(\d+(?:\.\d+)?)\s*°?\s*(c|f|k|celsius|fahrenheit|kelvin|degrees?\s*celsius|degrees?\s*fahrenheit)\b/gi,
-  volume: /\b(\d+(?:\.\d+)?)\s*(l|ml|gal|gallon|gallons|qt|quart|quarts|pt|pint|pints|cup|cups|fl\s*oz|fluid\s*ounce|fluid\s*ounces|liter|liters|milliliter|milliliters)\b/gi,
-  area: /(\d+(?:\.\d+)?)\s*-?\s*(m²|cm²|mm²|km²|ft²|in²|m2|cm2|mm2|km2|ft2|in2|acre|acres|square\s*meter|square\s*meters|square\s*centimeter|square\s*centimeters|square\s*millimeter|square\s*millimeters|square\s*kilometer|square\s*kilometers|square\s*foot|square\s*feet|square\s*inch|square\s*inches|meters?\s*squared|meter\s*squared|feet\s*squared|foot\s*squared|inches?\s*squared|inch\s*squared|centimeters?\s*squared|centimeter\s*squared|millimeters?\s*squared|millimeter\s*squared|kilometers?\s*squared|kilometer\s*squared)(?!\w)/gi,
+  length: /(?:^|\s|^[\s]*|[\s]*$)(\d+(?:\.\d+)?)\s*-?\s*(m|cm|mm|km|in|inch|inches|ft|foot|feet|yd|yard|yards|mi|mile|miles|meter|meters|centimeter|centimeters|millimeter|millimeters|kilometer|kilometers)(?=\s*$|\s*[.,!?;:]|\s*\n|\s*\r)/gi,
+  weight: /(?:^|\s|^[\s]*|[\s]*$)(\d+(?:\.\d+)?)\s*(kg|g|mg|lb(?![\s\.\-⋅\/]*(?:ft|foot|feet|in|inch|inches))|lbs|oz(?![\s\.\-⋅\/]*(?:in|inch|inches))|ounce|ounces|pound(?![\s\-]*(?:foot|feet|inch|inches))|pounds(?![\s\-]*(?:foot|feet|inch|inches))|kilogram|kilograms|gram|grams|milligram|milligrams|tonne|tonnes|t)(?=\s*$|\s*[.,!?;:]|\s*\n|\s*\r)/gi,
+  temperature: /(?:^|\s|^[\s]*|[\s]*$)(\d+(?:\.\d+)?)\s*°?\s*(c|f|k|celsius|fahrenheit|kelvin|degrees?\s*celsius|degrees?\s*fahrenheit)(?=\s*$|\s*[.,!?;:]|\s*\n|\s*\r)/gi,
+  volume: /(?:^|\s|^[\s]*|[\s]*$)(\d+(?:\.\d+)?)\s*(l|ml|gal|gallon|gallons|qt|quart|quarts|pt|pint|pints|cup|cups|fl\s*oz|fluid\s*ounce|fluid\s*ounces|liter|liters|milliliter|milliliters)(?=\s*$|\s*[.,!?;:]|\s*\n|\s*\r)/gi,
+  area: /(?:^|\s|^[\s]*|[\s]*$)(\d+(?:\.\d+)?)\s*-?\s*(m²|cm²|mm²|km²|ft²|in²|m2|cm2|mm2|km2|ft2|in2|acre|acres|square\s*meter|square\s*meters|square\s*centimeter|square\s*centimeters|square\s*millimeter|square\s*millimeters|square\s*kilometer|square\s*kilometers|square\s*foot|square\s*feet|square\s*inch|square\s*inches|meters?\s*squared|meter\s*squared|feet\s*squared|foot\s*squared|inches?\s*squared|inch\s*squared|centimeters?\s*squared|centimeter\s*squared|millimeters?\s*squared|millimeter\s*squared|kilometers?\s*squared|kilometer\s*squared)(?=\s*$|\s*[.,!?;:]|\s*\n|\s*\r)/gi,
   // Two dimension patterns: with units on each number, and with unit at the end
-  dimensionsWithUnits: /(\d+(?:\.\d+)?)\s*(m|cm|mm|km|in|inch|inches|ft|foot|feet|yd|yard|yards|mi|mile|miles|meter|meters|centimeter|centimeters|millimeter|millimeters|kilometer|kilometers)\s*(?:x|×|by|\*)\s*(\d+(?:\.\d+)?)\s*\2\s*(?:x|×|by|\*)\s*(\d+(?:\.\d+)?)\s*\2/gi,
-  dimensions: /(\d+(?:\.\d+)?)\s*(?:x|×|by|\*)\s*(\d+(?:\.\d+)?)\s*(?:x|×|by|\*)\s*(\d+(?:\.\d+)?)\s*-?\s*(m|cm|mm|km|in|inch|inches|ft|foot|feet|yd|yard|yards|mi|mile|miles|meter|meters|centimeter|centimeters|millimeter|millimeters|kilometer|kilometers)\b/gi,
-  speed: /\b(\d+(?:\.\d+)?)\s*-?\s*(m\/s|ms|km\/h|kmh|km\/hr|mph|mi\/h|ft\/s|fps|knots?|kn|nautical\s*miles?\s*per\s*hour|mach|meters?\s*per\s*second|kilometers?\s*per\s*hour|miles?\s*per\s*hour|feet\s*per\s*second)\b/gi,
-  torque: /\b(\d+(?:\.\d+)?)\s*-?\s*(N[\s\.\-⋅]?m|Nm|lb[\s\.\-⋅]?ft|lbft|ft[\s\.\-⋅]?lbs?|lb[\s\.\-⋅]?in|lbin|in[\s\.\-⋅]?lbs?|kg[\s\.\-⋅]?m|kgm|kgf[\s\.\-⋅]?m|oz[\s\.\-⋅]?in|ozin|newton[\s\-]?meters?|pound[\s\-]?feet|foot[\s\-]?pounds?|pound[\s\-]?inches?|inch[\s\-]?pounds?|kilogram[\s\-]?force[\s\-]?meters?)\b/gi,
-  pressure: /\b(\d+(?:\.\d+)?)\s*-?\s*(Pa|bar|psi|atm|mmHg|inHg|torr|kPa|MPa|psf|pascal|atmosphere|atmospheres|pounds?\s*per\s*square\s*inch|pounds?\s*per\s*square\s*foot|millimeters?\s*of\s*mercury|inches?\s*of\s*mercury)\b/gi,
+  dimensionsWithUnits: /(?:^|\s|^[\s]*|[\s]*$)(\d+(?:\.\d+)?)\s*(m|cm|mm|km|in|inch|inches|ft|foot|feet|yd|yard|yards|mi|mile|miles|meter|meters|centimeter|centimeters|millimeter|millimeters|kilometer|kilometers)\s*(?:x|×|by|\*)\s*(\d+(?:\.\d+)?)\s*\2\s*(?:x|×|by|\*)\s*(\d+(?:\.\d+)?)\s*\2(?=\s*$|\s*[.,!?;:]|\s*\n|\s*\r)/gi,
+  dimensions: /(?:^|\s|^[\s]*|[\s]*$)(\d+(?:\.\d+)?)\s*(?:x|×|by|\*)\s*(\d+(?:\.\d+)?)\s*(?:x|×|by|\*)\s*(\d+(?:\.\d+)?)\s*-?\s*(m|cm|mm|km|in|inch|inches|ft|foot|feet|yd|yard|yards|mi|mile|miles|meter|meters|centimeter|centimeters|millimeter|millimeters|kilometer|kilometers)(?=\s*$|\s*[.,!?;:]|\s*\n|\s*\r)/gi,
+  speed: /(?:^|\s|^[\s]*|[\s]*$)(\d+(?:\.\d+)?)\s*-?\s*(m\/s|ms|km\/h|kmh|km\/hr|mph|mi\/h|ft\/s|fps|knots?|kn|nautical\s*miles?\s*per\s*hour|mach|meters?\s*per\s*second|kilometers?\s*per\s*hour|miles?\s*per\s*hour|feet\s*per\s*second)(?=\s*$|\s*[.,!?;:]|\s*\n|\s*\r)/gi,
+  acceleration: /(?:^|\s|^[\s]*|[\s]*$)(\d+(?:\.\d+)?)\s*-?\s*(m\/s²|m\/s2|ms2|ft\/s²|ft\/s2|fts2|g-force|g|gee|meters?\s*per\s*second\s*squared|feet\s*per\s*second\s*squared)(?=\s*$|\s*[.,!?;:]|\s*\n|\s*\r)/gi,
+  torque: /(?:^|\s|^[\s]*|[\s]*$)(\d+(?:\.\d+)?)\s*-?\s*(N[\s\.\-⋅]?m|Nm|lb[\s\.\-⋅]?ft|lbft|ft[\s\.\-⋅]?lbs?|lb[\s\.\-⋅]?in|lbin|in[\s\.\-⋅]?lbs?|kg[\s\.\-⋅]?m|kgm|kgf[\s\.\-⋅]?m|oz[\s\.\-⋅]?in|ozin|newton[\s\-]?meters?|pound[\s\-]?feet|foot[\s\-]?pounds?|pound[\s\-]?inches?|inch[\s\-]?pounds?|kilogram[\s\-]?force[\s\-]?meters?)(?=\s*$|\s*[.,!?;:]|\s*\n|\s*\r)/gi,
+  pressure: /(?:^|\s|^[\s]*|[\s]*$)(\d+(?:\.\d+)?)\s*-?\s*(Pa|bar|psi|atm|mmHg|inHg|torr|kPa|MPa|psf|pascal|atmosphere|atmospheres|pounds?\s*per\s*square\s*inch|pounds?\s*per\s*square\s*foot|millimeters?\s*of\s*mercury|inches?\s*of\s*mercury)(?=\s*$|\s*[.,!?;:]|\s*\n|\s*\r)/gi,
   timezone: /\b(\d{1,2}):(\d{2})\s*(AM|PM)?\s*((EST|PST|CST|MST|GMT|UTC|JST|CET|EET|WET|BST|EASTERN|PACIFIC|CENTRAL|MOUNTAIN)([+-]\d{1,2})?|([+-]\d{1,2}):?(\d{2})?)/gi,
   // Currency pattern will be generated dynamically from currency mappings
-  currency: null  // Will be set after currency mappings are loaded
+  currency: null 
 };
 
 window.UnitConverterData.UNIT_ALIASES = {
@@ -153,6 +159,11 @@ window.UnitConverterData.UNIT_ALIASES = {
   'ft/s': 'fps', 'feet per second': 'fps', 'foot per second': 'fps',
   'knot': 'kn', 'knots': 'kn', 'nautical miles per hour': 'kn', 'nautical mile per hour': 'kn',
   
+  // Acceleration aliases
+  'm/s²': 'ms2', 'm/s2': 'ms2', 'meters per second squared': 'ms2', 'meter per second squared': 'ms2',
+  'ft/s²': 'fts2', 'ft/s2': 'fts2', 'feet per second squared': 'fts2', 'foot per second squared': 'fts2',
+  'g-force': 'g', 'gee': 'g',
+  
   // Torque aliases
   'n.m': 'nm', 'n·m': 'nm', 'n⋅m': 'nm', 'n-m': 'nm', 'newton meter': 'nm', 'newton meters': 'nm', 'newton-meters': 'nm', 'newton-meter': 'nm',
   'lb.ft': 'lbft', 'lb·ft': 'lbft', 'lb⋅ft': 'lbft', 'lb-ft': 'lbft', 'pound foot': 'lbft', 'pound feet': 'lbft', 'pound-feet': 'lbft', 'pound-foot': 'lbft',
@@ -183,6 +194,7 @@ window.UnitConverterData.DEFAULT_UNITS = {
   volume: 'l',
   area: 'm2',
   speed: 'ms',
+  acceleration: 'ms2',
   torque: 'nm',
   pressure: 'pa',
   timezone: 'auto', // Will be auto-detected
@@ -266,11 +278,11 @@ window.UnitConverterData.generateCurrencyPattern = function() {
   // Escape and join all symbols
   const escapedSymbols = sortedSymbols.map(escapeRegex).join('|');
   
-  // Create the complete pattern
-  // Matches: symbol + number OR number + symbol
+  // Create more restrictive pattern - only matches standalone currency values
+  // Matches: symbol + number OR number + symbol, but only at line boundaries or with specific terminators
   const pattern = new RegExp(
-    `(?:(?:^|\\s)(${escapedSymbols})(?=\\s*\\d)\\s*(\\d+(?:[.,\\d' \\s]*\\d)?)|` +
-    `(\\d+(?:[.,\\d' \\s]*\\d)?)\\s*(${escapedSymbols})(?=\\s|$))`,
+    `(?:(?:^|\\s|^[\\s]*|[\\s]*$)(${escapedSymbols})(?=\\s*\\d)\\s*(\\d+(?:[.,\\d' \\s]*\\d)?)(?=\\s*$|\\s*[.,!?;:]|\\s*\\n|\\s*\\r)|` +
+    `(?:^|\\s|^[\\s]*|[\\s]*$)(\\d+(?:[.,\\d' \\s]*\\d)?)\\s*(${escapedSymbols})(?=\\s*$|\\s*[.,!?;:]|\\s*\\n|\\s*\\r))`,
     'gi'
   );
   
