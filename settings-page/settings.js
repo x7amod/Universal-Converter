@@ -13,10 +13,13 @@ document.addEventListener('DOMContentLoaded', async function() {
     volumeUnit: document.getElementById('volumeUnit'),
     areaUnit: document.getElementById('areaUnit'),
     speedUnit: document.getElementById('speedUnit'),
+    accelerationUnit: document.getElementById('accelerationUnit'),
+    flowRateUnit: document.getElementById('flowRateUnit'),
     torqueUnit: document.getElementById('torqueUnit'),
     pressureUnit: document.getElementById('pressureUnit'),
     timezoneUnit: document.getElementById('timezoneUnit'),
-    timeFormatBtn: document.getElementById('timeFormatBtn'),
+    time12Btn: document.getElementById('time12Btn'),
+    time24Btn: document.getElementById('time24Btn'),
     currencyUnit: document.getElementById('currencyUnit')
   };
   
@@ -29,6 +32,8 @@ document.addEventListener('DOMContentLoaded', async function() {
       volumeUnit: 'l',
       areaUnit: 'm2',
       speedUnit: 'kmh',
+      accelerationUnit: 'ms2',
+      flowRateUnit: 'lmin',
       torqueUnit: 'nm',
       pressureUnit: 'kpa',
       timezoneUnit: 'auto',
@@ -42,6 +47,8 @@ document.addEventListener('DOMContentLoaded', async function() {
       volumeUnit: 'gal',
       areaUnit: 'ft2',
       speedUnit: 'mph',
+      accelerationUnit: 'fts2',
+      flowRateUnit: 'galmin',
       torqueUnit: 'lbft',
       pressureUnit: 'psi',
       timezoneUnit: 'auto',
@@ -131,7 +138,8 @@ document.addEventListener('DOMContentLoaded', async function() {
   });
   // Event listeners for unit selectors with auto-save (excluding currency and timezone)
   [elements.lengthUnit, elements.weightUnit, elements.temperatureUnit, 
-   elements.volumeUnit, elements.areaUnit, elements.speedUnit, elements.torqueUnit, elements.pressureUnit].forEach(select => {
+   elements.volumeUnit, elements.areaUnit, elements.speedUnit, elements.accelerationUnit,
+   elements.flowRateUnit, elements.torqueUnit, elements.pressureUnit].forEach(select => {
     select.addEventListener('change', () => {
       updateActivePreset();
       saveSettings(); // Auto-save when any setting changes
@@ -147,13 +155,15 @@ document.addEventListener('DOMContentLoaded', async function() {
     saveSettings();
   });
   
-  elements.timeFormatBtn.addEventListener('click', () => {
-    const currentFormat = elements.timeFormatBtn.dataset.format;
-    const newFormat = currentFormat === '12' ? '24' : '12';
-    
-    elements.timeFormatBtn.dataset.format = newFormat;
-    elements.timeFormatBtn.textContent = newFormat === '12' ? '12 Hours' : '24 Hours';
-    
+  elements.time12Btn.addEventListener('click', () => {
+    elements.time12Btn.classList.add('active');
+    elements.time24Btn.classList.remove('active');
+    saveSettings();
+  });
+  
+  elements.time24Btn.addEventListener('click', () => {
+    elements.time24Btn.classList.add('active');
+    elements.time12Btn.classList.remove('active');
     saveSettings();
   });
   
@@ -168,14 +178,21 @@ document.addEventListener('DOMContentLoaded', async function() {
       elements.volumeUnit.value = settings.volumeUnit || 'l';
       elements.areaUnit.value = settings.areaUnit || 'm2';
       elements.speedUnit.value = settings.speedUnit || 'ms';
+      elements.accelerationUnit.value = settings.accelerationUnit || 'ms2';
+      elements.flowRateUnit.value = settings.flowRateUnit || 'lmin';
       elements.torqueUnit.value = settings.torqueUnit || 'nm';
       elements.pressureUnit.value = settings.pressureUnit || 'pa';
       elements.timezoneUnit.value = settings.timezoneUnit || 'auto';
       
-      // Set button based on settings
+      // Set time format buttons based on settings
       const is12hr = settings.is12hr !== false; // Default to 12hr (true)
-      elements.timeFormatBtn.dataset.format = is12hr ? '12' : '24';
-      elements.timeFormatBtn.textContent = is12hr ? '12 Hours' : '24 Hours';
+      if (is12hr) {
+        elements.time12Btn.classList.add('active');
+        elements.time24Btn.classList.remove('active');
+      } else {
+        elements.time24Btn.classList.add('active');
+        elements.time12Btn.classList.remove('active');
+      }
       
       elements.currencyUnit.value = settings.currencyUnit || 'USD';
       
@@ -199,6 +216,8 @@ document.addEventListener('DOMContentLoaded', async function() {
       elements.volumeUnit.value = preset.volumeUnit;
       elements.areaUnit.value = preset.areaUnit;
       elements.speedUnit.value = preset.speedUnit;
+      elements.accelerationUnit.value = preset.accelerationUnit;
+      elements.flowRateUnit.value = preset.flowRateUnit;
       elements.torqueUnit.value = preset.torqueUnit;
       elements.pressureUnit.value = preset.pressureUnit;
       
@@ -229,6 +248,8 @@ document.addEventListener('DOMContentLoaded', async function() {
         volumeUnit: elements.volumeUnit.value,
         areaUnit: elements.areaUnit.value,
         speedUnit: elements.speedUnit.value,
+        accelerationUnit: elements.accelerationUnit.value,
+        flowRateUnit: elements.flowRateUnit.value,
         torqueUnit: elements.torqueUnit.value,
         pressureUnit: elements.pressureUnit.value
       };
@@ -241,6 +262,8 @@ document.addEventListener('DOMContentLoaded', async function() {
         volumeUnit: presets.metric.volumeUnit,
         areaUnit: presets.metric.areaUnit,
         speedUnit: presets.metric.speedUnit,
+        accelerationUnit: presets.metric.accelerationUnit,
+        flowRateUnit: presets.metric.flowRateUnit,
         torqueUnit: presets.metric.torqueUnit,
         pressureUnit: presets.metric.pressureUnit
       };
@@ -252,6 +275,8 @@ document.addEventListener('DOMContentLoaded', async function() {
         volumeUnit: presets.imperial.volumeUnit,
         areaUnit: presets.imperial.areaUnit,
         speedUnit: presets.imperial.speedUnit,
+        accelerationUnit: presets.imperial.accelerationUnit,
+        flowRateUnit: presets.imperial.flowRateUnit,
         torqueUnit: presets.imperial.torqueUnit,
         pressureUnit: presets.imperial.pressureUnit
       };
@@ -278,10 +303,12 @@ document.addEventListener('DOMContentLoaded', async function() {
       volumeUnit: elements.volumeUnit.value,
       areaUnit: elements.areaUnit.value,
       speedUnit: elements.speedUnit.value,
+      accelerationUnit: elements.accelerationUnit.value,
+      flowRateUnit: elements.flowRateUnit.value,
       torqueUnit: elements.torqueUnit.value,
       pressureUnit: elements.pressureUnit.value,
       timezoneUnit: elements.timezoneUnit.value,
-      is12hr: elements.timeFormatBtn.dataset.format === '12',
+      is12hr: elements.time12Btn.classList.contains('active'),
       currencyUnit: elements.currencyUnit.value
     };
     

@@ -4,6 +4,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Universal Converter Settings</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
   <link rel="stylesheet" href="settings.css">
 </head>
 <body>
@@ -11,13 +15,20 @@
     
     <!-- Header Section -->
     <header class="header">
-      <h1>Universal Converter</h1>
-      <p>Configure your preferred units for automatic conversions</p>
+      <div class="header-content">
+        <span class="header-icon">
+          <span class="material-symbols-outlined">settings</span>
+        </span>
+        <div class="header-text">
+          <h1>Universal Converter Settings</h1>
+          <p>Configure your preferred units and formats</p>
+        </div>
+      </div>
     </header>
 
-    <!-- Preset Buttons Section -->
-    <section class="preset-section">
-      <h2>Default Unit System</h2>
+    <!-- Default Unit System Section -->
+    <section class="card">
+      <h2 class="section-title">Default Unit System</h2>
       <div class="preset-buttons">
         <button class="preset-btn" id="metricBtn">Metric</button>
         <button class="preset-btn" id="imperialBtn">Imperial</button>
@@ -25,154 +36,241 @@
       </div>
     </section>
 
-    <!-- Settings Grid -->
-    <section class="settings-section">
+    <!-- Preferences Section -->
+    <section class="card">
+      <h2 class="section-title">Preferences</h2>
       
-      <!-- Currency and Timezone Row -->
-      <div class="row currency-timezone">
-        <div class="form-group">
-          <label for="currencyUnit">Currency</label>
-          <select id="currencyUnit">
-            <option value="USD">Loading currencies...</option>
-          </select>
+      <div class="preference-row">
+        <div class="preference-label">
+          <span class="preference-icon">
+            <span class="material-symbols-outlined">payments</span>
+          </span>
+          <span>Currency</span>
         </div>
-        <div class="form-group">
-          <label for="timezoneUnit">Timezone</label>
-          <select id="timezoneUnit">
-            <option value="auto">Auto-Detect</option>
-            <option value="GMT-12">GMT-12</option>
-            <option value="GMT-11">GMT-11</option>
-            <option value="GMT-10">GMT-10</option>
-            <option value="GMT-9">GMT-9</option>
-            <option value="GMT-8">GMT-8</option>
-            <option value="GMT-7">GMT-7</option>
-            <option value="GMT-6">GMT-6</option>
-            <option value="GMT-5">GMT-5</option>
-            <option value="GMT-4">GMT-4</option>
-            <option value="GMT-3">GMT-3</option>
-            <option value="GMT-2">GMT-2</option>
-            <option value="GMT-1">GMT-1</option>
-            <option value="GMT+0">GMT+0 (UTC)</option>
-            <option value="GMT+1">GMT+1</option>
-            <option value="GMT+2">GMT+2</option>
-            <option value="GMT+3">GMT+3</option>
-            <option value="GMT+4">GMT+4</option>
-            <option value="GMT+5">GMT+5</option>
-            <option value="GMT+6">GMT+6</option>
-            <option value="GMT+7">GMT+7</option>
-            <option value="GMT+8">GMT+8</option>
-            <option value="GMT+9">GMT+9</option>
-            <option value="GMT+10">GMT+10</option>
-            <option value="GMT+11">GMT+11</option>
-            <option value="GMT+12">GMT+12</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label for="timeFormatBtn">Time Format</label>
-          <button type="button" id="timeFormatBtn" class="time-format-btn" data-format="12">
-            12 Hours
-          </button>
-        </div>
+        <select id="currencyUnit">
+          <option value="USD">USD ($)</option>
+        </select>
       </div>
 
-      <!-- Units Grid -->
-      <div class="units-grid">
-        <div class="form-group">
-          <label for="lengthUnit">Length</label>
-          <select id="lengthUnit">
-            <option value="m">Meters (m)</option>
-            <option value="cm">Centimeters (cm)</option>
-            <option value="mm">Millimeters (mm)</option>
-            <option value="km">Kilometers (km)</option>
-            <option value="in">Inches (in)</option>
-            <option value="ft">Feet (ft)</option>
-            <option value="yd">Yards (yd)</option>
-            <option value="mi">Miles (mi)</option>
-          </select>
+      <div class="preference-row">
+        <div class="preference-label">
+          <span class="preference-icon">
+            <span class="material-symbols-outlined">public</span>
+          </span>
+          <span>Timezone</span>
         </div>
-        
-        <div class="form-group">
-          <label for="weightUnit">Weight</label>
-          <select id="weightUnit">
-            <option value="kg">Kilograms (kg)</option>
-            <option value="g">Grams (g)</option>
-            <option value="lb">Pounds (lb)</option>
-            <option value="oz">Ounces (oz)</option>
-            <option value="t">Tonnes (t)</option>
-          </select>
-        </div>
-        
-        <div class="form-group">
-          <label for="temperatureUnit">Temperature</label>
-          <select id="temperatureUnit">
-            <option value="c">Celsius (°C)</option>
-            <option value="f">Fahrenheit (°F)</option>
-            <option value="k">Kelvin (K)</option>
-          </select>
-        </div>
-        
-        <div class="form-group">
-          <label for="volumeUnit">Volume</label>
-          <select id="volumeUnit">
-            <option value="l">Liters (L)</option>
-            <option value="ml">Milliliters (ml)</option>
-            <option value="gal">Gallons (gal)</option>
-            <option value="qt">Quarts (qt)</option>
-            <option value="pt">Pints (pt)</option>
-            <option value="cup">Cups</option>
-            <option value="fl_oz">Fluid Ounces (fl oz)</option>
-          </select>
-        </div>
-        
-        <div class="form-group">
-          <label for="areaUnit">Area</label>
-          <select id="areaUnit">
-            <option value="m2">Square Meters (m²)</option>
-            <option value="cm2">Square Centimeters (cm²)</option>
-            <option value="km2">Square Kilometers (km²)</option>
-            <option value="ft2">Square Feet (ft²)</option>
-            <option value="in2">Square Inches (in²)</option>
-            <option value="acre">Acres</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label for="speedUnit">Speed</label>
-          <select id="speedUnit">
-            <option value="ms">Meters/Second (m/s)</option>
-            <option value="kmh">Kilometers/Hour (km/h)</option>
-            <option value="mph">Miles/Hour (mph)</option>
-            <option value="fps">Feet/Second (ft/s)</option>
-            <option value="kn">Knots (kn)</option>
-            <option value="mach">Mach</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label for="torqueUnit">Torque</label>
-          <select id="torqueUnit">
-            <option value="nm">Newton-Meters (N⋅m)</option>
-            <option value="lbft">Pound-Feet (lb/ft)</option>
-            <option value="lbin">Pound-Inches (lb⋅in)</option>
-            <option value="kgm">Kilogram-Meters (kg⋅m)</option>
-            <option value="ozin">Ounce-Inches (oz⋅in)</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label for="pressureUnit">Pressure</label>
-          <select id="pressureUnit">
-            <option value="pa">Pascals (Pa)</option>
-            <option value="kpa">Kilopascals (kPa)</option>
-            <option value="bar">Bar</option>
-            <option value="psi">PSI</option>
-            <option value="atm">Atmospheres (atm)</option>
-            <option value="mmhg">mmHg</option>
-            <option value="torr">Torr</option>
-          </select>
-        </div>
+        <select id="timezoneUnit">
+          <option value="auto">Auto-Detect</option>
+          <option value="GMT-12">GMT-12</option>
+          <option value="GMT-11">GMT-11</option>
+          <option value="GMT-10">GMT-10</option>
+          <option value="GMT-9">GMT-9</option>
+          <option value="GMT-8">GMT-8</option>
+          <option value="GMT-7">GMT-7</option>
+          <option value="GMT-6">GMT-6</option>
+          <option value="GMT-5">GMT-5</option>
+          <option value="GMT-4">GMT-4</option>
+          <option value="GMT-3">GMT-3</option>
+          <option value="GMT-2">GMT-2</option>
+          <option value="GMT-1">GMT-1</option>
+          <option value="GMT+0">GMT+0 (UTC)</option>
+          <option value="GMT+1">GMT+1</option>
+          <option value="GMT+2">GMT+2</option>
+          <option value="GMT+3">GMT+3</option>
+          <option value="GMT+4">GMT+4</option>
+          <option value="GMT+5">GMT+5</option>
+          <option value="GMT+6">GMT+6</option>
+          <option value="GMT+7">GMT+7</option>
+          <option value="GMT+8">GMT+8</option>
+          <option value="GMT+9">GMT+9</option>
+          <option value="GMT+10">GMT+10</option>
+          <option value="GMT+11">GMT+11</option>
+          <option value="GMT+12">GMT+12</option>
+        </select>
       </div>
 
+      <div class="preference-row">
+        <div class="preference-label">
+          <span class="preference-icon">
+            <span class="material-symbols-outlined">schedule</span>
+          </span>
+          <span>Time Format</span>
+        </div>
+        <div class="toggle-group">
+          <button type="button" class="toggle-btn active" id="time12Btn" data-format="12">12 Hours</button>
+          <button type="button" class="toggle-btn" id="time24Btn" data-format="24">24 Hours</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Unit Preferences Section -->
+    <section class="card">
+      <h2 class="section-title">Unit Preferences</h2>
+      
+      <div class="preference-row">
+        <div class="preference-label">
+          <span class="preference-icon">
+            <span class="material-symbols-outlined">bolt</span>
+          </span>
+          <span>Acceleration</span>
+        </div>
+        <select id="accelerationUnit">
+          <option value="ms2">m/s²</option>
+          <option value="fts2">ft/s²</option>
+          <option value="gforce">g-force</option>
+        </select>
+      </div>
+
+      <div class="preference-row">
+        <div class="preference-label">
+          <span class="preference-icon">
+            <span class="material-symbols-outlined">square_foot</span>
+          </span>
+          <span>Area</span>
+        </div>
+        <select id="areaUnit">
+          <option value="m2">Square Meters (m²)</option>
+          <option value="cm2">Square Centimeters (cm²)</option>
+          <option value="km2">Square Kilometers (km²)</option>
+          <option value="ft2">Square Feet (ft²)</option>
+          <option value="in2">Square Inches (in²)</option>
+          <option value="acre">Acres</option>
+        </select>
+      </div>
+
+      <div class="preference-row">
+        <div class="preference-label">
+          <span class="preference-icon">
+            <span class="material-symbols-outlined">waves</span>
+          </span>
+          <span>Flow Rate</span>
+        </div>
+        <select id="flowRateUnit">
+          <option value="lmin">Liters/Minute (L/min)</option>
+          <option value="galmin">Gallons/Minute (gal/min)</option>
+          <option value="m3s">m³/s</option>
+          <option value="m3h">m³/h</option>
+          <option value="cfm">CFM</option>
+        </select>
+      </div>
+
+      <div class="preference-row">
+        <div class="preference-label">
+          <span class="preference-icon">
+            <span class="material-symbols-outlined">straighten</span>
+          </span>
+          <span>Length</span>
+        </div>
+        <select id="lengthUnit">
+          <option value="m">Meters (m)</option>
+          <option value="cm">Centimeters (cm)</option>
+          <option value="mm">Millimeters (mm)</option>
+          <option value="km">Kilometers (km)</option>
+          <option value="in">Inches (in)</option>
+          <option value="ft">Feet (ft)</option>
+          <option value="yd">Yards (yd)</option>
+          <option value="mi">Miles (mi)</option>
+        </select>
+      </div>
+
+      <div class="preference-row">
+        <div class="preference-label">
+          <span class="preference-icon">
+            <span class="material-symbols-outlined">compress</span>
+          </span>
+          <span>Pressure</span>
+        </div>
+        <select id="pressureUnit">
+          <option value="pa">Pascal (Pa)</option>
+          <option value="kpa">Kilopascals (kPa)</option>
+          <option value="bar">Bar</option>
+          <option value="psi">PSI</option>
+          <option value="atm">Atmospheres (atm)</option>
+          <option value="mmhg">mmHg</option>
+          <option value="torr">Torr</option>
+        </select>
+      </div>
+
+      <div class="preference-row">
+        <div class="preference-label">
+          <span class="preference-icon">
+            <span class="material-symbols-outlined">speed</span>
+          </span>
+          <span>Speed</span>
+        </div>
+        <select id="speedUnit">
+          <option value="kmh">Kilometers/Hour (km/h)</option>
+          <option value="ms">Meters/Second (m/s)</option>
+          <option value="mph">Miles/Hour (mph)</option>
+          <option value="fps">Feet/Second (ft/s)</option>
+          <option value="kn">Knots (kn)</option>
+          <option value="mach">Mach</option>
+        </select>
+      </div>
+
+      <div class="preference-row">
+        <div class="preference-label">
+          <span class="preference-icon">
+            <span class="material-symbols-outlined">thermostat</span>
+          </span>
+          <span>Temperature</span>
+        </div>
+        <select id="temperatureUnit">
+          <option value="c">Celsius (°C)</option>
+          <option value="f">Fahrenheit (°F)</option>
+          <option value="k">Kelvin (K)</option>
+        </select>
+      </div>
+
+      <div class="preference-row">
+        <div class="preference-label">
+          <span class="preference-icon">
+            <span class="material-symbols-outlined">360</span>
+          </span>
+          <span>Torque</span>
+        </div>
+        <select id="torqueUnit">
+          <option value="nm">Newton-Meters (N·m)</option>
+          <option value="lbft">Pound-Feet (lb·ft)</option>
+          <option value="lbin">Pound-Inches (lb·in)</option>
+          <option value="kgm">Kilogram-Meters (kg·m)</option>
+          <option value="ozin">Ounce-Inches (oz·in)</option>
+        </select>
+      </div>
+
+      <div class="preference-row">
+        <div class="preference-label">
+          <span class="preference-icon">
+            <span class="material-symbols-outlined">water_drop</span>
+          </span>
+          <span>Volume</span>
+        </div>
+        <select id="volumeUnit">
+          <option value="l">Liters (L)</option>
+          <option value="ml">Milliliters (ml)</option>
+          <option value="gal">Gallons (gal)</option>
+          <option value="qt">Quarts (qt)</option>
+          <option value="pt">Pints (pt)</option>
+          <option value="cup">Cups</option>
+          <option value="fl_oz">Fluid Ounces (fl oz)</option>
+        </select>
+      </div>
+
+      <div class="preference-row">
+        <div class="preference-label">
+          <span class="preference-icon">
+            <span class="material-symbols-outlined">scale</span>
+          </span>
+          <span>Weight</span>
+        </div>
+        <select id="weightUnit">
+          <option value="kg">Kilograms (kg)</option>
+          <option value="g">Grams (g)</option>
+          <option value="lb">Pounds (lb)</option>
+          <option value="oz">Ounces (oz)</option>
+          <option value="t">Tonnes (t)</option>
+        </select>
+      </div>
     </section>
 
   </div>

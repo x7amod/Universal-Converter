@@ -11,7 +11,9 @@ window.UnitConverter.SettingsManager = class {
       weightUnit: 'kg',
       temperatureUnit: 'c',
       volumeUnit: 'l',
-      areaUnit: 'm2'
+      areaUnit: 'm2',
+      accelerationUnit: 'ms2',
+      flowRateUnit: 'lmin'
     };
   }
   
@@ -69,14 +71,18 @@ window.UnitConverter.SettingsManager = class {
         weightUnit: 'kg',
         temperatureUnit: 'c',
         volumeUnit: 'l',
-        areaUnit: 'm2'
+        areaUnit: 'm2',
+        accelerationUnit: 'ms2',
+        flowRateUnit: 'lmin'
       },
       imperial: {
         lengthUnit: 'ft',
         weightUnit: 'lb',
         temperatureUnit: 'f',
         volumeUnit: 'gal',
-        areaUnit: 'ft2'
+        areaUnit: 'ft2',
+        accelerationUnit: 'fts2',
+        flowRateUnit: 'galmin'
       }
     };
   }

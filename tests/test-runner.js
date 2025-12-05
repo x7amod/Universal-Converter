@@ -298,6 +298,23 @@ class JSONUnitConverterTester {
         }
         break;
 
+      case 'currencyCodeDetection':
+        // Test that explicit currency codes (like CAD in "$89.99 CAD") are properly detected
+        const currencyConverter = global.window.UnitConverter.currencyConverter;
+        if (currencyConverter) {
+          const detectedSymbol = currencyConverter.extractCurrencySymbol(input.text);
+          const detectedCode = currencyConverter.detectCurrency(detectedSymbol);
+          this.assert(
+            detectedCode === expected.currencyCode,
+            name,
+            expected.currencyCode,
+            detectedCode
+          );
+        } else {
+          this.assert(false, name, expected.currencyCode, 'currency converter not available');
+        }
+        break;
+
       // Handle legacy test formats that might not follow standard structure
       default:
         // Check if this is a legacy dimension format test

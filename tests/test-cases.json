@@ -256,6 +256,56 @@
       }
     },
     {
+      "name": "Currency: \"$89.99 CAD\" should detect as CAD not USD",
+      "type": "currencyCodeDetection",
+      "input": {
+        "text": "$89.99 CAD"
+      },
+      "expected": {
+        "currencyCode": "CAD"
+      }
+    },
+    {
+      "name": "Currency: \"$50 AUD\" should detect as AUD not USD",
+      "type": "currencyCodeDetection",
+      "input": {
+        "text": "$50 AUD"
+      },
+      "expected": {
+        "currencyCode": "AUD"
+      }
+    },
+    {
+      "name": "Currency: \"CAD $100\" should detect as CAD not USD",
+      "type": "currencyCodeDetection",
+      "input": {
+        "text": "CAD $100"
+      },
+      "expected": {
+        "currencyCode": "CAD"
+      }
+    },
+    {
+      "name": "Currency: \"$25.00 NZD\" should detect as NZD not USD",
+      "type": "currencyCodeDetection",
+      "input": {
+        "text": "$25.00 NZD"
+      },
+      "expected": {
+        "currencyCode": "NZD"
+      }
+    },
+    {
+      "name": "Currency: \"$100\" with no explicit code should detect based on context",
+      "type": "currencyCodeDetection",
+      "input": {
+        "text": "$100"
+      },
+      "expected": {
+        "currencyCode": "USD"
+      }
+    },
+    {
       "name": "Single Selection: \"6m × 4m × 2.5m\" should convert dimensions",
       "type": "singleSelection",
       "input": {
@@ -523,6 +573,84 @@
         "text": "30 psi",
         "userSettings": {
           "pressureUnit": "bar"
+        }
+      },
+      "expected": {
+        "minConversions": 1
+      }
+    },
+    {
+      "name": "Pattern: \"9.8 m/s²\" detected as acceleration",
+      "type": "patternDetection",
+      "input": {
+        "text": "9.8 m/s²",
+        "userSettings": {
+          "accelerationUnit": "fts2"
+        }
+      },
+      "expected": {
+        "minConversions": 1
+      }
+    },
+    {
+      "name": "Pattern: \"32 ft/s²\" detected as acceleration",
+      "type": "patternDetection",
+      "input": {
+        "text": "32 ft/s²",
+        "userSettings": {
+          "accelerationUnit": "ms2"
+        }
+      },
+      "expected": {
+        "minConversions": 1
+      }
+    },
+    {
+      "name": "Pattern: \"2 g-force\" detected as acceleration",
+      "type": "patternDetection",
+      "input": {
+        "text": "2 g-force",
+        "userSettings": {
+          "accelerationUnit": "ms2"
+        }
+      },
+      "expected": {
+        "minConversions": 1
+      }
+    },
+    {
+      "name": "Pattern: \"50 L/min\" detected as flow rate",
+      "type": "patternDetection",
+      "input": {
+        "text": "50 L/min",
+        "userSettings": {
+          "flowRateUnit": "galmin"
+        }
+      },
+      "expected": {
+        "minConversions": 1
+      }
+    },
+    {
+      "name": "Pattern: \"10 gal/min\" detected as flow rate",
+      "type": "patternDetection",
+      "input": {
+        "text": "10 gal/min",
+        "userSettings": {
+          "flowRateUnit": "lmin"
+        }
+      },
+      "expected": {
+        "minConversions": 1
+      }
+    },
+    {
+      "name": "Pattern: \"100 CFM\" detected as flow rate",
+      "type": "patternDetection",
+      "input": {
+        "text": "100 CFM",
+        "userSettings": {
+          "flowRateUnit": "lmin"
         }
       },
       "expected": {
@@ -1446,6 +1574,105 @@
         "to": "kg"
       },
       "expected": null
+    },
+    {
+      "name": "Acceleration: 1 m/s² ≈ 3.28084 ft/s²",
+      "type": "conversion",
+      "input": {
+        "value": 1,
+        "from": "ms2",
+        "to": "fts2"
+      },
+      "expected": 3.28084,
+      "tolerance": 0.001
+    },
+    {
+      "name": "Acceleration: 9.80665 m/s² = 1 g-force",
+      "type": "conversion",
+      "input": {
+        "value": 9.80665,
+        "from": "ms2",
+        "to": "gforce"
+      },
+      "expected": 1,
+      "tolerance": 0.001
+    },
+    {
+      "name": "Acceleration: 1 g-force ≈ 32.174 ft/s²",
+      "type": "conversion",
+      "input": {
+        "value": 1,
+        "from": "gforce",
+        "to": "fts2"
+      },
+      "expected": 32.174,
+      "tolerance": 0.01
+    },
+    {
+      "name": "Acceleration: 10 ft/s² ≈ 3.048 m/s²",
+      "type": "conversion",
+      "input": {
+        "value": 10,
+        "from": "fts2",
+        "to": "ms2"
+      },
+      "expected": 3.048,
+      "tolerance": 0.001
+    },
+    {
+      "name": "Flow Rate: 1 L/min ≈ 0.264172 gal/min",
+      "type": "conversion",
+      "input": {
+        "value": 1,
+        "from": "lmin",
+        "to": "galmin"
+      },
+      "expected": 0.264172,
+      "tolerance": 0.001
+    },
+    {
+      "name": "Flow Rate: 60000 L/min = 1 m³/s",
+      "type": "conversion",
+      "input": {
+        "value": 60000,
+        "from": "lmin",
+        "to": "m3s"
+      },
+      "expected": 1,
+      "tolerance": 0.1
+    },
+    {
+      "name": "Flow Rate: 1 gal/min ≈ 3.78541 L/min",
+      "type": "conversion",
+      "input": {
+        "value": 1,
+        "from": "galmin",
+        "to": "lmin"
+      },
+      "expected": 3.78541,
+      "tolerance": 0.001
+    },
+    {
+      "name": "Flow Rate: 1 m³/h = 60 L/min",
+      "type": "conversion",
+      "input": {
+        "value": 1,
+        "from": "m3h",
+        "to": "lmin"
+      },
+      "expected": 16.6667,
+      "tolerance": 0.001
+    },
+    {
+      "name": "Flow Rate: 1 CFM ≈ 28.3168 L/min",
+      "type": "conversion",
+      "input": {
+        "value": 1,
+        "from": "cfm",
+        "to": "lmin"
+      },
+      "expected": 28.3168,
+      "tolerance": 0.01
     }
   ]
 }

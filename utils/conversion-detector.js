@@ -206,7 +206,7 @@ window.UnitConverter.ConversionDetector = class {
    */
   detectUnit(text, userSettings) {
     // Try unit types in priority order (torque before weight to avoid lb conflicts)
-    const priorityOrder = ['timezone', 'area', 'torque', 'speed', 'pressure', 'temperature', 'volume', 'weight', 'length'];
+    const priorityOrder = ['timezone', 'area', 'torque', 'speed', 'acceleration', 'flowRate', 'pressure', 'temperature', 'volume', 'weight', 'length'];
     
     for (const unitType of priorityOrder) {
       const pattern = this.patterns[unitType];

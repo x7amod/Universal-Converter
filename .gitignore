@@ -1,19 +1,15 @@
 # Build outputs
-build/
-build-firefox/
+build*/
 *.zip
 *.crx
 *.pem
-# Test scripts
-run-tests.ps1
+
+# Temporary Debug files
 tests/debug*
-debug*
+debug* 
 
 # Node.js
 node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
 
 # OS generated files
 .DS_Store
@@ -25,13 +21,17 @@ ehthumbs.db
 Thumbs.db
 
 # IDE files
-.vscode/settings.json
+.vscode/
 .idea/
 *.swp
 *.swo
+.*/
 
 # Logs
 *.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
 # Temporary files
 *.tmp

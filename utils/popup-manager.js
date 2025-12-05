@@ -118,6 +118,10 @@ window.UnitConverter.PopupManager = class {
       this.conversionPopup.remove();
       this.conversionPopup = null;
     }
+    
+    // Also clean up any orphaned popups that might be stuck
+    const orphanedPopups = document.querySelectorAll('.unit-converter-popup');
+    orphanedPopups.forEach(popup => popup.remove());
   }
   
   /**

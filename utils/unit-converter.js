@@ -65,34 +65,39 @@ window.UnitConverter.UnitConverter = class {
       return null;
     }
     
-    if (unitType === 'temperature') {
-      return this.convertTemperature(value, normalizedFrom, normalizedTo);
+    switch (unitType) {
+      case 'temperature':
+        return this.convertTemperature(value, normalizedFrom, normalizedTo);
+      
+      case 'speed':
+        return this.convertSpeed(value, normalizedFrom, normalizedTo);
+      
+      case 'acceleration':
+        return this.convertAcceleration(value, normalizedFrom, normalizedTo);
+      
+      case 'flowRate':
+        return this.convertFlowRate(value, normalizedFrom, normalizedTo);
+      
+      case 'torque':
+        return this.convertTorque(value, normalizedFrom, normalizedTo);
+      
+      case 'pressure':
+        return this.convertPressure(value, normalizedFrom, normalizedTo);
+      
+      case 'timezone':
+        // Timezone conversion is handled differently - returns object not number
+        return null; // Use convertTimezone method directly
+      
+      default: {
+        // Generic conversion for length, weight, volume, area
+        const conversions = this.conversions[unitType];
+        if (!conversions[normalizedFrom] || !conversions[normalizedTo]) {
+          return null;
+        }
+        const valueInBase = value / conversions[normalizedFrom];
+        return valueInBase * conversions[normalizedTo];
+      }
     }
-    
-    if (unitType === 'speed') {
-      return this.convertSpeed(value, normalizedFrom, normalizedTo);
-    }
-    
-    if (unitType === 'torque') {
-      return this.convertTorque(value, normalizedFrom, normalizedTo);
-    }
-    
-    if (unitType === 'pressure') {
-      return this.convertPressure(value, normalizedFrom, normalizedTo);
-    }
-    
-    if (unitType === 'timezone') {
-      // Timezone conversion is handled differently - returns object not number
-      return null; // Use convertTimezone method directly
-    }
-    
-    const conversions = this.conversions[unitType];
-    if (!conversions[normalizedFrom] || !conversions[normalizedTo]) {
-      return null;
-    }
-    
-    const valueInBase = value / conversions[normalizedFrom];
-    return valueInBase * conversions[normalizedTo];
   }
   
   /**
@@ -137,6 +142,8 @@ window.UnitConverter.UnitConverter = class {
                       unitType === 'volume' ? 'volumeUnit' :
                       unitType === 'area' ? 'areaUnit' : 
                       unitType === 'speed' ? 'speedUnit' :
+                      unitType === 'acceleration' ? 'accelerationUnit' :
+                      unitType === 'flowRate' ? 'flowRateUnit' :
                       unitType === 'torque' ? 'torqueUnit' :
                       unitType === 'pressure' ? 'pressureUnit' :
                       unitType === 'timezone' ? 'timezoneUnit' :
@@ -163,6 +170,49 @@ window.UnitConverter.UnitConverter = class {
     // Convert to m/s first, then to target unit
     const metersPerSecond = value * this.conversions.speed[normalizedFrom];
     return metersPerSecond / this.conversions.speed[normalizedTo];
+  }
+
+  /**
+   * Convert acceleration units
+   * @param {number} value - Acceleration value
+   * @param {string} fromUnit - Source unit
+   * @param {string} toUnit - Target unit
+   * @returns {number|null} - Converted value or null
+   */
+  convertAcceleration(value, fromUnit, toUnit) {
+    const normalizedFrom = this.normalizeUnit(fromUnit);
+    const normalizedTo = this.normalizeUnit(toUnit);
+    
+    if (!this.conversions.acceleration[normalizedFrom] || !this.conversions.acceleration[normalizedTo]) {
+      return null;
+    }
+    
+    // Convert to m/s² first (base unit), then to target unit
+    // For acceleration, the ratios are: ms2=1, fts2=3.28084, g=9.80665
+    // To convert FROM a unit, divide by its ratio to get m/s²
+    // To convert TO a unit, multiply by its ratio
+    const metersPerSecondSquared = value / this.conversions.acceleration[normalizedFrom];
+    return metersPerSecondSquared * this.conversions.acceleration[normalizedTo];
+  }
+
+  /**
+   * Convert flow rate units
+   * @param {number} value - Flow rate value
+   * @param {string} fromUnit - Source unit
+   * @param {string} toUnit - Target unit
+   * @returns {number|null} - Converted value or null
+   */
+  convertFlowRate(value, fromUnit, toUnit) {
+    const normalizedFrom = this.normalizeUnit(fromUnit);
+    const normalizedTo = this.normalizeUnit(toUnit);
+    
+    if (!this.conversions.flowRate[normalizedFrom] || !this.conversions.flowRate[normalizedTo]) {
+      return null;
+    }
+    
+    // Convert to L/min first (base unit), then to target unit
+    const litersPerMinute = value / this.conversions.flowRate[normalizedFrom];
+    return litersPerMinute * this.conversions.flowRate[normalizedTo];
   }
 
   /**
@@ -496,6 +546,21 @@ window.UnitConverter.UnitConverter = class {
       'kn': 'knots',
       'mach': 'Mach',
       
+      // Acceleration units
+      'ms2': 'm/s²',
+      'fts2': 'ft/s²',
+      'gforce': 'g',
+      
+      // Flow rate units
+      'lmin': 'L/min',
+      'lpm': 'L/min',
+      'galmin': 'gal/min',
+      'gpm': 'gal/min',
+      'm3s': 'm³/s',
+      'm3h': 'm³/h',
+      'cfm': 'CFM',
+      'cfs': 'CFS',
+      
       // Torque units
       'nm': 'N⋅m',
       'lbft': 'lb⋅ft',
@@ -516,12 +581,16 @@ window.UnitConverter.UnitConverter = class {
       'torr': 'Torr',
       'psf': 'psf',
       
-      // Other units
+      // length
       'm': 'm', 'cm': 'cm', 'mm': 'mm', 'km': 'km',
       'in': 'in', 'ft': 'ft', 'yd': 'yd', 'mi': 'mi',
+      // weight
       'kg': 'kg', 'g': 'g', 'mg': 'mg', 'lb': 'lb', 'oz': 'oz', 't': 't',
+      //temperature
       'c': '°C', 'f': '°F', 'k': 'K',
+      // volume
       'l': 'L', 'ml': 'mL', 'gal': 'gal', 'qt': 'qt', 'pt': 'pt', 'cup': 'cup', 'fl_oz': 'fl oz',
+      // area
       'm2': 'm²', 'cm2': 'cm²', 'mm2': 'mm²', 'km2': 'km²',
       'ft2': 'ft²', 'in2': 'in²', 'acre': 'acre'
     };

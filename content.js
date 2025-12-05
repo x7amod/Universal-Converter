@@ -31,7 +31,7 @@ async function init() {
     await loadUserSettings();
     setupEventListeners();
     
-    console.log('Unit Converter extension initialized successfully');
+    //console.log('Unit Converter extension initialized successfully'); // debugging if something goes wrong
   } catch (error) {
     console.error('Error initializing Unit Converter extension:', error);
   }
@@ -63,7 +63,8 @@ async function handleTextSelection(event) {
     const selection = window.getSelection();
     const selectedText = selection.toString().trim();
     
-    if (selectedText && selectedText.length > 0) {
+    // Only process single-line selections (no line breaks)
+    if (selectedText && selectedText.length > 0 && !selectedText.includes('\n') && !selectedText.includes('\r')) {
       // Use Currency-Converter logic for currency detection
       const currencyConverter = window.UnitConverter.currencyConverter;
       const detectedCurrency = currencyConverter.detectCurrency(currencyConverter.extractCurrencySymbol(selectedText));
@@ -111,6 +112,15 @@ async function handleTextSelection(event) {
       hidePopup();
     }
   }, 10);
+}
+
+/**
+ * Check if text contains multiple lines
+ * @param {string} text - Text to check
+ * @returns {boolean} - True if multi-line
+ */
+function isMultiLine(text) {
+  return text.includes('\n') || text.includes('\r');
 }
 
 /**

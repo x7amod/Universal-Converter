@@ -56,7 +56,17 @@ window.UnitConverterData.CONVERSION_RATIOS = {
   acceleration: {
     'ms2': 1, // m/s²
     'fts2': 3.28084, // ft/s²
-    'g': 9.80665 // g-force (standard gravity)
+    'gforce': 0.101972 // g-force (1 / 9.80665)
+  },
+  flowRate: {
+    'lmin': 1, // L/min (base unit)
+    'lpm': 1, // L/min alias
+    'galmin': 0.264172, // gal/min (US)
+    'gpm': 0.264172, // gal/min alias
+    'm3s': 0.0000166667, // m³/s
+    'm3h': 0.06, // m³/h
+    'cfm': 0.0353147, // cubic feet per minute
+    'cfs': 0.000588578 // cubic feet per second
   },
   torque: {
     'nm': 1,
@@ -95,7 +105,8 @@ window.UnitConverterData.UNIT_PATTERNS = {
   dimensionsWithUnits: /(?:^|\s|^[\s]*|[\s]*$)(\d+(?:\.\d+)?)\s*(m|cm|mm|km|in|inch|inches|ft|foot|feet|yd|yard|yards|mi|mile|miles|meter|meters|centimeter|centimeters|millimeter|millimeters|kilometer|kilometers)\s*(?:x|×|by|\*)\s*(\d+(?:\.\d+)?)\s*\2\s*(?:x|×|by|\*)\s*(\d+(?:\.\d+)?)\s*\2(?=\s*$|\s*[.,!?;:]|\s*\n|\s*\r)/gi,
   dimensions: /(?:^|\s|^[\s]*|[\s]*$)(\d+(?:\.\d+)?)\s*(?:x|×|by|\*)\s*(\d+(?:\.\d+)?)\s*(?:x|×|by|\*)\s*(\d+(?:\.\d+)?)\s*-?\s*(m|cm|mm|km|in|inch|inches|ft|foot|feet|yd|yard|yards|mi|mile|miles|meter|meters|centimeter|centimeters|millimeter|millimeters|kilometer|kilometers)(?=\s*$|\s*[.,!?;:]|\s*\n|\s*\r)/gi,
   speed: /(?:^|\s|^[\s]*|[\s]*$)(\d+(?:\.\d+)?)\s*-?\s*(m\/s|ms|km\/h|kmh|km\/hr|mph|mi\/h|ft\/s|fps|knots?|kn|nautical\s*miles?\s*per\s*hour|mach|meters?\s*per\s*second|kilometers?\s*per\s*hour|miles?\s*per\s*hour|feet\s*per\s*second)(?=\s*$|\s*[.,!?;:]|\s*\n|\s*\r)/gi,
-  acceleration: /(?:^|\s|^[\s]*|[\s]*$)(\d+(?:\.\d+)?)\s*-?\s*(m\/s²|m\/s2|ms2|ft\/s²|ft\/s2|fts2|g-force|g|gee|meters?\s*per\s*second\s*squared|feet\s*per\s*second\s*squared)(?=\s*$|\s*[.,!?;:]|\s*\n|\s*\r)/gi,
+  acceleration: /(?:^|\s|^[\s]*|[\s]*$)(\d+(?:\.\d+)?)\s*-?\s*(m\/s²|m\/s2|ms2|ft\/s²|ft\/s2|fts2|g-force|gee|meters?\s*per\s*second\s*squared|feet\s*per\s*second\s*squared)(?=\s*$|\s*[.,!?;:]|\s*\n|\s*\r)/gi,
+  flowRate: /(?:^|\s|^[\s]*|[\s]*$)(\d+(?:\.\d+)?)\s*-?\s*(L\/min|l\/min|lpm|gal\/min|gpm|gallons?\s*per\s*minute|m³\/s|m3\/s|m³\/h|m3\/h|cubic\s*meters?\s*per\s*second|cubic\s*meters?\s*per\s*hour|cfm|cfs|cubic\s*feet\s*per\s*minute|cubic\s*feet\s*per\s*second|liters?\s*per\s*minute)(?=\s*$|\s*[.,!?;:]|\s*\n|\s*\r)/gi,
   torque: /(?:^|\s|^[\s]*|[\s]*$)(\d+(?:\.\d+)?)\s*-?\s*(N[\s\.\-⋅]?m|Nm|lb[\s\.\-⋅]?ft|lbft|ft[\s\.\-⋅]?lbs?|lb[\s\.\-⋅]?in|lbin|in[\s\.\-⋅]?lbs?|kg[\s\.\-⋅]?m|kgm|kgf[\s\.\-⋅]?m|oz[\s\.\-⋅]?in|ozin|newton[\s\-]?meters?|pound[\s\-]?feet|foot[\s\-]?pounds?|pound[\s\-]?inches?|inch[\s\-]?pounds?|kilogram[\s\-]?force[\s\-]?meters?)(?=\s*$|\s*[.,!?;:]|\s*\n|\s*\r)/gi,
   pressure: /(?:^|\s|^[\s]*|[\s]*$)(\d+(?:\.\d+)?)\s*-?\s*(Pa|bar|psi|atm|mmHg|inHg|torr|kPa|MPa|psf|pascal|atmosphere|atmospheres|pounds?\s*per\s*square\s*inch|pounds?\s*per\s*square\s*foot|millimeters?\s*of\s*mercury|inches?\s*of\s*mercury)(?=\s*$|\s*[.,!?;:]|\s*\n|\s*\r)/gi,
   timezone: /\b(\d{1,2}):(\d{2})\s*(AM|PM)?\s*((EST|PST|CST|MST|GMT|UTC|JST|CET|EET|WET|BST|EASTERN|PACIFIC|CENTRAL|MOUNTAIN)([+-]\d{1,2})?|([+-]\d{1,2}):?(\d{2})?)/gi,
@@ -162,7 +173,15 @@ window.UnitConverterData.UNIT_ALIASES = {
   // Acceleration aliases
   'm/s²': 'ms2', 'm/s2': 'ms2', 'meters per second squared': 'ms2', 'meter per second squared': 'ms2',
   'ft/s²': 'fts2', 'ft/s2': 'fts2', 'feet per second squared': 'fts2', 'foot per second squared': 'fts2',
-  'g-force': 'g', 'gee': 'g',
+  'g-force': 'gforce', 'gee': 'gforce',
+  
+  // Flow rate aliases
+  'l/min': 'lmin', 'L/min': 'lmin', 'liters per minute': 'lmin', 'liter per minute': 'lmin', 'lpm': 'lpm',
+  'gal/min': 'galmin', 'gallons per minute': 'galmin', 'gallon per minute': 'galmin', 'gpm': 'gpm',
+  'm³/s': 'm3s', 'm3/s': 'm3s', 'cubic meters per second': 'm3s', 'cubic meter per second': 'm3s',
+  'm³/h': 'm3h', 'm3/h': 'm3h', 'cubic meters per hour': 'm3h', 'cubic meter per hour': 'm3h',
+  'cfm': 'cfm', 'cubic feet per minute': 'cfm', 'cubic foot per minute': 'cfm',
+  'cfs': 'cfs', 'cubic feet per second': 'cfs', 'cubic foot per second': 'cfs',
   
   // Torque aliases
   'n.m': 'nm', 'n·m': 'nm', 'n⋅m': 'nm', 'n-m': 'nm', 'newton meter': 'nm', 'newton meters': 'nm', 'newton-meters': 'nm', 'newton-meter': 'nm',
@@ -195,6 +214,7 @@ window.UnitConverterData.DEFAULT_UNITS = {
   area: 'm2',
   speed: 'ms',
   acceleration: 'ms2',
+  flowRate: 'lmin',
   torque: 'nm',
   pressure: 'pa',
   timezone: 'auto', // Will be auto-detected
@@ -296,6 +316,6 @@ window.UnitConverterData.initializeCurrencyPattern = function() {
   const pattern = window.UnitConverterData.generateCurrencyPattern();
   if (pattern) {
     window.UnitConverterData.UNIT_PATTERNS.currency = pattern;
-    console.log('Currency pattern initialized with', Object.keys(window.currencySymbolToCurrencyCode || {}).length, 'symbols');
+    //console.log('Currency pattern initialized with', Object.keys(window.currencySymbolToCurrencyCode || {}).length, 'symbols'); // Uncomment for debugging
   }
 };

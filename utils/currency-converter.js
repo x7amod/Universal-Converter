@@ -16,11 +16,23 @@ window.UnitConverter.CurrencyConverter = class {
 
     /**
      * Extract currency symbol from text (from Currency-Converter)
+     * Enhanced to detect explicit currency codes like "$89.99 CAD" or "CAD 89.99"
      */
     extractCurrencySymbol(str) {
         // Check if str is valid
         if (!str || typeof str !== 'string') {
             return '';
+        }
+        
+        // First, check for explicit 3-letter currency codes (case insensitive)
+        // These take priority over symbols since they're unambiguous
+        const explicitCodeMatch = str.match(/\b([A-Za-z]{3})\b/);
+        if (explicitCodeMatch) {
+            const code = explicitCodeMatch[1].toUpperCase();
+            // Check if this is a valid currency code
+            if (window.currencySymbolToCurrencyCode && window.currencySymbolToCurrencyCode[code]) {
+                return code;
+            }
         }
         
         // Remove numbers, whitespace, commas, periods
