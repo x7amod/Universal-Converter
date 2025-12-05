@@ -11,9 +11,9 @@
 </div>
 
 <div align="center">
-<strong>Instantly convert any unit or currency by simply selecting text on any webpage!</strong>
+<h2>Instantly convert any unit or currency by simply selecting them on any page!</h2>
 </div>
-
+<br>
 A powerful Chrome Extension that automatically detects and converts units in selected text, supporting length, weight, temperature, volume, area measurements, and **real-time currency conversions** with smart auto-sizing and dimension support.
 
 ## ✨ Key Features
@@ -23,47 +23,6 @@ A powerful Chrome Extension that automatically detects and converts units in sel
 - **Smart Auto-Sizing** - Automatically chooses appropriate units (0.001m → 1mm)  
 - **Dimension Support** - Handles formats like "8ft × 4ft × 30in", "6m × 4m × 2.5m"
 - **Auto-Save Settings** - Metric/Imperial presets with manual overrides
-
-## Supported Units
-
-### 📏 **Length**
-- **Metric**: meter (m), centimeter (cm), millimeter (mm), kilometer (km)
-- **Imperial**: inch (in), foot (ft), yard (yd), mile (mi)
-
-### ⚖️ **Weight/Mass**
-- **Metric**: kilogram (kg), gram (g), milligram (mg), tonne (t)
-- **Imperial**: pound (lb), ounce (oz)
-
-### 🌡️ **Temperature**
-- **Units**: Celsius (°C), Fahrenheit (°F), Kelvin (K)
-
-### 🫗 **Volume**
-- **Metric**: liter (l), milliliter (ml)
-- **Imperial**: gallon (gal), quart (qt), pint (pt), cup, fluid ounce (fl oz)
-
-### 📐 **Area**
-- **Metric**: square meter (m²), square centimeter (cm²), square millimeter (mm²), square kilometer (km²)
-- **Imperial**: square foot (ft²), square inch (in²), acre
-
-### 🏃 **Speed**
-- **Units**: meters per second (m/s), kilometers per hour (km/h), miles per hour (mph), feet per second (fps), knots (kn), mach
-
-### 🔧 **Torque**
-- **Units**: newton-meter (N⋅m), pound-foot (lb⋅ft), pound-inch (lb⋅in), kilogram-meter (kg⋅m), ounce-inch (oz⋅in)
-
-### 🌬️ **Pressure**
-- **Units**: pascal (Pa), bar, pounds per square inch (psi), atmosphere (atm), millimeters of mercury (mmHg), inches of mercury (inHg), torr, kilopascal (kPa), megapascal (MPa)
-
-### 🌍 **Multi-Dimensional**
-- **3D Dimensions**: Supports "length × width × height" formats
-
-### 💰 **Currency** (150+ currencies with real-time rates)
-- USD ($), EUR (€), GBP (£), JPY (¥), CAD, AUD, CHF and more...
-- **Unicode Support**: Arabic, Chinese, and other international currency symbols
-
-### 🕐 **Time Zones**
-- EST, PST, CST, MST, GMT, UTC, CET, JST and more...
-- **Format Support**: 12-hour (AM/PM) and 24-hour formats
 
 ## 🚀 Installation
 **One Click Installation**
@@ -75,6 +34,54 @@ A powerful Chrome Extension that automatically detects and converts units in sel
 3. **Enable** "Developer mode" (top right toggle)
 4. **Click** "Load unpacked" and select the project folder
 5. **Test** by selecting "30 cm" on any webpage → See "11.81 inches" popup
+
+## Supported Units
+
+### 🚀 **Acceleration**
+- **Units**: meters per second squared (m/s²), feet per second squared (ft/s²), g-force (g)
+
+### 📐 **Area**
+- **Metric**: square meter (m²), square centimeter (cm²), square millimeter (mm²), square kilometer (km²)
+- **Imperial**: square foot (ft²), square inch (in²), acre
+
+### 💰 **Currency** (150+ currencies with real-time rates)
+- USD ($), EUR (€), GBP (£), JPY (¥), CAD, AUD, CHF and more...
+- **Unicode Support**: Arabic, Chinese, and other international currency symbols
+
+### 💧 **Flow Rate**
+- **Metric**: liters per minute (L/min), cubic meters per second (m³/s), cubic meters per hour (m³/h)
+- **Imperial**: gallons per minute (gal/min), cubic feet per minute (CFM), cubic feet per second (CFS)
+
+### 📏 **Length**
+- **Metric**: meter (m), centimeter (cm), millimeter (mm), kilometer (km)
+- **Imperial**: inch (in), foot (ft), yard (yd), mile (mi)
+
+### 🌍 **Multi-Dimensional**
+- **3D Dimensions**: Supports "length × width × height" formats
+
+### 🌬️ **Pressure**
+- **Units**: pascal (Pa), bar, pounds per square inch (psi), atmosphere (atm), millimeters of mercury (mmHg), inches of mercury (inHg), torr, kilopascal (kPa), megapascal (MPa)
+
+### 🏃 **Speed**
+- **Units**: meters per second (m/s), kilometers per hour (km/h), miles per hour (mph), feet per second (fps), knots (kn), mach
+
+### 🌡️ **Temperature**
+- **Units**: Celsius (°C), Fahrenheit (°F), Kelvin (K)
+
+### 🕐 **Time Zones**
+- EST, PST, CST, MST, GMT, UTC, CET, JST and more...
+- **Format Support**: 12-hour (AM/PM) and 24-hour formats
+
+### 🔧 **Torque**
+- **Units**: newton-meter (N⋅m), pound-foot (lb⋅ft), pound-inch (lb⋅in), kilogram-meter (kg⋅m), ounce-inch (oz⋅in)
+
+### 🫗 **Volume**
+- **Metric**: liter (l), milliliter (ml)
+- **Imperial**: gallon (gal), quart (qt), pint (pt), cup, fluid ounce (fl oz)
+
+### ⚖️ **Weight/Mass**
+- **Metric**: kilogram (kg), gram (g), milligram (mg), tonne (t)
+- **Imperial**: pound (lb), ounce (oz)
 
 ## 🧪 Testing & Development
 
