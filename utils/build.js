@@ -601,6 +601,29 @@ window.fetch = function(url, options = {}) {
     console.log(`${colors.cyan}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${colors.reset}`);
     
     try {
+      // Step 0: Run tests first
+      console.log(`${colors.blue}🧪 Running tests before build...${colors.reset}`);
+      const testsPath = path.join(this.rootDir, 'tests', 'run-all-tests.js');
+      
+      if (!fs.existsSync(testsPath)) {
+        console.log(`${colors.yellow}⚠️  Tests not found at ${testsPath}, skipping tests${colors.reset}`);
+      } else {
+        try {
+          // Run the tests and capture output
+          execSync(`node "${testsPath}"`, {
+            cwd: this.rootDir,
+            stdio: 'inherit', // Show test output in real-time
+            encoding: 'utf8'
+          });
+          console.log(`${colors.green}✅ All tests passed!${colors.reset}`);
+          console.log('');
+        } catch (error) {
+          console.log(`${colors.red}❌ Tests failed! Build aborted.${colors.reset}`);
+          console.log(`${colors.yellow}💡 Fix the failing tests before building the extension.${colors.reset}`);
+          process.exit(1);
+        }
+      }
+      
       // Step 1: Clean build directory
       this.cleanBuildDir();
       

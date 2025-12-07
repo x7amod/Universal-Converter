@@ -658,6 +658,175 @@
       }
     },
     {
+      "name": "Pattern: \"5 cm/s\" detected as speed",
+      "type": "patternDetection",
+      "input": {
+        "text": "5 cm/s",
+        "userSettings": {
+          "speedUnit": "ms"
+        }
+      },
+      "expected": {
+        "minConversions": 1
+      }
+    },
+    {
+      "name": "Pattern: \"1000 km/s\" detected as speed",
+      "type": "patternDetection",
+      "input": {
+        "text": "1000 km/s",
+        "userSettings": {
+          "speedUnit": "ms"
+        }
+      },
+      "expected": {
+        "minConversions": 1
+      }
+    },
+    {
+      "name": "Pattern: \"0.5 mi/s\" detected as speed",
+      "type": "patternDetection",
+      "input": {
+        "text": "0.5 mi/s",
+        "userSettings": {
+          "speedUnit": "ms"
+        }
+      },
+      "expected": {
+        "minConversions": 1
+      }
+    },
+    {
+      "name": "Pattern: \"0.01 cm/s²\" detected as acceleration",
+      "type": "patternDetection",
+      "input": {
+        "text": "0.01 cm/s²",
+        "userSettings": {
+          "accelerationUnit": "ms2"
+        }
+      },
+      "expected": {
+        "minConversions": 1
+      }
+    },
+    {
+      "name": "Pattern: \"5000 km/s²\" detected as acceleration",
+      "type": "patternDetection",
+      "input": {
+        "text": "5000 km/s²",
+        "userSettings": {
+          "accelerationUnit": "ms2"
+        }
+      },
+      "expected": {
+        "minConversions": 1
+      }
+    },
+    {
+      "name": "Pattern: \"0.2 in/s²\" detected as acceleration",
+      "type": "patternDetection",
+      "input": {
+        "text": "0.2 in/s²",
+        "userSettings": {
+          "accelerationUnit": "ms2"
+        }
+      },
+      "expected": {
+        "minConversions": 1
+      }
+    },
+    {
+      "name": "Pattern: \"500 mL/min\" detected as flow rate",
+      "type": "patternDetection",
+      "input": {
+        "text": "500 mL/min",
+        "userSettings": {
+          "flowRateUnit": "lmin"
+        }
+      },
+      "expected": {
+        "minConversions": 1
+      }
+    },
+    {
+      "name": "Pattern: \"2 mL/s\" detected as flow rate",
+      "type": "patternDetection",
+      "input": {
+        "text": "2 mL/s",
+        "userSettings": {
+          "flowRateUnit": "lmin"
+        }
+      },
+      "expected": {
+        "minConversions": 1
+      }
+    },
+    {
+      "name": "Pattern: \"10 L/s\" detected as flow rate",
+      "type": "patternDetection",
+      "input": {
+        "text": "10 L/s",
+        "userSettings": {
+          "flowRateUnit": "lmin"
+        }
+      },
+      "expected": {
+        "minConversions": 1
+      }
+    },
+    {
+      "name": "Pattern: \"300 L/h\" detected as flow rate",
+      "type": "patternDetection",
+      "input": {
+        "text": "300 L/h",
+        "userSettings": {
+          "flowRateUnit": "lmin"
+        }
+      },
+      "expected": {
+        "minConversions": 1
+      }
+    },
+    {
+      "name": "Pattern: \"5 gal/s\" detected as flow rate",
+      "type": "patternDetection",
+      "input": {
+        "text": "5 gal/s",
+        "userSettings": {
+          "flowRateUnit": "lmin"
+        }
+      },
+      "expected": {
+        "minConversions": 1
+      }
+    },
+    {
+      "name": "Pattern: \"200 gal/h\" detected as flow rate",
+      "type": "patternDetection",
+      "input": {
+        "text": "200 gal/h",
+        "userSettings": {
+          "flowRateUnit": "lmin"
+        }
+      },
+      "expected": {
+        "minConversions": 1
+      }
+    },
+    {
+      "name": "Pattern: \"0.5 m³/min\" detected as flow rate",
+      "type": "patternDetection",
+      "input": {
+        "text": "0.5 m³/min",
+        "userSettings": {
+          "flowRateUnit": "lmin"
+        }
+      },
+      "expected": {
+        "minConversions": 1
+      }
+    },
+    {
       "name": "Timezone Pattern: \"5:30 PM EST\" matches timezone pattern",
       "type": "patternFromDataTest",
       "input": {
@@ -880,7 +1049,7 @@
       "expected": "cup"
     },
     {
-      "name": "Auto-size: 0.1 m/s → 36 cm/s",
+      "name": "Auto-size: 0.1 m/s → 10 cm/s",
       "type": "bestUnitWithValue",
       "input": {
         "value": 0.1,
@@ -888,9 +1057,109 @@
         "sourceUnit": "ms"
       },
       "expected": {
-        "unit": "ms",
-        "value": 0.1
+        "unit": "cms",
+        "value": 10
       }
+    },
+    {
+      "name": "Auto-size: 0.5 m/s → cm/s",
+      "type": "bestUnit",
+      "input": {
+        "value": 0.5,
+        "unitType": "speed",
+        "sourceUnit": "ms"
+      },
+      "expected": "cms"
+    },
+    {
+      "name": "Auto-size: 100 m/s → km/h",
+      "type": "bestUnit",
+      "input": {
+        "value": 100,
+        "unitType": "speed",
+        "sourceUnit": "ms"
+      },
+      "expected": "kmh"
+    },
+    {
+      "name": "Auto-size: 1500 m/s → km/s",
+      "type": "bestUnit",
+      "input": {
+        "value": 1500,
+        "unitType": "speed",
+        "sourceUnit": "ms"
+      },
+      "expected": "kms"
+    },
+    {
+      "name": "Auto-size: 0.005 m/s² → cm/s²",
+      "type": "bestUnit",
+      "input": {
+        "value": 0.005,
+        "unitType": "acceleration",
+        "sourceUnit": "ms2"
+      },
+      "expected": "cms2"
+    },
+    {
+      "name": "Auto-size: 1500 m/s² → km/s²",
+      "type": "bestUnit",
+      "input": {
+        "value": 1500,
+        "unitType": "acceleration",
+        "sourceUnit": "ms2"
+      },
+      "expected": "kms2"
+    },
+    {
+      "name": "Auto-size: 0.5 ft/s² → in/s²",
+      "type": "bestUnit",
+      "input": {
+        "value": 0.5,
+        "unitType": "acceleration",
+        "sourceUnit": "fts2"
+      },
+      "expected": "ins2"
+    },
+    {
+      "name": "Auto-size: 0.5 L/min → mL/min",
+      "type": "bestUnit",
+      "input": {
+        "value": 0.5,
+        "unitType": "flowRate",
+        "sourceUnit": "lmin"
+      },
+      "expected": "mlmin"
+    },
+    {
+      "name": "Auto-size: 100 L/min → L/s",
+      "type": "bestUnit",
+      "input": {
+        "value": 100,
+        "unitType": "flowRate",
+        "sourceUnit": "lmin"
+      },
+      "expected": "ls"
+    },
+    {
+      "name": "Auto-size: 1500 L/min → m³/min",
+      "type": "bestUnit",
+      "input": {
+        "value": 1500,
+        "unitType": "flowRate",
+        "sourceUnit": "lmin"
+      },
+      "expected": "m3min"
+    },
+    {
+      "name": "Auto-size: 100 gal/min → gal/s",
+      "type": "bestUnit",
+      "input": {
+        "value": 100,
+        "unitType": "flowRate",
+        "sourceUnit": "galmin"
+      },
+      "expected": "gals"
     },
     {
       "name": "Auto-size: 1000 Pa → 1 kPa",

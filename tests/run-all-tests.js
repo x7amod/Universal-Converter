@@ -69,6 +69,17 @@ class CrossPlatformTestRunner {
     
     console.log(`${colorize(testName, colors.cyan + colors.bold)} - ${status} ${durationStr}`);
     
+    // Show failed test cases
+    if (!passed && output) {
+      const failedTests = this.extractFailedTests(output);
+      if (failedTests.length > 0) {
+        console.log(colorize('  Failed test cases:', colors.red + colors.bold));
+        failedTests.forEach(test => {
+          console.log(colorize(`    ❌ ${test}`, colors.red));
+        });
+      }
+    }
+    
     if (this.verbose && output) {
       console.log(colorize('Output:', colors.blue));
       output.split('\n').forEach(line => {
@@ -84,6 +95,44 @@ class CrossPlatformTestRunner {
     }
     
     console.log('');
+  }
+
+  extractFailedTests(output) {
+    const failedTests = [];
+    const lines = output.split('\n');
+    
+    // Look for [FAIL] markers
+    for (const line of lines) {
+      if (line.includes('[FAIL]')) {
+        const testName = line.replace(/\[FAIL\]/g, '').trim();
+        if (testName) {
+          failedTests.push(testName);
+        }
+      }
+    }
+    
+    // If no [FAIL] markers, look for "Failed Tests:" section
+    if (failedTests.length === 0) {
+      let inFailedSection = false;
+      for (const line of lines) {
+        if (line.includes('Failed Tests:')) {
+          inFailedSection = true;
+          continue;
+        }
+        if (inFailedSection && line.trim().startsWith('-')) {
+          const testName = line.trim().replace(/^-\s*/, '');
+          if (testName) {
+            failedTests.push(testName);
+          }
+        }
+        // Stop when we hit an empty line after the failed tests section
+        if (inFailedSection && !line.trim()) {
+          break;
+        }
+      }
+    }
+    
+    return failedTests;
   }
 
   runNodeTest(scriptPath, testName) {
@@ -179,9 +228,20 @@ class CrossPlatformTestRunner {
       const durationStr = colorize(`(${result.duration.toFixed(2)}s)`, colors.yellow);
       console.log(`  ${colorize(result.name, colors.bold)}: ${status} ${durationStr}`);
       
-      if (!result.passed && result.error) {
-        const errorLine = result.error.split('\n')[0];
-        console.log(`    ${colorize(`Error: ${errorLine}`, colors.red)}`);
+      if (!result.passed) {
+        // Extract and show failed test cases
+        const failedTests = this.extractFailedTests(result.output);
+        if (failedTests.length > 0) {
+          console.log(colorize('    Failed test cases:', colors.red));
+          failedTests.forEach(test => {
+            console.log(colorize(`      • ${test}`, colors.red));
+          });
+        }
+        
+        if (result.error) {
+          const errorLine = result.error.split('\n')[0];
+          console.log(`    ${colorize(`Error: ${errorLine}`, colors.red)}`);
+        }
       }
     });
     

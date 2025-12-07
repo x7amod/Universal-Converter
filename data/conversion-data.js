@@ -46,25 +46,38 @@ window.UnitConverterData.CONVERSION_RATIOS = {
     acre: 0.000247105
   },
   speed: {
-    'ms': 1,
-    'kmh': 0.277778,
-    'mph': 0.44704,
-    'fps': 0.3048,
-    'kn': 0.514444,
-    'mach': 343
+    'ms': 1, // m/s (base unit)
+    'cms': 100, // cm/s (for auto-sizing)
+    'kmh': 0.277778, // km/h
+    'kms': 0.001, // km/s (for auto-sizing)
+    'mph': 0.44704, // mph
+    'mis': 0.000621371, // mi/s (for auto-sizing)
+    'fps': 0.3048, // ft/s
+    'kn': 0.514444, // knots
+    'mach': 343 // mach
   },
   acceleration: {
-    'ms2': 1, // m/s²
+    'ms2': 1, // m/s² (base unit)
+    'cms2': 100, // cm/s² (for auto-sizing)
+    'kms2': 0.001, // km/s² (for auto-sizing)
     'fts2': 3.28084, // ft/s²
+    'ins2': 39.3701, // in/s² (for auto-sizing)
     'gforce': 0.101972 // g-force (1 / 9.80665)
   },
   flowRate: {
     'lmin': 1, // L/min (base unit)
     'lpm': 1, // L/min alias
+    'mlmin': 1000, // ml/min (for auto-sizing)
+    'mls': 16.6667, // ml/s (for auto-sizing)
+    'ls': 0.0166667, // L/s (for auto-sizing)
+    'lh': 60, // L/h (for auto-sizing)
     'galmin': 0.264172, // gal/min (US)
     'gpm': 0.264172, // gal/min alias
+    'gals': 0.00440287, // gal/s (for auto-sizing)
+    'galh': 15.8503, // gal/h (for auto-sizing)
     'm3s': 0.0000166667, // m³/s
     'm3h': 0.06, // m³/h
+    'm3min': 0.001, // m³/min (for auto-sizing)
     'cfm': 0.0353147, // cubic feet per minute
     'cfs': 0.000588578 // cubic feet per second
   },
@@ -104,9 +117,9 @@ window.UnitConverterData.UNIT_PATTERNS = {
   // Two dimension patterns: with units on each number, and with unit at the end
   dimensionsWithUnits: /(?:^|\s|^[\s]*|[\s]*$)(\d+(?:\.\d+)?)\s*(m|cm|mm|km|in|inch|inches|ft|foot|feet|yd|yard|yards|mi|mile|miles|meter|meters|centimeter|centimeters|millimeter|millimeters|kilometer|kilometers)\s*(?:x|×|by|\*)\s*(\d+(?:\.\d+)?)\s*\2\s*(?:x|×|by|\*)\s*(\d+(?:\.\d+)?)\s*\2(?=\s*$|\s*[.,!?;:]|\s*\n|\s*\r)/gi,
   dimensions: /(?:^|\s|^[\s]*|[\s]*$)(\d+(?:\.\d+)?)\s*(?:x|×|by|\*)\s*(\d+(?:\.\d+)?)\s*(?:x|×|by|\*)\s*(\d+(?:\.\d+)?)\s*-?\s*(m|cm|mm|km|in|inch|inches|ft|foot|feet|yd|yard|yards|mi|mile|miles|meter|meters|centimeter|centimeters|millimeter|millimeters|kilometer|kilometers)(?=\s*$|\s*[.,!?;:]|\s*\n|\s*\r)/gi,
-  speed: /(?:^|\s|^[\s]*|[\s]*$)(\d+(?:\.\d+)?)\s*-?\s*(m\/s|ms|km\/h|kmh|km\/hr|mph|mi\/h|ft\/s|fps|knots?|kn|nautical\s*miles?\s*per\s*hour|mach|meters?\s*per\s*second|kilometers?\s*per\s*hour|miles?\s*per\s*hour|feet\s*per\s*second)(?=\s*$|\s*[.,!?;:]|\s*\n|\s*\r)/gi,
-  acceleration: /(?:^|\s|^[\s]*|[\s]*$)(\d+(?:\.\d+)?)\s*-?\s*(m\/s²|m\/s2|ms2|ft\/s²|ft\/s2|fts2|g-force|gee|meters?\s*per\s*second\s*squared|feet\s*per\s*second\s*squared)(?=\s*$|\s*[.,!?;:]|\s*\n|\s*\r)/gi,
-  flowRate: /(?:^|\s|^[\s]*|[\s]*$)(\d+(?:\.\d+)?)\s*-?\s*(L\/min|l\/min|lpm|gal\/min|gpm|gallons?\s*per\s*minute|m³\/s|m3\/s|m³\/h|m3\/h|cubic\s*meters?\s*per\s*second|cubic\s*meters?\s*per\s*hour|cfm|cfs|cubic\s*feet\s*per\s*minute|cubic\s*feet\s*per\s*second|liters?\s*per\s*minute)(?=\s*$|\s*[.,!?;:]|\s*\n|\s*\r)/gi,
+  speed: /(?:^|\s|^[\s]*|[\s]*$)(\d+(?:\.\d+)?)\s*-?\s*(m\/s|ms|cm\/s|cms|km\/s|kms|km\/h|kmh|km\/hr|mph|mi\/h|mi\/s|mis|ft\/s|fps|knots?|kn|nautical\s*miles?\s*per\s*hour|mach|meters?\s*per\s*second|centimeters?\s*per\s*second|kilometers?\s*per\s*second|kilometers?\s*per\s*hour|miles?\s*per\s*hour|miles?\s*per\s*second|feet\s*per\s*second)(?=\s*$|\s*[.,!?;:]|\s*\n|\s*\r)/gi,
+  acceleration: /(?:^|\s|^[\s]*|[\s]*$)(\d+(?:\.\d+)?)\s*-?\s*(m\/s²|m\/s2|ms2|cm\/s²|cm\/s2|cms2|km\/s²|km\/s2|kms2|ft\/s²|ft\/s2|fts2|in\/s²|in\/s2|ins2|g-force|gee|meters?\s*per\s*second\s*squared|centimeters?\s*per\s*second\s*squared|kilometers?\s*per\s*second\s*squared|feet\s*per\s*second\s*squared|inches?\s*per\s*second\s*squared)(?=\s*$|\s*[.,!?;:]|\s*\n|\s*\r)/gi,
+  flowRate: /(?:^|\s|^[\s]*|[\s]*$)(\d+(?:\.\d+)?)\s*-?\s*(L\/min|l\/min|lpm|lmin|mL\/min|ml\/min|mlmin|mL\/s|ml\/s|mls|L\/s|l\/s|ls|L\/h|l\/h|lh|gal\/min|gpm|gal\/s|gals|gal\/h|galh|m³\/s|m3\/s|m3s|m³\/min|m3\/min|m3min|m³\/h|m3\/h|m3h|cubic\s*meters?\s*per\s*second|cubic\s*meters?\s*per\s*minute|cubic\s*meters?\s*per\s*hour|cfm|cfs|cubic\s*feet\s*per\s*minute|cubic\s*feet\s*per\s*second|liters?\s*per\s*minute|milliliters?\s*per\s*minute|milliliters?\s*per\s*second|liters?\s*per\s*second|liters?\s*per\s*hour|gallons?\s*per\s*minute|gallons?\s*per\s*second|gallons?\s*per\s*hour)(?=\s*$|\s*[.,!?;:]|\s*\n|\s*\r)/gi,
   torque: /(?:^|\s|^[\s]*|[\s]*$)(\d+(?:\.\d+)?)\s*-?\s*(N[\s\.\-⋅]?m|Nm|lb[\s\.\-⋅]?ft|lbft|ft[\s\.\-⋅]?lbs?|lb[\s\.\-⋅]?in|lbin|in[\s\.\-⋅]?lbs?|kg[\s\.\-⋅]?m|kgm|kgf[\s\.\-⋅]?m|oz[\s\.\-⋅]?in|ozin|newton[\s\-]?meters?|pound[\s\-]?feet|foot[\s\-]?pounds?|pound[\s\-]?inches?|inch[\s\-]?pounds?|kilogram[\s\-]?force[\s\-]?meters?)(?=\s*$|\s*[.,!?;:]|\s*\n|\s*\r)/gi,
   pressure: /(?:^|\s|^[\s]*|[\s]*$)(\d+(?:\.\d+)?)\s*-?\s*(Pa|bar|psi|atm|mmHg|inHg|torr|kPa|MPa|psf|pascal|atmosphere|atmospheres|pounds?\s*per\s*square\s*inch|pounds?\s*per\s*square\s*foot|millimeters?\s*of\s*mercury|inches?\s*of\s*mercury)(?=\s*$|\s*[.,!?;:]|\s*\n|\s*\r)/gi,
   timezone: /\b(\d{1,2}):(\d{2})\s*(AM|PM)?\s*((EST|PST|CST|MST|GMT|UTC|JST|CET|EET|WET|BST|EASTERN|PACIFIC|CENTRAL|MOUNTAIN)([+-]\d{1,2})?|([+-]\d{1,2}):?(\d{2})?)/gi,
@@ -164,22 +177,35 @@ window.UnitConverterData.UNIT_ALIASES = {
   'ft²': 'ft2', 'in²': 'in2',
   
   // Speed aliases
-  'm/s': 'ms', 'meters per second': 'ms', 'meter per second': 'ms',
-  'km/h': 'kmh', 'km/hr': 'kmh', 'kilometers per hour': 'kmh', 'kilometer per hour': 'kmh',
-  'miles per hour': 'mph', 'mile per hour': 'mph', 'mi/h': 'mph',
-  'ft/s': 'fps', 'feet per second': 'fps', 'foot per second': 'fps',
-  'knot': 'kn', 'knots': 'kn', 'nautical miles per hour': 'kn', 'nautical mile per hour': 'kn',
+  'm/s': 'ms', 'ms': 'ms', 'meters per second': 'ms', 'meter per second': 'ms',
+  'cm/s': 'cms', 'cms': 'cms', 'centimeters per second': 'cms', 'centimeter per second': 'cms',
+  'km/s': 'kms', 'kms': 'kms', 'kilometers per second': 'kms', 'kilometer per second': 'kms',
+  'km/h': 'kmh', 'kmh': 'kmh', 'km/hr': 'kmh', 'kilometers per hour': 'kmh', 'kilometer per hour': 'kmh',
+  'miles per hour': 'mph', 'mile per hour': 'mph', 'mi/h': 'mph', 'mph': 'mph',
+  'mi/s': 'mis', 'mis': 'mis', 'miles per second': 'mis', 'mile per second': 'mis',
+  'ft/s': 'fps', 'fps': 'fps', 'feet per second': 'fps', 'foot per second': 'fps',
+  'knot': 'kn', 'knots': 'kn', 'kn': 'kn', 'nautical miles per hour': 'kn', 'nautical mile per hour': 'kn',
   
   // Acceleration aliases
-  'm/s²': 'ms2', 'm/s2': 'ms2', 'meters per second squared': 'ms2', 'meter per second squared': 'ms2',
-  'ft/s²': 'fts2', 'ft/s2': 'fts2', 'feet per second squared': 'fts2', 'foot per second squared': 'fts2',
-  'g-force': 'gforce', 'gee': 'gforce',
+  'm/s²': 'ms2', 'm/s2': 'ms2', 'ms2': 'ms2', 'meters per second squared': 'ms2', 'meter per second squared': 'ms2',
+  'cm/s²': 'cms2', 'cm/s2': 'cms2', 'cms2': 'cms2', 'centimeters per second squared': 'cms2', 'centimeter per second squared': 'cms2',
+  'km/s²': 'kms2', 'km/s2': 'kms2', 'kms2': 'kms2', 'kilometers per second squared': 'kms2', 'kilometer per second squared': 'kms2',
+  'ft/s²': 'fts2', 'ft/s2': 'fts2', 'fts2': 'fts2', 'feet per second squared': 'fts2', 'foot per second squared': 'fts2',
+  'in/s²': 'ins2', 'in/s2': 'ins2', 'ins2': 'ins2', 'inches per second squared': 'ins2', 'inch per second squared': 'ins2',
+  'g-force': 'gforce', 'gee': 'gforce', 'gforce': 'gforce',
   
   // Flow rate aliases
-  'l/min': 'lmin', 'L/min': 'lmin', 'liters per minute': 'lmin', 'liter per minute': 'lmin', 'lpm': 'lpm',
-  'gal/min': 'galmin', 'gallons per minute': 'galmin', 'gallon per minute': 'galmin', 'gpm': 'gpm',
-  'm³/s': 'm3s', 'm3/s': 'm3s', 'cubic meters per second': 'm3s', 'cubic meter per second': 'm3s',
-  'm³/h': 'm3h', 'm3/h': 'm3h', 'cubic meters per hour': 'm3h', 'cubic meter per hour': 'm3h',
+  'l/min': 'lmin', 'L/min': 'lmin', 'lmin': 'lmin', 'liters per minute': 'lmin', 'liter per minute': 'lmin', 'lpm': 'lmin',
+  'ml/min': 'mlmin', 'mL/min': 'mlmin', 'mlmin': 'mlmin', 'milliliters per minute': 'mlmin', 'milliliter per minute': 'mlmin',
+  'ml/s': 'mls', 'mL/s': 'mls', 'mls': 'mls', 'milliliters per second': 'mls', 'milliliter per second': 'mls',
+  'l/s': 'ls', 'L/s': 'ls', 'ls': 'ls', 'liters per second': 'ls', 'liter per second': 'ls',
+  'l/h': 'lh', 'L/h': 'lh', 'lh': 'lh', 'liters per hour': 'lh', 'liter per hour': 'lh',
+  'gal/min': 'galmin', 'galmin': 'galmin', 'gallons per minute': 'galmin', 'gallon per minute': 'galmin', 'gpm': 'galmin',
+  'gal/s': 'gals', 'gals': 'gals', 'gallons per second': 'gals', 'gallon per second': 'gals',
+  'gal/h': 'galh', 'galh': 'galh', 'gallons per hour': 'galh', 'gallon per hour': 'galh',
+  'm³/s': 'm3s', 'm3/s': 'm3s', 'm3s': 'm3s', 'cubic meters per second': 'm3s', 'cubic meter per second': 'm3s',
+  'm³/min': 'm3min', 'm3/min': 'm3min', 'm3min': 'm3min', 'cubic meters per minute': 'm3min', 'cubic meter per minute': 'm3min',
+  'm³/h': 'm3h', 'm3/h': 'm3h', 'm3h': 'm3h', 'cubic meters per hour': 'm3h', 'cubic meter per hour': 'm3h',
   'cfm': 'cfm', 'cubic feet per minute': 'cfm', 'cubic foot per minute': 'cfm',
   'cfs': 'cfs', 'cubic feet per second': 'cfs', 'cubic foot per second': 'cfs',
   

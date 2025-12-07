@@ -239,8 +239,8 @@ window.UnitConverter.ConversionDetector = class {
       const convertedValue = this.unitConverter.convert(parseFloat(value), normalizedUnit, targetUnit);
       if (convertedValue === null) continue;
       
-      // Auto-detect best unit size
-      const bestResult = this.unitConverter.getBestUnit(convertedValue, unitType, targetUnit);
+      // Auto-detect best unit size (pass source unit to avoid returning to it)
+      const bestResult = this.unitConverter.getBestUnit(convertedValue, unitType, targetUnit, normalizedUnit);
       
       // Skip if the best unit is the same as the original unit AND the values are essentially the same
       if (bestResult.unit === normalizedUnit && Math.abs(bestResult.value - parseFloat(value)) < 0.01) {

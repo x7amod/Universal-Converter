@@ -390,7 +390,7 @@ window.UnitConverter.UnitConverter = class {
    * @param {string} defaultUnit - The default target unit
    * @returns {Object} - {value, unit} with the best unit choice
    */
-  getBestUnit(value, unitType, defaultUnit) {
+  getBestUnit(value, unitType, defaultUnit, sourceUnit = null) {
     if (unitType === 'length') {
       const units = this.conversions.length;
       
@@ -492,16 +492,108 @@ window.UnitConverter.UnitConverter = class {
       
       // Auto-size speed based on magnitude
       if (defaultUnit === 'ms') {
-        if (value > 50) {
+        if (value >= 1000) {
+          // Very large values → km/s
+          return { value: value * units.kms, unit: 'kms' };
+        } else if (value >= 50) {
+          // Large values → km/h
           return { value: value / units.kmh, unit: 'kmh' };
+        } else if (value < 1) {
+          // Small values → cm/s
+          return { value: value * units.cms, unit: 'cms' };
         }
       } else if (defaultUnit === 'kmh') {
         if (value < 1) {
+          // Small values → m/s
           return { value: value * units.kmh, unit: 'ms' };
+        } else if (value >= 3600) {
+          // Very large values → km/s
+          return { value: value * units.kmh * units.kms, unit: 'kms' };
         }
       } else if (defaultUnit === 'mph') {
         if (value < 1) {
+          // Small values → ft/s
           return { value: value * units.mph / units.fps, unit: 'fps' };
+        } else if (value >= 3600) {
+          // Very large values → mi/s
+          return { value: value * units.mph * units.mis, unit: 'mis' };
+        }
+      } else if (defaultUnit === 'fps') {
+        if (value >= 5280) {
+          // Large values → mph
+          return { value: value * units.fps / units.mph, unit: 'mph' };
+        }
+      }
+      
+    } else if (unitType === 'acceleration') {
+      const units = this.conversions.acceleration;
+      
+      // Auto-size acceleration based on magnitude
+      if (defaultUnit === 'ms2') {
+        if (value >= 1000 && sourceUnit !== 'kms2') {
+          // Very large values → km/s² (but not if source is already km/s²)
+          return { value: value * units.kms2, unit: 'kms2' };
+        } else if (value < 0.01 && sourceUnit !== 'cms2') {
+          // Very small values → cm/s² (but not if source is already cm/s²)
+          return { value: value * units.cms2, unit: 'cms2' };
+        }
+      } else if (defaultUnit === 'fts2') {
+        if (value < 1) {
+          // Small values → in/s²
+          return { value: value * units.ins2, unit: 'ins2' };
+        }
+      } else if (defaultUnit === 'cms2') {
+        if (value >= 100) {
+          // Large values → m/s²
+          return { value: value / units.cms2, unit: 'ms2' };
+        }
+      } else if (defaultUnit === 'kms2') {
+        if (value < 1) {
+          // Small values → m/s²
+          return { value: value / units.kms2, unit: 'ms2' };
+        }
+      }
+      
+    } else if (unitType === 'flowRate') {
+      const units = this.conversions.flowRate;
+      
+      // Auto-size flow rate based on magnitude
+      if (defaultUnit === 'lmin') {
+        if (value >= 1000) {
+          // Very large values → m³/min
+          return { value: value * units.m3min, unit: 'm3min' };
+        } else if (value >= 60 && sourceUnit !== 'ls') {
+          // Large values → L/s (but not if source is already L/s)
+          return { value: value * units.ls, unit: 'ls' };
+        } else if (value < 1 && sourceUnit !== 'mlmin') {
+          // Small values → mL/min (but not if source is already mL/min)
+          return { value: value * units.mlmin, unit: 'mlmin' };
+        }
+      } else if (defaultUnit === 'galmin') {
+        if (value >= 60) {
+          // Large values → gal/s
+          return { value: value * units.gals, unit: 'gals' };
+        } else if (value < 1) {
+          // Small values → gal/h
+          return { value: value * units.galh, unit: 'galh' };
+        }
+      } else if (defaultUnit === 'mlmin') {
+        if (value >= 1000) {
+          // Large values → L/min
+          return { value: value / units.mlmin, unit: 'lmin' };
+        } else if (value >= 60) {
+          // Medium-large values → mL/s
+          return { value: value * units.mlmin / units.mls, unit: 'mls' };
+        }
+      } else if (defaultUnit === 'ls') {
+        if (value < 1) {
+          // Small values → L/min
+          return { value: value / units.ls, unit: 'lmin' };
+        }
+      } else if (defaultUnit === 'm3s') {
+        if (value < 0.001) {
+          // Very small values → L/min
+          return { value: value / units.m3s, unit: 'lmin' };
         }
       }
       
@@ -540,24 +632,37 @@ window.UnitConverter.UnitConverter = class {
     const displayMap = {
       // Speed units
       'kmh': 'km/h',
+      'kms': 'km/s',
       'mph': 'mph',
+      'mis': 'mi/s',
       'fps': 'ft/s',
       'ms': 'm/s',
+      'cms': 'cm/s',
       'kn': 'knots',
       'mach': 'Mach',
       
       // Acceleration units
       'ms2': 'm/s²',
+      'cms2': 'cm/s²',
+      'kms2': 'km/s²',
       'fts2': 'ft/s²',
+      'ins2': 'in/s²',
       'gforce': 'g',
       
       // Flow rate units
       'lmin': 'L/min',
       'lpm': 'L/min',
+      'mlmin': 'mL/min',
+      'mls': 'mL/s',
+      'ls': 'L/s',
+      'lh': 'L/h',
       'galmin': 'gal/min',
       'gpm': 'gal/min',
+      'gals': 'gal/s',
+      'galh': 'gal/h',
       'm3s': 'm³/s',
       'm3h': 'm³/h',
+      'm3min': 'm³/min',
       'cfm': 'CFM',
       'cfs': 'CFS',
       

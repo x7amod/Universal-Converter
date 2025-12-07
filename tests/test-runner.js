@@ -101,7 +101,7 @@ class JSONUnitConverterTester {
     
     if (condition) {
       this.passCount++;
-      console.log(`${colors.green}[PASS] ${testName}${colors.reset}`);
+      //console.log(`${colors.green}[PASS] ${testName}${colors.reset}`); // reduce clutter during test runs
       this.testResults.push({ name: testName, status: 'PASS', expected, actual });
     } else {
       this.failCount++;
