@@ -5,8 +5,8 @@ window.UnitConverter = window.UnitConverter || {};
 
 window.UnitConverter.SettingsManager = class {
   constructor() {
-    // Use shared default settings from default-settings.js
-    this.defaultSettings = DEFAULT_SETTINGS;
+    // Use metric preset as default
+    this.defaultSettings = { preset: 'metric' };
   }
   
   /**

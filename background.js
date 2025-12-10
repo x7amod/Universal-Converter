@@ -1,18 +1,5 @@
 // Background service worker for Chrome Extension v3
 
-// Default settings - inline to avoid importScripts in development
-const DEFAULT_SETTINGS = {
-  preset: 'metric',
-  lengthUnit: 'm',
-  weightUnit: 'kg',
-  temperatureUnit: 'c',
-  volumeUnit: 'l',
-  areaUnit: 'm2',
-  speedUnit: 'ms',
-  accelerationUnit: 'ms2',
-  flowRateUnit: 'lmin'
-};
-
 // Handle extension icon click to open settings page
 chrome.action.onClicked.addListener((tab) => {
   chrome.tabs.create({
@@ -37,7 +24,7 @@ chrome.runtime.onInstalled.addListener(async (details) => {
   try {
     const result = await chrome.storage.sync.get(['unitSettings']);
     if (!result.unitSettings) {
-      await chrome.storage.sync.set({ unitSettings: DEFAULT_SETTINGS });
+      await chrome.storage.sync.set({ unitSettings: { preset: 'metric' } });
       //console.log('Default settings initialized');
     }
   } catch (error) {

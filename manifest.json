@@ -15,7 +15,6 @@
     {
       "matches": ["<all_urls>"],
       "js": [
-        "data/default-settings.js",
         "data/conversion-data.js",
         "data/currency-mappings.js",
         "utils/unit-converter.js",
