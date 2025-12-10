@@ -82,10 +82,11 @@ document.addEventListener('DOMContentLoaded', async function() {
         'South Korean Won': 'KRW'
       };
       populateSelectList(currencySelect, basicCurrencies, 'USD');
+      console.warn('countryNameToCurrencyCode mapping not found. Loaded basic currency list.');
     }
   }
   
-  // Populate select list function (from Currency-Converter-master)
+  // Populate select list function (from Currency-Converter)
   function populateSelectList(selectElement, dataList, defaultOption) {
     for (const key in dataList) {
       const option = document.createElement('option');

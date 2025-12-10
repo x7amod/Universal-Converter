@@ -5,16 +5,8 @@ window.UnitConverter = window.UnitConverter || {};
 
 window.UnitConverter.SettingsManager = class {
   constructor() {
-    this.defaultSettings = {
-      preset: 'metric',
-      lengthUnit: 'm',
-      weightUnit: 'kg',
-      temperatureUnit: 'c',
-      volumeUnit: 'l',
-      areaUnit: 'm2',
-      accelerationUnit: 'ms2',
-      flowRateUnit: 'lmin'
-    };
+    // Use shared default settings from default-settings.js
+    this.defaultSettings = DEFAULT_SETTINGS;
   }
   
   /**

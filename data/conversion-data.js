@@ -14,7 +14,8 @@ window.UnitConverterData.CONVERSION_RATIOS = {
     ft: 3.28084,
     yd: 1.09361,
     mi: 0.000621371
-  },  weight: {
+  },
+  weight: {
     kg: 1,
     g: 1000,
     mg: 1000000,
@@ -122,7 +123,7 @@ window.UnitConverterData.UNIT_PATTERNS = {
   flowRate: /(?:^|\s|^[\s]*|[\s]*$)(\d+(?:\.\d+)?)\s*-?\s*(L\/min|l\/min|lpm|lmin|mL\/min|ml\/min|mlmin|mL\/s|ml\/s|mls|L\/s|l\/s|ls|L\/h|l\/h|lh|gal\/min|gpm|gal\/s|gals|gal\/h|galh|m³\/s|m3\/s|m3s|m³\/min|m3\/min|m3min|m³\/h|m3\/h|m3h|cubic\s*meters?\s*per\s*second|cubic\s*meters?\s*per\s*minute|cubic\s*meters?\s*per\s*hour|cfm|cfs|cubic\s*feet\s*per\s*minute|cubic\s*feet\s*per\s*second|liters?\s*per\s*minute|milliliters?\s*per\s*minute|milliliters?\s*per\s*second|liters?\s*per\s*second|liters?\s*per\s*hour|gallons?\s*per\s*minute|gallons?\s*per\s*second|gallons?\s*per\s*hour)(?=\s*$|\s*[.,!?;:]|\s*\n|\s*\r)/gi,
   torque: /(?:^|\s|^[\s]*|[\s]*$)(\d+(?:\.\d+)?)\s*-?\s*(N[\s\.\-⋅]?m|Nm|lb[\s\.\-⋅]?ft|lbft|ft[\s\.\-⋅]?lbs?|lb[\s\.\-⋅]?in|lbin|in[\s\.\-⋅]?lbs?|kg[\s\.\-⋅]?m|kgm|kgf[\s\.\-⋅]?m|oz[\s\.\-⋅]?in|ozin|newton[\s\-]?meters?|pound[\s\-]?feet|foot[\s\-]?pounds?|pound[\s\-]?inches?|inch[\s\-]?pounds?|kilogram[\s\-]?force[\s\-]?meters?)(?=\s*$|\s*[.,!?;:]|\s*\n|\s*\r)/gi,
   pressure: /(?:^|\s|^[\s]*|[\s]*$)(\d+(?:\.\d+)?)\s*-?\s*(Pa|bar|psi|atm|mmHg|inHg|torr|kPa|MPa|psf|pascal|atmosphere|atmospheres|pounds?\s*per\s*square\s*inch|pounds?\s*per\s*square\s*foot|millimeters?\s*of\s*mercury|inches?\s*of\s*mercury)(?=\s*$|\s*[.,!?;:]|\s*\n|\s*\r)/gi,
-  timezone: /\b(\d{1,2}):(\d{2})\s*(AM|PM)?\s*((EST|PST|CST|MST|GMT|UTC|JST|CET|EET|WET|BST|EASTERN|PACIFIC|CENTRAL|MOUNTAIN)([+-]\d{1,2})?|([+-]\d{1,2}):?(\d{2})?)/gi,
+  timezone: /\b(\d{1,2})(?::(\d{2}))?\s*(AM|PM|am|pm)?\s*((EST|EDT|ET|PST|PDT|PT|CST|CDT|CT|MST|MDT|MT|AST|ADT|NST|NDT|HST|AKST|AKDT|EASTERN|PACIFIC|CENTRAL|MOUNTAIN|GMT|UTC|CET|CEST|EET|EEST|WET|WEST|BST|MSK|FET|IST|PKT|ICT|SGT|HKT|JST|KST|ACST|ACDT|AEST|AEDT|AWST|AWDT|NZST|NZDT|IRST|IDT|CAT|EAT|WAT|SAST|ART|BRT|BRST|CLT|CLST|PET|COT)([+-]\d{1,2})?|([+-]\d{1,2}):?(\d{2})?)/gi,
   // Currency pattern will be generated dynamically from currency mappings
   currency: null 
 };
@@ -263,21 +264,58 @@ window.UnitConverterData.TIMEZONE_MAPPINGS = {
   'MST': -7, 'MDT': -6, 'MT': -7, 'MOUNTAIN': -7,
   'CST': -6, 'CDT': -5, 'CT': -6, 'CENTRAL': -6,
   'EST': -5, 'EDT': -4, 'ET': -5, 'EASTERN': -5,
+  'AST': -4, 'ADT': -3,
+  'NST': -3.5, 'NDT': -2.5,
+  'HST': -10, 'AKST': -9, 'AKDT': -8,
   
-  // International
+  // International - UTC/GMT
   'UTC': 0, 'GMT': 0,
+  
+  // European
   'CET': 1, 'CEST': 2,
   'EET': 2, 'EEST': 3,
   'WET': 0, 'WEST': 1,
-  'JST': 9, 'KST': 9,
-  'IST': 5.5, 'BST': 1,
+  'BST': 1,
+  'MSK': 3, // Moscow Time
+  'FET': 3, // Further-Eastern European Time
+  
+  // Asian
+  'IST': 5.5, // India Standard Time
+  'PKT': 5, // Pakistan Standard Time
+  'BST_BD': 6, // Bangladesh Standard Time
+  'ICT': 7, // Indochina Time
+  'SGT': 8, // Singapore Time
+  'HKT': 8, // Hong Kong Time
+  'CST_CN': 8, // China Standard Time
+  'JST': 9, // Japan Standard Time
+  'KST': 9, // Korea Standard Time
+  'ACST': 9.5, // Australian Central Standard Time
+  'ACDT': 10.5, // Australian Central Daylight Time
+  
+  // Australian & Pacific
   'AEST': 10, 'AEDT': 11,
   'NZST': 12, 'NZDT': 13,
+  'AWST': 8, // Australian Western Standard Time
+  'AWDT': 9, // Australian Western Daylight Time
   
-  // Additional common zones
-  'AST': -4, 'ADT': -3,
-  'NST': -3.5, 'NDT': -2.5,
-  'HST': -10, 'AKST': -9, 'AKDT': -8
+  // Middle East
+  'AST_AR': 3, // Arabia Standard Time
+  'IRST': 3.5, // Iran Standard Time
+  
+  // African
+  'CAT': 2, // Central Africa Time
+  'EAT': 3, // East Africa Time
+  'WAT': 1, // West Africa Time
+  'SAST': 2, // South Africa Standard Time
+  
+  // South American
+  'ART': -3, // Argentina Time
+  'BRT': -3, // Brasília Time
+  'BRST': -2, // Brasília Summer Time
+  'CLT': -4, // Chile Standard Time
+  'CLST': -3, // Chile Summer Time
+  'PET': -5, // Peru Time
+  'COT': -5 // Colombia Time
 };
 
 /**

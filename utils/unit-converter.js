@@ -37,7 +37,7 @@ window.UnitConverter.UnitConverter = class {
       return 'temperature';
     }
     
-    // Check if it's a currency using Currency-Converter-master detection
+    // Check if it's a currency using Currency-Converter detection
     if (window.UnitConverter.currencyConverter) {
       const currencyConverter = window.UnitConverter.currencyConverter;
       const detectedCurrency = currencyConverter.detectCurrency(unit);
@@ -215,7 +215,7 @@ window.UnitConverter.UnitConverter = class {
     }
     
     // Convert to m/s² first (base unit), then to target unit
-    // For acceleration, the ratios are: ms2=1, fts2=3.28084, g=9.80665
+    // For acceleration, the ratios are: m/s²=1, ft/s²=3.28084, g=9.80665
     // To convert FROM a unit, divide by its ratio to get m/s²
     // To convert TO a unit, multiply by its ratio
     const metersPerSecondSquared = value / this.conversions.acceleration[normalizedFrom];
@@ -292,12 +292,12 @@ window.UnitConverter.UnitConverter = class {
    */
   convertTimezone(timeString, fromZone, toZone, useOffsetFormat = false) {
     try {
-      // Parse time string
-      const timeMatch = timeString.match(/(\d{1,2}):(\d{2})\s*(AM|PM)?/i);
+      // Parse time string - minutes are optional
+      const timeMatch = timeString.match(/(\d{1,2})(?::(\d{2}))?\s*(AM|PM|am|pm)?/i);
       if (!timeMatch) return null;
       
       let hours = parseInt(timeMatch[1]);
-      const minutes = parseInt(timeMatch[2]);
+      const minutes = timeMatch[2] ? parseInt(timeMatch[2]) : 0; // Default to 0 if no minutes
       const period = timeMatch[3]?.toUpperCase();
       
       // Convert to 24-hour format

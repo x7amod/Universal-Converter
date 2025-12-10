@@ -136,7 +136,7 @@ async function processCurrencyConversions(conversions) {
   for (const conversion of conversions) {
     if (conversion.type === 'currency' && conversion.needsAsyncProcessing) {
       try {
-        console.log('Processing currency conversion:', conversion);
+        //console.log('Processing currency conversion:', conversion);
         
         // Get the conversion rate
         const rate = await window.UnitConverter.currencyConverter.getCurrencyRate(
@@ -144,7 +144,7 @@ async function processCurrencyConversions(conversions) {
           conversion.toCurrency.toLowerCase()
         );
         
-        console.log('Got rate:', rate);
+        //console.log('Got rate:', rate);
         
         if (rate && rate > 0) {
           const convertedAmount = conversion.originalValue * rate;
@@ -153,7 +153,7 @@ async function processCurrencyConversions(conversions) {
             conversion.toCurrency
           );
           
-          console.log('Formatted result:', formattedResult);
+          //console.log('Formatted result:', formattedResult);
           
           conversion.converted = formattedResult;
           conversion.convertedValue = convertedAmount;

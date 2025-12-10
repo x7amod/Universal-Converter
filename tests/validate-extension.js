@@ -161,9 +161,11 @@ class ExtensionValidator {
       if (manifest.content_scripts && manifest.content_scripts[0]) {
         const jsFiles = manifest.content_scripts[0].js;
         
-        // Check that data loads first
+        // Check that default-settings loads first, then data files
+        const defaultSettingsIndex = jsFiles.findIndex(file => file.includes('default-settings.js'));
         const dataIndex = jsFiles.findIndex(file => file.includes('conversion-data.js'));
-        this.check(dataIndex === 0, 'conversion-data.js loads first');
+        this.check(defaultSettingsIndex === 0, 'default-settings.js loads first');
+        this.check(dataIndex > defaultSettingsIndex, 'conversion-data.js loads after default-settings.js');
 
         // Check that utils load before content.js
         const contentIndex = jsFiles.findIndex(file => file === 'content.js');

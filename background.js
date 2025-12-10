@@ -1,5 +1,18 @@
 // Background service worker for Chrome Extension v3
 
+// Default settings - inline to avoid importScripts in development
+const DEFAULT_SETTINGS = {
+  preset: 'metric',
+  lengthUnit: 'm',
+  weightUnit: 'kg',
+  temperatureUnit: 'c',
+  volumeUnit: 'l',
+  areaUnit: 'm2',
+  speedUnit: 'ms',
+  accelerationUnit: 'ms2',
+  flowRateUnit: 'lmin'
+};
+
 // Handle extension icon click to open settings page
 chrome.action.onClicked.addListener((tab) => {
   chrome.tabs.create({
@@ -8,7 +21,7 @@ chrome.action.onClicked.addListener((tab) => {
 });
 
 chrome.runtime.onInstalled.addListener(async (details) => {
-  console.log('Unit Converter extension installed');
+  //console.log('Unit Converter extension installed');
   
   // Create context menu
   createContextMenu();
@@ -24,16 +37,8 @@ chrome.runtime.onInstalled.addListener(async (details) => {
   try {
     const result = await chrome.storage.sync.get(['unitSettings']);
     if (!result.unitSettings) {
-      const defaultSettings = {
-        preset: 'metric',
-        lengthUnit: 'm',
-        weightUnit: 'kg',
-        temperatureUnit: 'c',
-        volumeUnit: 'l',
-        areaUnit: 'm2'
-      };
-      await chrome.storage.sync.set({ unitSettings: defaultSettings });
-      console.log('Default settings initialized');
+      await chrome.storage.sync.set({ unitSettings: DEFAULT_SETTINGS });
+      //console.log('Default settings initialized');
     }
   } catch (error) {
     console.error('Error initializing settings:', error);
@@ -74,7 +79,7 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
 
 // Handle context menu (optional future feature)
 chrome.runtime.onStartup.addListener(() => {
-  console.log('Unit Converter extension started');
+  //console.log('Unit Converter extension started');
   createContextMenu();
 });
 

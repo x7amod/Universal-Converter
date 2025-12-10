@@ -460,6 +460,90 @@
       }
     },
     {
+      "name": "Timezone Detection: \"8 am PST\" detected",
+      "type": "patternDetection",
+      "input": {
+        "text": "8 am PST",
+        "userSettings": {
+          "timezoneUnit": "EST"
+        }
+      },
+      "expected": {
+        "minConversions": 1,
+        "type": "timezone"
+      }
+    },
+    {
+      "name": "Timezone Detection: \"9 am MST\" detected",
+      "type": "patternDetection",
+      "input": {
+        "text": "9 am MST",
+        "userSettings": {
+          "timezoneUnit": "EST"
+        }
+      },
+      "expected": {
+        "minConversions": 1,
+        "type": "timezone"
+      }
+    },
+    {
+      "name": "Timezone Detection: \"4 pm GMT\" detected",
+      "type": "patternDetection",
+      "input": {
+        "text": "4 pm GMT",
+        "userSettings": {
+          "timezoneUnit": "EST"
+        }
+      },
+      "expected": {
+        "minConversions": 1,
+        "type": "timezone"
+      }
+    },
+    {
+      "name": "Timezone Detection: \"4 pm UTC\" detected",
+      "type": "patternDetection",
+      "input": {
+        "text": "4 pm UTC",
+        "userSettings": {
+          "timezoneUnit": "EST"
+        }
+      },
+      "expected": {
+        "minConversions": 1,
+        "type": "timezone"
+      }
+    },
+    {
+      "name": "Timezone Detection: \"5 pm CEST\" detected",
+      "type": "patternDetection",
+      "input": {
+        "text": "5 pm CEST",
+        "userSettings": {
+          "timezoneUnit": "EST"
+        }
+      },
+      "expected": {
+        "minConversions": 1,
+        "type": "timezone"
+      }
+    },
+    {
+      "name": "Timezone Detection: \"6 pm EET\" detected",
+      "type": "patternDetection",
+      "input": {
+        "text": "6 pm EET",
+        "userSettings": {
+          "timezoneUnit": "EST"
+        }
+      },
+      "expected": {
+        "minConversions": 1,
+        "type": "timezone"
+      }
+    },
+    {
       "name": "Timezone Detection: Same timezone skipped",
       "type": "patternDetection",
       "input": {
