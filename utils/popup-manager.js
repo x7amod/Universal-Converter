@@ -78,7 +78,7 @@ window.UnitConverter.PopupManager = class {
               <div class="arrow">➜</div>
               <div class="converted">
                 ${conv.converted}
-                ${!(conv.usedFallback) ?  `
+                ${conv.usedFallback ?  `
                   <span class="fallback-warning">
                     <span class="warning-icon">⚠</span>
                     <span class="warning-tooltip">Currency rate may be up to 24 hours old</span>
