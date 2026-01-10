@@ -16,13 +16,24 @@ window.UnitConverter.PopupManager = class {
   async showConversionPopup(conversions, selection) {
     this.hidePopup();
     
+    // Validate conversions is an array
+    if (!Array.isArray(conversions) || conversions.length === 0) {
+      console.warn('Invalid conversions data provided to showConversionPopup');
+      return;
+    }
+    
     // Get user settings for time format preference
     let userSettings = {};
     try {
-      const result = await chrome.storage.sync.get(['unitSettings']);
-      userSettings = result.unitSettings || {};
+      // Check if chrome.storage is available and extension context is valid
+      if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.sync && chrome.runtime?.id) {
+        const result = await chrome.storage.sync.get(['unitSettings']);
+        userSettings = result.unitSettings || {};
+      } else {
+        userSettings = { is12hr: true };
+      }
     } catch (error) {
-      // If storage is not available (e.g., in tests), use defaults
+      // If storage is not available (e.g., extension context invalidated or in tests), use defaults
       userSettings = { is12hr: true };
     }
     
@@ -51,6 +62,11 @@ window.UnitConverter.PopupManager = class {
    * @returns {HTMLElement} - The popup element
    */
   createPopupElement(conversions) {
+    // Ensure conversions is an array
+    if (!Array.isArray(conversions)) {
+      console.error('createPopupElement received non-array conversions:', conversions);
+      conversions = [];
+    }
     const popup = document.createElement('div');
     popup.className = 'unit-converter-popup';
     popup.innerHTML = `
@@ -60,7 +76,15 @@ window.UnitConverter.PopupManager = class {
             <div class="unit-converter-item">
               <div class="original">${conv.original}</div>
               <div class="arrow">➜</div>
-              <div class="converted">${conv.converted}</div>
+              <div class="converted">
+                ${conv.converted}
+                ${!(conv.usedFallback) ?  `
+                  <span class="fallback-warning">
+                    <span class="warning-icon">⚠</span>
+                    <span class="warning-tooltip">Currency rate may be up to 24 hours old</span>
+                  </span>
+                ` : ''}
+              </div>
             </div>
           `).join('')}
         </div>

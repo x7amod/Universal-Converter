@@ -15,8 +15,12 @@ window.UnitConverter.SettingsManager = class {
    */
   async loadSettings() {
     try {
-      const result = await chrome.storage.sync.get(['unitSettings']);
-      return result.unitSettings || this.defaultSettings;
+      // Check if chrome.storage is available and extension context is valid
+      if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.sync && chrome.runtime?.id) {
+        const result = await chrome.storage.sync.get(['unitSettings']);
+        return result.unitSettings || this.defaultSettings;
+      }
+      return this.defaultSettings;
     } catch (error) {
       console.error('Error loading settings:', error);
       return this.defaultSettings;
@@ -30,18 +34,23 @@ window.UnitConverter.SettingsManager = class {
    */
   async saveSettings(settings) {
     try {
-      await chrome.storage.sync.set({ unitSettings: settings });
-      
-      // Notify all tabs about settings update
-      const tabs = await chrome.tabs.query({});
-      for (const tab of tabs) {
-        try {
-          await chrome.tabs.sendMessage(tab.id, { 
-            action: 'settingsUpdated',
-            newSettings: settings
-          });
-        } catch (error) {
-          // Ignore errors for tabs without content script
+      // Check if chrome.storage is available and extension context is valid
+      if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.sync && chrome.runtime?.id) {
+        await chrome.storage.sync.set({ unitSettings: settings });
+        
+        // Notify all tabs about settings update
+        if (chrome.tabs && chrome.tabs.query) {
+          const tabs = await chrome.tabs.query({});
+          for (const tab of tabs) {
+            try {
+              await chrome.tabs.sendMessage(tab.id, { 
+                action: 'settingsUpdated',
+                newSettings: settings
+              });
+            } catch (error) {
+              // Ignore errors for tabs without content script
+            }
+          }
         }
       }
       

@@ -1,5 +1,8 @@
 // Background service worker for Chrome Extension v3
 
+// Track if context menu is being created to prevent duplicates
+let isCreatingContextMenu = false;
+
 // Handle extension icon click to open settings page
 chrome.action.onClicked.addListener((tab) => {
   chrome.tabs.create({
@@ -74,26 +77,78 @@ chrome.runtime.onStartup.addListener(() => {
  * Create context menu for the extension icon
  */
 function createContextMenu() {
-  // Clear existing context menus first
+  // Prevent duplicate creation attempts
+  if (isCreatingContextMenu) {
+    return;
+  }
+  
+  isCreatingContextMenu = true;
+  
+  // Clear existing context menus first to avoid duplicates
   chrome.contextMenus.removeAll(() => {
-    // Create Settings context menu item
-    chrome.contextMenus.create({
-      id: 'open-settings',
-      title: 'Universal Converter Settings',
-      contexts: ['action']
-    });
+    if (chrome.runtime.lastError) {
+      console.error('Error removing context menus:', chrome.runtime.lastError);
+    }
     
-    // Only add Reload Extension in development mode
+    // Create Settings context menu item
+    try {
+      chrome.contextMenus.create({
+        id: 'open-settings',
+        title: 'Universal Converter Settings',
+        contexts: ['action']
+      }, () => {
+        if (chrome.runtime.lastError) {
+          // Silently ignore duplicate errors - menu item already exists
+          if (!chrome.runtime.lastError.message.includes('duplicate')) {
+            console.error('Error creating settings menu:', chrome.runtime.lastError);
+          }
+        }
+      });
+    } catch (error) {
+      console.error('Error creating settings context menu:', error);
+    }
+    
+    // Only add developer tools in development mode
     // Check if we're in development by looking for unpacked extension
-    chrome.management.getSelf((extensionInfo) => {
-      if (extensionInfo.installType === 'development') {
-        chrome.contextMenus.create({
-          id: 'reload-extension',
-          title: 'Reload Extension',
-          contexts: ['action']
-        });
-      }
-    });
+    try {
+      chrome.management.getSelf((extensionInfo) => {
+        if (chrome.runtime.lastError) {
+          console.error('Error getting extension info:', chrome.runtime.lastError);
+          isCreatingContextMenu = false;
+          return;
+        }
+        
+        if (extensionInfo.installType === 'development') {
+          chrome.contextMenus.create({
+            id: 'clear-currency-cache',
+            title: 'Clear Currency Cache',
+            contexts: ['action']
+          }, () => {
+            if (chrome.runtime.lastError && !chrome.runtime.lastError.message.includes('duplicate')) {
+              console.error('Error creating cache menu:', chrome.runtime.lastError);
+            }
+          });
+          
+          chrome.contextMenus.create({
+            id: 'reload-extension',
+            title: 'Reload Extension',
+            contexts: ['action']
+          }, () => {
+            if (chrome.runtime.lastError && !chrome.runtime.lastError.message.includes('duplicate')) {
+              console.error('Error creating reload menu:', chrome.runtime.lastError);
+            }
+            // Reset flag after all menus are created
+            isCreatingContextMenu = false;
+          });
+        } else {
+          // Reset flag if not in development mode
+          isCreatingContextMenu = false;
+        }
+      });
+    } catch (error) {
+      console.error('Error in chrome.management.getSelf:', error);
+      isCreatingContextMenu = false;
+    }
   });
 }
 
@@ -105,6 +160,18 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
     chrome.tabs.create({
       url: chrome.runtime.getURL('settings-page/settings.html')
     });
+  } else if (info.menuItemId === 'clear-currency-cache') {
+    // Clear currency cache in all tabs
+    chrome.tabs.query({}, (tabs) => {
+      tabs.forEach(tab => {
+        chrome.tabs.sendMessage(tab.id, { 
+          action: 'clearCurrencyCache'
+        }).catch(() => {
+          // Ignore errors for tabs without content script
+        });
+      });
+    });
+    console.log('Currency cache cleared in all tabs');
   } else if (info.menuItemId === 'reload-extension') {
     // Reload the extension
     chrome.runtime.reload();

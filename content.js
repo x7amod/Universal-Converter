@@ -92,8 +92,12 @@ async function handleTextSelection(event) {
               converted: '...'
             }];
             
-            await processCurrencyConversions(conversions);
-            popupManager.showConversionPopup(conversions, selection);
+            try {
+              await processCurrencyConversions(conversions);
+              await popupManager.showConversionPopup(conversions, selection);
+            } catch (error) {
+              console.error('Error showing currency conversion popup:', error);
+            }
             return;
           }
         }
@@ -103,8 +107,13 @@ async function handleTextSelection(event) {
       const conversions = conversionDetector.findConversions(selectedText, userSettings);
       
       if (conversions.length > 0) {
-        await processCurrencyConversions(conversions);
-        popupManager.showConversionPopup(conversions, selection);
+        try {
+          await processCurrencyConversions(conversions);
+          await popupManager.showConversionPopup(conversions, selection);
+        } catch (error) {
+          console.error('Error showing conversion popup:', error);
+          hidePopup();
+        }
       } else {
         hidePopup();
       }
@@ -128,6 +137,12 @@ function isMultiLine(text) {
  * @param {Array} conversions - Array of conversion objects
  */
 async function processCurrencyConversions(conversions) {
+  // Validate conversions array
+  if (!Array.isArray(conversions) || conversions.length === 0) {
+    console.warn('Invalid conversions array provided to processCurrencyConversions');
+    return;
+  }
+  
   if (!window.UnitConverter.currencyConverter) {
     console.error('Currency converter not available');
     return;
@@ -138,16 +153,16 @@ async function processCurrencyConversions(conversions) {
       try {
         //console.log('Processing currency conversion:', conversion);
         
-        // Get the conversion rate
-        const rate = await window.UnitConverter.currencyConverter.getCurrencyRate(
+        // Get the conversion rate and API source info
+        const rateInfo = await window.UnitConverter.currencyConverter.getCurrencyRate(
           conversion.fromCurrency.toLowerCase(), 
           conversion.toCurrency.toLowerCase()
         );
         
-        //console.log('Got rate:', rate);
+        //console.log('Got rate info:', rateInfo);
         
-        if (rate && rate > 0) {
-          const convertedAmount = conversion.originalValue * rate;
+        if (rateInfo && rateInfo.rate && rateInfo.rate > 0) {
+          const convertedAmount = conversion.originalValue * rateInfo.rate;
           const formattedResult = window.UnitConverter.currencyConverter.formatCurrency(
             convertedAmount, 
             conversion.toCurrency
@@ -157,6 +172,7 @@ async function processCurrencyConversions(conversions) {
           
           conversion.converted = formattedResult;
           conversion.convertedValue = convertedAmount;
+          conversion.usedFallback = rateInfo.usedFallback;
           conversion.needsAsyncProcessing = false;
         } else {
           console.warn('Unable to get valid exchange rate');
@@ -186,6 +202,14 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === 'settingsUpdated') {
     loadUserSettings();
     sendResponse({ status: 'Settings updated' });
+  } else if (request.action === 'clearCurrencyCache') {
+    // Clear the currency cache
+    if (window.UnitConverter && window.UnitConverter.currencyConverter) {
+      window.UnitConverter.currencyConverter.clearCache();
+      sendResponse({ status: 'Currency cache cleared' });
+    } else {
+      sendResponse({ status: 'Currency converter not available' });
+    }
   }
 });
 
