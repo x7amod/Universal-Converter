@@ -61,8 +61,8 @@ document.addEventListener('DOMContentLoaded', async function() {
   async function initializeCurrencyList() {
     const currencySelect = document.getElementById('currencyUnit');
     
-    // Clear existing options
-    currencySelect.innerHTML = '';
+    // Clear existing options (using textContent is safer than innerHTML)
+    currencySelect.textContent = '';
     
     // Add all currencies from the mapping
     if (typeof countryNameToCurrencyCode !== 'undefined') {

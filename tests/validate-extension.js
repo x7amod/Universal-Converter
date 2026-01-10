@@ -217,6 +217,130 @@ class ExtensionValidator {
     }
   }
 
+  validateFirefoxManifest() {
+    console.log(`\n${colors.blue}🦊 Validating Firefox manifest.json${colors.reset}`);
+    
+    try {
+      const manifestPath = path.join(__dirname, '..', 'build-firefox', 'manifest.json');
+      
+      if (!fs.existsSync(manifestPath)) {
+        this.check(false, 'Firefox manifest.json exists (run npm run build first)');
+        return null;
+      }
+      
+      const manifestContent = fs.readFileSync(manifestPath, 'utf8');
+      const manifest = JSON.parse(manifestContent);
+
+      // Check Firefox Manifest V3 fields
+      this.check(manifest.manifest_version === 3, 'Firefox manifest version is 3');
+      this.check(typeof manifest.name === 'string' && manifest.name.length > 0, 'Firefox extension name is present');
+      this.check(typeof manifest.version === 'string', 'Firefox version is present');
+      this.check(typeof manifest.description === 'string', 'Firefox description is present');
+
+      // Check Firefox-specific browser_specific_settings field (REQUIRED for Firefox MV3)
+      const hasModernField = manifest.browser_specific_settings && manifest.browser_specific_settings.gecko;
+      this.check(hasModernField, 'Firefox browser_specific_settings.gecko field present');
+      
+      const geckoSettings = manifest.browser_specific_settings?.gecko;
+      if (geckoSettings) {
+        this.check(typeof geckoSettings.id === 'string', 'Firefox addon ID is present');
+        this.check(typeof geckoSettings.strict_min_version === 'string', 'Firefox minimum version specified');
+        this.check(typeof geckoSettings.data_collection_permissions === 'object', 'Firefox data_collection_permissions is object');
+        if (typeof geckoSettings.data_collection_permissions === 'object') {
+          this.check(Array.isArray(geckoSettings.data_collection_permissions.required), 'Firefox data_collection_permissions.required is array');
+          if (Array.isArray(geckoSettings.data_collection_permissions.required)) {
+            this.check(geckoSettings.data_collection_permissions.required.includes('none') || geckoSettings.data_collection_permissions.required.length > 0, 'Firefox data_collection_permissions.required contains valid values');
+          }
+        }
+      }
+
+      // Check permissions (V3 format)
+      this.check(Array.isArray(manifest.permissions), 'Firefox permissions array exists');
+      this.check(manifest.permissions.includes('activeTab'), 'Firefox activeTab permission granted');
+      this.check(manifest.permissions.includes('storage'), 'Firefox storage permission granted');
+      this.check(manifest.permissions.includes('management'), 'Firefox management permission granted');
+
+      // Check action (V3) - Firefox V3 uses 'action' not 'browser_action'
+      this.check(manifest.action && manifest.action.default_title, 'Firefox action configured');
+
+      // Check background scripts (V3 Firefox format - uses 'scripts' array instead of 'service_worker')
+      this.check(manifest.background && Array.isArray(manifest.background.scripts), 'Firefox background scripts array exists');
+      this.check(!manifest.background?.service_worker, 'Firefox does not use service_worker (uses scripts array)');
+
+      // Check content scripts
+      this.check(Array.isArray(manifest.content_scripts), 'Firefox content scripts array exists');
+      this.check(manifest.content_scripts.length > 0, 'Firefox has at least one content script defined');
+
+      return manifest;
+
+    } catch (error) {
+      this.check(false, `Failed to read/parse Firefox manifest.json: ${error.message}`);
+      return null;
+    }
+  }
+
+  validateFirefoxFiles() {
+    console.log(`\n${colors.blue}🦊 Validating Firefox build structure${colors.reset}`);
+    
+    const buildPath = path.join(__dirname, '..', 'build-firefox');
+    
+    if (!fs.existsSync(buildPath)) {
+      this.check(false, 'Firefox build directory exists (run npm run build first)');
+      return;
+    }
+    
+    // Required files
+    const requiredFiles = [
+      'manifest.json',
+      'background.js',
+      'content.js',
+      'content.css',
+      'settings-page/settings.html',
+      'settings-page/settings.js',
+      'data/conversion-data.js',
+      'data/currency-mappings.js',
+      'utils/conversion-detector.js',
+      'utils/currency-converter.js',
+      'utils/popup-manager.js',
+      'utils/settings-manager.js',
+      'utils/unit-converter.js'
+    ];
+
+    requiredFiles.forEach(file => {
+      const exists = fs.existsSync(path.join(buildPath, file));
+      this.check(exists, `Firefox build file exists: ${file}`);
+    });
+  }
+
+  validateFirefoxAPIReplacements() {
+    console.log(`\n${colors.blue}🦊 Validating Firefox API compatibility${colors.reset}`);
+    
+    const backgroundPath = path.join(__dirname, '..', 'build-firefox', 'background.js');
+    
+    if (!fs.existsSync(backgroundPath)) {
+      this.check(false, 'Firefox background.js exists for API validation');
+      return;
+    }
+    
+    try {
+      const content = fs.readFileSync(backgroundPath, 'utf8');
+      
+      // Check for Firefox Manifest V3 compatibility shim
+      this.check(content.includes('Firefox Manifest V3 compatibility'), 'Firefox Manifest V3 compatibility shim is present');
+      
+      // Firefox V3 supports chrome.* APIs natively, so we check the shim provides fallback
+      const hasCompatibilityShim = content.includes('globalThis.chrome = browser') || content.includes('window.chrome = browser');
+      this.check(hasCompatibilityShim, 'Firefox compatibility shim provides chrome API fallback');
+      
+      // In Manifest V3, Firefox can use chrome.action (it's cross-compatible)
+      // We just need to ensure the compatibility shim is present for browser.* fallback
+      this.check(content.includes('chrome.action') || content.includes('browser.action'), 'Firefox uses action API (V3 compatible)');
+      
+    } catch (error) {
+      this.check(false, `Failed to validate Firefox API compatibility: ${error.message}`);
+    }
+  }
+
   validate() {
     console.log(`${colors.bright}${colors.yellow}🔍 Chrome Extension Validation${colors.reset}\n`);
 
@@ -227,12 +351,36 @@ class ExtensionValidator {
 
     return this.generateReport();
   }
+
+  validateWithFirefox() {
+    console.log(`${colors.bright}${colors.yellow}🔍 Chrome & Firefox Extension Validation${colors.reset}\n`);
+
+    // Chrome validation
+    this.validateManifest();
+    this.validateFiles();
+    this.validateSyntax();
+    this.validateContentScriptOrder();
+
+    // Firefox validation (only if build exists)
+    const firefoxBuildPath = path.join(__dirname, '..', 'build-firefox');
+    if (fs.existsSync(firefoxBuildPath)) {
+      this.validateFirefoxManifest();
+      this.validateFirefoxFiles();
+      this.validateFirefoxAPIReplacements();
+    } else {
+      console.log(`\n${colors.yellow}⚠️  Firefox build not found - skipping Firefox validation${colors.reset}`);
+      console.log(`${colors.yellow}💡 Run 'npm run build' to create Firefox build${colors.reset}`);
+    }
+
+    return this.generateReport();
+  }
 }
 
 // Run validation if this file is executed directly
 if (require.main === module) {
   const validator = new ExtensionValidator();
-  const isValid = validator.validate();
+  // Use Firefox validation to check both Chrome and Firefox builds
+  const isValid = validator.validateWithFirefox();
   process.exit(isValid ? 0 : 1);
 }
 

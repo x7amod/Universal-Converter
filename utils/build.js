@@ -291,60 +291,53 @@ class ExtensionBuilder {
       const chromeManifestPath = path.join(this.rootDir, 'manifest.json');
       const chromeManifest = JSON.parse(fs.readFileSync(chromeManifestPath, 'utf8'));
       
-      // Convert Chrome Manifest V3 to Firefox Manifest V2
+      // Create Firefox-compatible Manifest V3
       const firefoxManifest = {
-        manifest_version: 2,
+        manifest_version: 3,
         name: chromeManifest.name,
         version: chromeManifest.version,
         description: chromeManifest.description,
         
-        // Firefox-specific fields
-        applications: {
+        // Firefox-specific fields (REQUIRED for Manifest V3)
+        browser_specific_settings: {
           gecko: {
             id: "universal-converter@extension.com",
-            strict_min_version: "57.0"
+            strict_min_version: "140.0",
+            data_collection_permissions: {
+              required: ["none"]
+            }
           }
         },
         
-        // Convert permissions - ADD CURRENCY API PERMISSIONS FOR FIREFOX
-        permissions: [
+        // Permissions
+        permissions: chromeManifest.permissions || [
           "activeTab",
           "storage",
-          "https://cdn.jsdelivr.net/*",
-          "https://currency-api.pages.dev/*"
+          "contextMenus",
+          "management"
         ],
         
-        // ADD CONTENT SECURITY POLICY FOR FIREFOX NETWORK REQUESTS
-        content_security_policy: "script-src 'self'; object-src 'self'; connect-src 'self' https://cdn.jsdelivr.net https://currency-api.pages.dev;",
-        
-        // Convert background script (V3 service worker -> V2 background page)
+        // Firefox uses 'scripts' array instead of 'service_worker'
         background: {
-          scripts: ["background.js"],
-          persistent: false
+          scripts: ["background.js"]
         },
         
-        // Convert content scripts
+        // Content scripts
         content_scripts: chromeManifest.content_scripts,
         
-        // Convert action to browser_action (V2)
-        browser_action: {
-          default_title: chromeManifest.action?.default_title || "Universal Converter",
-          default_icon: chromeManifest.action?.default_icon || chromeManifest.icons
+        // action (V3)
+        action: chromeManifest.action || {
+          default_title: "Universal Converter"
         },
         
-        // Keep icons
+        // Icons
         icons: chromeManifest.icons,
         
-        // Convert options page
-        options_ui: chromeManifest.options_ui ? {
-          page: chromeManifest.options_ui.page,
-          open_in_tab: chromeManifest.options_ui.open_in_tab || true
-        } : undefined,
+        // Options page (if present)
+        options_ui: chromeManifest.options_ui,
         
-        // Web accessible resources (V2 format)
-        web_accessible_resources: chromeManifest.web_accessible_resources?.map(resource => 
-          typeof resource === 'string' ? resource : resource.resources
-        ).flat() || []
+        // Web accessible resources (V3 format)
+        web_accessible_resources: chromeManifest.web_accessible_resources || []
       };
       
       // Remove undefined fields
@@ -357,7 +350,7 @@ class ExtensionBuilder {
       const firefoxManifestPath = path.join(this.firefoxBuildDir, 'manifest.json');
       fs.writeFileSync(firefoxManifestPath, JSON.stringify(firefoxManifest, null, 2));
       
-      console.log(`${colors.green}  ✅ Firefox manifest created with currency API permissions${colors.reset}`);
+      console.log(`${colors.green}  ✅ Firefox Manifest V3 created with gecko ID and data_collection_permissions${colors.reset}`);
       return true;
       
     } catch (error) {
@@ -375,26 +368,20 @@ class ExtensionBuilder {
       
       let backgroundContent = fs.readFileSync(chromeBackgroundPath, 'utf8');
       
-      // Replace Chrome V3 APIs with Firefox V2 equivalents
+      // Firefox Manifest V3 compatibility
+      // Firefox V3 supports chrome.* APIs, but we add a compatibility layer for browser.* as well
       backgroundContent = backgroundContent
-        // Replace chrome.action with browser.browserAction (Firefox V2)
-        .replace(/chrome\.action/g, 'browser.browserAction')
-        // Replace chrome.storage with browser.storage (though chrome.storage works in Firefox too)
-        .replace(/chrome\.storage/g, 'browser.storage')
-        // Replace chrome.tabs with browser.tabs`
-        .replace(/chrome\.tabs/g, 'browser.tabs')
-        // Replace chrome.runtime with browser.runtime
-        .replace(/chrome\.runtime/g, 'browser.runtime')
         // Add compatibility shim at the top
-        .replace(/^/, `// Firefox compatibility shim
+        .replace(/^/, `// Firefox Manifest V3 compatibility shim
+// Firefox supports both chrome.* and browser.* APIs
 if (typeof browser !== 'undefined' && typeof chrome === 'undefined') {
-  global.chrome = browser;
+  globalThis.chrome = browser;
 }
 
 `);
       
       fs.writeFileSync(firefoxBackgroundPath, backgroundContent);
-      console.log(`${colors.green}  ✅ Background script adapted for Firefox${colors.reset}`);
+      console.log(`${colors.green}  ✅ Background script adapted for Firefox Manifest V3${colors.reset}`);
       return true;
       
     } catch (error) {
@@ -468,17 +455,33 @@ if (typeof browser !== 'undefined' && typeof chrome === 'undefined') {
       const manifestPath = path.join(this.firefoxBuildDir, 'manifest.json');
       const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
       
-      if (manifest.manifest_version === 2) {
-        console.log(`${colors.green}  ✅ Manifest v2 format (Firefox)${colors.reset}`);
+      if (manifest.manifest_version === 3) {
+        console.log(`${colors.green}  ✅ Manifest v3 format (Firefox)${colors.reset}`);
       } else {
         console.log(`${colors.red}  ❌ Invalid manifest version for Firefox${colors.reset}`);
         isValid = false;
       }
       
-      if (manifest.applications && manifest.applications.gecko) {
-        console.log(`${colors.green}  ✅ Firefox gecko application ID${colors.reset}`);
+      if (manifest.browser_specific_settings?.gecko?.id) {
+        console.log(`${colors.green}  ✅ Firefox gecko application ID: ${manifest.browser_specific_settings.gecko.id}${colors.reset}`);
+      } else if (manifest.applications?.gecko?.id) {
+        console.log(`${colors.green}  ✅ Firefox gecko application ID (deprecated field): ${manifest.applications.gecko.id}${colors.reset}`);
       } else {
-        console.log(`${colors.yellow}  ⚠️  Missing Firefox gecko application ID${colors.reset}`);
+        console.log(`${colors.red}  ❌ Missing Firefox gecko application ID${colors.reset}`);
+        isValid = false;
+      }
+      
+      if (manifest.browser_specific_settings?.gecko?.data_collection_permissions !== undefined) {
+        console.log(`${colors.green}  ✅ data_collection_permissions: ${manifest.browser_specific_settings.gecko.data_collection_permissions}${colors.reset}`);
+      } else {
+        console.log(`${colors.yellow}  ⚠️  Missing data_collection_permissions (will be required in future)${colors.reset}`);
+      }
+      
+      if (manifest.background?.scripts) {
+        console.log(`${colors.green}  ✅ Using background.scripts (Firefox-compatible)${colors.reset}`);
+      } else if (manifest.background?.service_worker) {
+        console.log(`${colors.red}  ❌ Using service_worker (not supported in Firefox)${colors.reset}`);
+        isValid = false;
       }
       
     } catch (error) {
@@ -534,6 +537,51 @@ if (typeof browser !== 'undefined' && typeof chrome === 'undefined') {
     });
   }
 
+  createFirefoxXpiArchive() {
+    console.log(`${colors.blue}📦 Creating Firefox XPI package...${colors.reset}`);
+    
+    const xpiName = `universal-converter-firefox-v${this.version}.xpi`;
+    const xpiPath = path.join(this.rootDir, xpiName);
+    
+    return new Promise((resolve, reject) => {
+      try {
+        // Remove existing xpi if it exists
+        if (fs.existsSync(xpiPath)) {
+          fs.unlinkSync(xpiPath);
+        }
+        
+        // Create XPI using archiver (XPI is just a ZIP with .xpi extension)
+        const output = fs.createWriteStream(xpiPath);
+        const archive = archiver('zip', {
+          zlib: { level: 9 } // Maximum compression
+        });
+        
+        output.on('close', () => {
+          const xpiStats = fs.statSync(xpiPath);
+          const xpiSizeMB = (xpiStats.size / (1024 * 1024)).toFixed(2);
+          console.log(`${colors.green}  ✅ Created: ${xpiName} (${xpiSizeMB} MB)${colors.reset}`);
+          resolve(xpiPath);
+        });
+        
+        archive.on('error', (err) => {
+          console.log(`${colors.red}  ❌ Failed to create Firefox XPI: ${err.message}${colors.reset}`);
+          reject(err);
+        });
+        
+        archive.pipe(output);
+        
+        // Add the entire Firefox build directory to the XPI
+        archive.directory(this.firefoxBuildDir, false);
+        
+        archive.finalize();
+        
+      } catch (error) {
+        console.log(`${colors.red}  ❌ Failed to create Firefox XPI: ${error.message}${colors.reset}`);
+        reject(error);
+      }
+    });
+  }
+
   adaptCurrencyConverterForFirefox() {
     console.log(`${colors.blue}💱 Adapting currency converter for Firefox...${colors.reset}`);
     
@@ -547,44 +595,18 @@ if (typeof browser !== 'undefined' && typeof chrome === 'undefined') {
       
       let currencyContent = fs.readFileSync(currencyConverterPath, 'utf8');
       
-      // Add Firefox-specific fetch handling and error handling
-      const firefoxCompatibilityCode = `
-// Firefox compatibility enhancements
-const originalFetch = window.fetch;
-window.fetch = function(url, options = {}) {
-    // Add timeout and better error handling for Firefox
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
-    
-    return originalFetch(url, {
-        ...options,
-        signal: controller.signal
-    }).finally(() => {
-        clearTimeout(timeoutId);
-    }).catch(error => {
-        if (error.name === 'AbortError') {
-            throw new Error('Request timeout - please check your internet connection');
-        }
-        throw error;
-    });
-};
+      // Add Firefox compatibility shim at the beginning
+      const firefoxCompatibilityCode = `// Firefox Manifest V3 compatibility
+if (typeof browser !== 'undefined' && typeof chrome === 'undefined') {
+  globalThis.chrome = browser;
+}
 
 `;
       
-      // Add the compatibility code at the beginning
-      currencyContent = firefoxCompatibilityCode + currencyContent;
-      
-      // Also add better error messages for Firefox
-      currencyContent = currencyContent.replace(
-        /catch\s*\(\s*error\s*\)\s*\{([^}]*)\}/g,
-        `catch (error) {
-            console.error('Firefox currency API error:', error.message);
-            if (error.message.includes('NetworkError') || error.message.includes('Failed to fetch')) {
-                throw new Error('Network connection failed. Please check your internet connection and try again.');
-            }
-            throw error;
-        }`
-      );
+      // Add the compatibility code at the beginning if not already present
+      if (!currencyContent.includes('Firefox Manifest V3 compatibility')) {
+        currencyContent = firefoxCompatibilityCode + currencyContent;
+      }
       
       fs.writeFileSync(currencyConverterPath, currencyContent);
       console.log(`${colors.green}  ✅ Currency converter adapted for Firefox${colors.reset}`);
@@ -592,6 +614,45 @@ window.fetch = function(url, options = {}) {
       
     } catch (error) {
       console.log(`${colors.red}  ❌ Failed to adapt currency converter: ${error.message}${colors.reset}`);
+      return false;
+    }
+  }
+
+  adaptSettingsPageForFirefox() {
+    console.log(`${colors.blue}⚙️  Adapting settings page for Firefox...${colors.reset}`);
+    
+    try {
+      const settingsPath = path.join(this.firefoxBuildDir, 'settings-page', 'settings.js');
+      
+      if (!fs.existsSync(settingsPath)) {
+        console.log(`${colors.yellow}  ⚠️  Settings page not found, skipping adaptation${colors.reset}`);
+        return true;
+      }
+      
+      let settingsContent = fs.readFileSync(settingsPath, 'utf8');
+      
+      // Replace Chrome APIs with browser APIs for Firefox
+      settingsContent = settingsContent
+        .replace(/chrome\.storage/g, 'browser.storage')
+        .replace(/chrome\.tabs/g, 'browser.tabs')
+        .replace(/chrome\.runtime/g, 'browser.runtime');
+      
+      // Add Firefox compatibility shim at the top
+      const firefoxShim = `// Firefox compatibility shim for settings page
+if (typeof browser !== 'undefined' && typeof chrome === 'undefined') {
+  window.chrome = browser;
+}
+
+`;
+      
+      settingsContent = firefoxShim + settingsContent;
+      
+      fs.writeFileSync(settingsPath, settingsContent);
+      console.log(`${colors.green}  ✅ Settings page adapted for Firefox${colors.reset}`);
+      return true;
+      
+    } catch (error) {
+      console.log(`${colors.red}  ❌ Failed to adapt settings page: ${error.message}${colors.reset}`);
       return false;
     }
   }
@@ -656,7 +717,7 @@ window.fetch = function(url, options = {}) {
       
       // Firefox build steps
       console.log(`${colors.cyan}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${colors.reset}`);
-      console.log(`${colors.bright}${colors.cyan}🦊 Building Firefox version (Manifest V2)...${colors.reset}`);
+      console.log(`${colors.bright}${colors.cyan}🦊 Building Firefox version (Manifest V3)...${colors.reset}`);
       
       // Copy files to Firefox build
       this.copyExtensionFilesForFirefox();
@@ -670,7 +731,10 @@ window.fetch = function(url, options = {}) {
       // Adapt currency converter for Firefox
       const isCurrencyConverterAdapted = this.adaptCurrencyConverterForFirefox();
       
-      if (!isFirefoxManifestCreated || !isBackgroundScriptAdapted || !isCurrencyConverterAdapted) {
+      // Adapt settings page for Firefox
+      const isSettingsPageAdapted = this.adaptSettingsPageForFirefox();
+      
+      if (!isFirefoxManifestCreated || !isBackgroundScriptAdapted || !isCurrencyConverterAdapted || !isSettingsPageAdapted) {
         throw new Error('Firefox build preparation failed');
       }
       
@@ -686,6 +750,13 @@ window.fetch = function(url, options = {}) {
       
       if (firefoxZipPath) {
         console.log(`${colors.green}   📦 Firefox ZIP: ${path.basename(firefoxZipPath)}${colors.reset}`);
+      }
+      
+      // Create Firefox XPI package
+      const firefoxXpiPath = await this.createFirefoxXpiArchive();
+      
+      if (firefoxXpiPath) {
+        console.log(`${colors.green}   📦 Firefox XPI: ${path.basename(firefoxXpiPath)}${colors.reset}`);
       }
       
       // Final summary

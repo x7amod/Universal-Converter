@@ -3,7 +3,7 @@ build*/
 *.zip
 *.crx
 *.pem
-
+*.xpi
 # Temporary Debug files
 tests/debug*
 debug* 

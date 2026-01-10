@@ -67,29 +67,65 @@ window.UnitConverter.PopupManager = class {
       console.error('createPopupElement received non-array conversions:', conversions);
       conversions = [];
     }
+    
+    // Create popup structure using DOM API (safer and more performant)
     const popup = document.createElement('div');
     popup.className = 'unit-converter-popup';
-    popup.innerHTML = `
-      <div class="unit-converter-content">
-        <div class="unit-converter-results">
-          ${conversions.map(conv => `
-            <div class="unit-converter-item">
-              <div class="original">${conv.original}</div>
-              <div class="arrow">➜</div>
-              <div class="converted">
-                ${conv.converted}
-                ${conv.usedFallback ?  `
-                  <span class="fallback-warning">
-                    <span class="warning-icon">⚠</span>
-                    <span class="warning-tooltip">Currency rate may be up to 24 hours old</span>
-                  </span>
-                ` : ''}
-              </div>
-            </div>
-          `).join('')}
-        </div>
-      </div>
-    `;
+    
+    const content = document.createElement('div');
+    content.className = 'unit-converter-content';
+    
+    const results = document.createElement('div');
+    results.className = 'unit-converter-results';
+    
+    // Create each conversion item
+    conversions.forEach(conv => {
+      const item = document.createElement('div');
+      item.className = 'unit-converter-item';
+      
+      // Original value
+      const original = document.createElement('div');
+      original.className = 'original';
+      original.textContent = conv.original;
+      item.appendChild(original);
+      
+      // Arrow
+      const arrow = document.createElement('div');
+      arrow.className = 'arrow';
+      arrow.textContent = '➜';
+      item.appendChild(arrow);
+      
+      // Converted value
+      const converted = document.createElement('div');
+      converted.className = 'converted';
+      converted.textContent = conv.converted;
+      
+      // Add fallback warning if needed
+      if (conv.usedFallback) {
+        const fallbackWarning = document.createElement('span');
+        fallbackWarning.className = 'fallback-warning';
+        
+        const warningIcon = document.createElement('span');
+        warningIcon.className = 'warning-icon';
+        warningIcon.textContent = '⚠';
+        fallbackWarning.appendChild(warningIcon);
+        
+        const warningTooltip = document.createElement('span');
+        warningTooltip.className = 'warning-tooltip';
+        warningTooltip.textContent = 'Currency rate may be up to 24 hours old';
+        fallbackWarning.appendChild(warningTooltip);
+        
+        converted.appendChild(document.createTextNode(' '));
+        converted.appendChild(fallbackWarning);
+      }
+      
+      item.appendChild(converted);
+      results.appendChild(item);
+    });
+    
+    content.appendChild(results);
+    popup.appendChild(content);
+    
     return popup;
   }
   

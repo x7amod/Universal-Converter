@@ -345,28 +345,90 @@ class ExtensionTester {
     const container = document.getElementById('test-results');
     if (!container) return;
 
-    container.innerHTML = `
-      <div style="padding: 15px;">
-        <h3 style="margin: 0 0 10px 0; color: #333;">Test Results</h3>
-        <div style="margin-bottom: 10px;">
-          <strong>Total:</strong> ${report.summary.total}<br>
-          <strong>Passed:</strong> <span style="color: green;">${report.summary.passed}</span><br>
-          <strong>Failed:</strong> <span style="color: red;">${report.summary.failed}</span><br>
-          <strong>Success Rate:</strong> ${report.summary.successRate}
-        </div>
-        <div style="max-height: 200px; overflow-y: auto;">
-          ${report.results.map(result => `
-            <div style="margin: 5px 0; padding: 5px; background: ${result.passed ? '#e8f5e8' : '#ffe8e8'}; border-radius: 3px;">
-              <strong>${result.category}:</strong> ${result.test}<br>
-              <small>${result.message}</small>
-            </div>
-          `).join('')}
-        </div>
-        <button onclick="extensionTester.exportResults()" style="margin-top: 10px; padding: 5px 10px; background: #007cba; color: white; border: none; border-radius: 3px; cursor: pointer;">
-          Export Results
-        </button>
-      </div>
-    `;
+    // Clear container
+    container.textContent = '';
+    
+    // Build DOM tree programmatically for security and performance
+    const wrapper = document.createElement('div');
+    wrapper.style.padding = '15px';
+    
+    // Title
+    const title = document.createElement('h3');
+    title.style.margin = '0 0 10px 0';
+    title.style.color = '#333';
+    title.textContent = 'Test Results';
+    wrapper.appendChild(title);
+    
+    // Summary section
+    const summary = document.createElement('div');
+    summary.style.marginBottom = '10px';
+    
+    const summaryHTML = [
+      { label: 'Total', value: report.summary.total },
+      { label: 'Passed', value: report.summary.passed, color: 'green' },
+      { label: 'Failed', value: report.summary.failed, color: 'red' },
+      { label: 'Success Rate', value: report.summary.successRate }
+    ];
+    
+    summaryHTML.forEach(item => {
+      const line = document.createElement('div');
+      const strong = document.createElement('strong');
+      strong.textContent = item.label + ': ';
+      line.appendChild(strong);
+      
+      const value = document.createElement('span');
+      value.textContent = item.value;
+      if (item.color) value.style.color = item.color;
+      line.appendChild(value);
+      
+      summary.appendChild(line);
+    });
+    
+    wrapper.appendChild(summary);
+    
+    // Results list
+    const resultsList = document.createElement('div');
+    resultsList.style.maxHeight = '200px';
+    resultsList.style.overflowY = 'auto';
+    
+    report.results.forEach(result => {
+      const resultDiv = document.createElement('div');
+      resultDiv.style.margin = '5px 0';
+      resultDiv.style.padding = '5px';
+      resultDiv.style.background = result.passed ? '#e8f5e8' : '#ffe8e8';
+      resultDiv.style.borderRadius = '3px';
+      
+      const categoryTest = document.createElement('div');
+      const strongLabel = document.createElement('strong');
+      strongLabel.textContent = result.category + ': ';
+      categoryTest.appendChild(strongLabel);
+      categoryTest.appendChild(document.createTextNode(result.test));
+      
+      const message = document.createElement('small');
+      message.textContent = result.message;
+      message.style.display = 'block';
+      
+      resultDiv.appendChild(categoryTest);
+      resultDiv.appendChild(message);
+      resultsList.appendChild(resultDiv);
+    });
+    
+    wrapper.appendChild(resultsList);
+    
+    // Export button
+    const exportBtn = document.createElement('button');
+    exportBtn.textContent = 'Export Results';
+    exportBtn.style.marginTop = '10px';
+    exportBtn.style.padding = '5px 10px';
+    exportBtn.style.background = '#007cba';
+    exportBtn.style.color = 'white';
+    exportBtn.style.border = 'none';
+    exportBtn.style.borderRadius = '3px';
+    exportBtn.style.cursor = 'pointer';
+    exportBtn.onclick = () => this.exportResults();
+    wrapper.appendChild(exportBtn);
+    
+    container.appendChild(wrapper);
   }
 
   // Export results as JSON
