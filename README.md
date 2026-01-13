@@ -29,7 +29,7 @@ A powerful Browser Extension that automatically detects and converts units in se
 
 **Manual Installation**
 1. Click on Code, Download ZIP, Extract files. (or get it from releases for more stable-er build)
-2. **Open** `chrome://extensions/` in Chrome
+2. **Open** `chrome://extensions/`
 3. **Enable** "Developer mode" (top right toggle)
 4. **Click** "Load unpacked" and select the project folder
 
