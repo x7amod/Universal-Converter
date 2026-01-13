@@ -4,16 +4,18 @@
 </div>
 
 <div align="center">
-[![Tests](../../actions/workflows/ci.yml/badge.svg)](../../actions)
+<h2>Instantly convert any unit or currency by simply selecting them on any page!</h2>
 </div>
-
 <div align="center">
 <img src="img/popup.png" alt="Extension Usage Demo" />
 </div>
 
 <div align="center">
-<h2>Instantly convert any unit or currency by simply selecting them on any page!</h2>
+
+[![Tests](../../actions/workflows/ci.yml/badge.svg)](../../actions)
+
 </div>
+
 <br>
 A powerful Browser Extension that automatically detects and converts units in selected text, supporting length, weight, temperature, volume, area measurements, and **real-time currency conversions** with smart auto-sizing and dimension support.
 
