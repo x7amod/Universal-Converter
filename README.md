@@ -1,19 +1,13 @@
-<h1 style="text-align: center;">Universal Converter - Browser Extension</h1>
 <div align="center">
-    <img src="icons/icon128.png" alt="Universal Converter Icon" width="120" />
+    <h1 style="text-align: center;">Universal Converter - Browser Extension</h1>
+    <img src="icons/icon128.png" alt="Universal Converter Icon" width="128" />
 </div>
-
-<div align="center">
-<h2>Instantly convert any unit or currency by simply selecting them on any page!</h2>
-</div>
-<div align="center">
-<img src="img/popup.png" alt="Extension Usage Demo" />
-</div>
-
-<div align="center">
 
 [![Tests](../../actions/workflows/ci.yml/badge.svg)](../../actions)
 
+<div align="center">
+    <h2>Instantly convert any unit or currency by simply selecting them on any page!</h2>
+    <img src="img/popup.png" alt="Extension Usage Demo" />
 </div>
 
 <br>
