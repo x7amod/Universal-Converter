@@ -1,9 +1,10 @@
 <h1 style="text-align: center;">Universal Converter - Browser Extension</h1>
+<div align="center">
+    <img src="icons/icon128.png" alt="Universal Converter Icon" width="120" />
+</div>
 
 <div align="center">
-    
 [![Tests](../../actions/workflows/ci.yml/badge.svg)](../../actions)
-
 </div>
 
 <div align="center">
