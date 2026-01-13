@@ -1,17 +1,18 @@
 <div align="center">
-    <h1 style="text-align: center;">Universal Converter - Browser Extension</h1>
-    <img src="icons/icon128.png" alt="Universal Converter Icon" width="128" />
-</div>
 
-[![Tests](../../actions/workflows/ci.yml/badge.svg)](../../actions)
+<h1>Universal Converter - Browser Extension</h1>
 
-<div align="center">
-    <h2>Instantly convert any unit or currency by simply selecting them on any page!</h2>
-    <img src="img/popup.png" alt="Extension Usage Demo" />
+<img src="icons/icon128.png" alt="Universal Converter Icon" width="128" /><hr>
+
+Instantly convert any unit, currency or timezone by simply selecting them on any page! 
+
+<img src="img/popup.png" alt="Extension Usage Demo" />
+
 </div>
 
 <br>
-A powerful Browser Extension that automatically detects and converts units in selected text, supporting length, weight, temperature, volume, area measurements, and **real-time currency conversions** with smart auto-sizing and dimension support.
+
+A powerful Browser Extension that automatically detects and converts units in selected text, supporting length, weight, temperature, volume, area measurements, and real-time currency conversions with smart auto-sizing and dimension support.
 
 ## ✨ Key Features
 
