@@ -14,7 +14,7 @@
 <h2>Instantly convert any unit or currency by simply selecting them on any page!</h2>
 </div>
 <br>
-A powerful Chrome Extension that automatically detects and converts units in selected text, supporting length, weight, temperature, volume, area measurements, and **real-time currency conversions** with smart auto-sizing and dimension support.
+A powerful Browser Extension that automatically detects and converts units in selected text, supporting length, weight, temperature, volume, area measurements, and **real-time currency conversions** with smart auto-sizing and dimension support.
 
 ## ✨ Key Features
 
