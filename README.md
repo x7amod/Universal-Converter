@@ -1,4 +1,4 @@
-<h1 style="text-align: center;">Universal Converter - Chrome Extension</h1>
+<h1 style="text-align: center;">Universal Converter - Browser Extension</h1>
 
 <div align="center">
     
@@ -22,18 +22,18 @@ A powerful Chrome Extension that automatically detects and converts units in sel
 - **Real-Time Currency Conversion** - Live exchange rates for 150+ currencies with Arabic/Unicode symbol support
 - **Smart Auto-Sizing** - Automatically chooses appropriate units (0.001m → 1mm)  
 - **Dimension Support** - Handles formats like "8ft × 4ft × 30in", "6m × 4m × 2.5m"
-- **Auto-Save Settings** - Metric/Imperial presets with manual overrides
+- **Auto-Save Settings** - With Metric/Imperial presets and manual overrides
 
 ## 🚀 Installation
 **One Click Installation**
 - [Chrome Webstore](https://chromewebstore.google.com/detail/ediegfdjholeejhjdenagnjjjlhafgbl)
+- [Firefox Add-Ons](https://addons.mozilla.org/addon/universalconverter/)
 
 **Manual Installation**
 1. Click on Code, Download ZIP, Extract files. (or get it from releases for more stable-er build)
 2. **Open** `chrome://extensions/` in Chrome
 3. **Enable** "Developer mode" (top right toggle)
 4. **Click** "Load unpacked" and select the project folder
-5. **Test** by selecting "30 cm" on any webpage → See "11.81 inches" popup
 
 ## Supported Units
 
