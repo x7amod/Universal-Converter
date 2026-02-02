@@ -95,54 +95,85 @@ npm run build     # Build for distribution
 ```
 Universal Converter/
 ├── manifest.json              # Extension configuration
-├── background.js              # Service worker
-├── content.js                 # Main content script
-├── content.css                # Content script styles (Mainly Contains styles for the popup)
+├── background.js              # Service worker (handles API calls & caching)
+├── content.js                 # Main content script (text selection & conversion)
+├── content.css                # Popup styles
 ├── package.json               # Node.js dependencies
+├── LICENSE                    # MIT License
 │
-├── data/                       # Conversion data
-│   ├── conversion-data.js     # Unit definitions & patterns
-│   └── currency-mappings.js   # Currency symbols & codes
+├── data/                      # Conversion data & configuration
+│   ├── conversion-data.js     # Unit ratios, patterns, scaling rules, timezone mappings
+│   └── currency-mappings.js   # Currency symbols & codes (150+ currencies)
 │
-├── utils/                      # Core functionality
-│   ├── unit-converter.js      # Unit conversion logic
+├── utils/                     # Core functionality
+│   ├── unit-converter.js      # Unit conversion logic & best unit selection
 │   ├── currency-converter.js  # Currency detection & conversion
-│   ├── conversion-detector.js # Pattern matching & detection
+│   ├── conversion-detector.js # Pattern matching & text detection
 │   ├── popup-manager.js       # Popup positioning & display
 │   ├── settings-manager.js    # User preferences storage
-│   └── build.js               # Build script for distribution
+│   └── build.js               # Build script for Chrome/Firefox
 │
 ├── settings-page/             # Extension settings UI
-│   ├── settings.html         # Settings interface
-│   ├── settings.js           # Settings functionality
-│   └── settings.css          # Settings styles  
+│   ├── settings.html          # Settings interface
+│   ├── settings.js            # Settings functionality
+│   └── settings.css           # Settings styles
 │
-├── icons/                     # Extension icons
+├── icons/                     # Extension icons (16, 32, 48, 128px)
 │
-├── tests/                     # Test suite
-│   ├── test-runner.js        # Core unit tests
-│   ├── test-suite.js         # Additional tests
-│   ├── test-cases.js         # Test case definitions
-│   ├── validate-extension.js # Extension structure validation
-│   ├── run-all-tests.js      # Cross-platform test runner
-│   ├── test.html             # Browser test page
-│   └── area-test.html        # Area conversion test page
+├── img/                       # Docs images
+│
+├── tests/                     # Automated test suite
+│   ├── test-runner.js         # Core unit tests
+│   ├── test-suite.js          # Additional test scenarios
+│   ├── popup-interaction-tests.js # Popup UI interaction tests
+│   ├── currency-cache-lifecycle.test.js # Currency cache lifecycle tests
+│   ├── test-cases.json        # Test case definitions
+│   ├── test-cases.schema.json # JSON schema for test cases
+│   ├── validate-extension.js  # Extension structure validation
+│   ├── run-all-tests.js       # Cross-platform test runner
+│   ├── test.html              # Browser test page
+│   ├── tests.md               # Test documentation
+│   └── test-helpers/          # Test mocking utilities
+│       ├── mock-time-controller.js # Time simulation for cache tests
+│       ├── mock-storage.js    # In-memory storage mock
+│       ├── mock-fetch.js      # API response mocking
+│       └── test-utilities.js  # Test fixtures & assertions
+│
+├── build/                     # Production build for Chrome
+│   └── (generated files)
+│
+├── build-firefox/             # Production build for Firefox
+│   └── (generated files)
 │
 └── .github/                   # GitHub configuration
-    └── workflows/            # CI/CD automation
-        └── ci.yml           # Continuous integration
+    └── workflows/             # CI/CD automation
+        └── ci.yml             # Continuous integration (auto-testing)
 ```
 
 ## 🔒 Privacy & Security
 
-- **Minimal Permissions**: Only `activeTab` and `storage`
-- **Uses Currency Data from an API**: this extension uses [Fawaz Exchange API](https://github.com/fawazahmed0/exchange-api).
-- **No Data Collection**: Zero tracking or analytics
+- **Permissions**: 
+  - `activeTab` - Access to current tab for text conversion
+  - `storage` - Save user preferences
+  - `management` - Detect development mode (for developer tools in context menu)
+  - `host permissions` - Fetch real-time currency rates from APIs
+- **No Data Collection** - Zero tracking or analytics
+- **Local Processing** - All conversions happen on your device
 
+## 🌐 APIs Used
+
+**Currency Exchange Rates:**
+1. **Primary API**: [Exchange Rate Fun API](https://api.exchangerate.fun/) - Real-time currency rates
+   - Endpoint: `https://api.exchangerate.fun/latest`
+   - 60-minute cache with smart refresh
+   
+2. **Fallback API**: [Fawaz Ahmed's Currency API](https://github.com/fawazahmed0/exchange-api) - Backup currency data
+   - Endpoint: `https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/`
+   - Used only when primary API fails
 
 ## 🙏 Credits & Acknowledgments
 
-This project integrates currency conversion functionality from [Currency-Converter](https://github.com/adampawelczyk/Currency-Converter) by Adam Pawełczyk. The currency detection, symbol mapping, API's used and real-time exchange rate features are based on this open-source project.
+This project integrates currency conversion functionality from [Currency-Converter](https://github.com/adampawelczyk/Currency-Converter) by Adam Pawełczyk. The currency detection, symbol mapping, and real-time exchange rate features are based on this open-source project.
 
 ## 📄 License
 

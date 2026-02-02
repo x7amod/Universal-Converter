@@ -7,6 +7,32 @@ window.UnitConverter.ConversionDetector = class {
   constructor(unitConverter) {
     this.unitConverter = unitConverter;
     this.patterns = window.UnitConverterData.UNIT_PATTERNS;
+    
+    // Pre-compile regex patterns for performance
+    // Note: Some patterns (like currency) may be added after construction
+    this.compiledPatterns = {};
+    this.compilePatterns();
+  }
+  
+  /**
+   * Compile or recompile all available patterns
+   */
+  compilePatterns() {
+    for (const [type, pattern] of Object.entries(this.patterns)) {
+      if (pattern && pattern.source && !this.compiledPatterns[type]) {
+        this.compiledPatterns[type] = new RegExp(pattern.source, 'i');
+      }
+    }
+  }
+  
+  /**
+   * Get compiled pattern, compiling on-demand if not yet available
+   */
+  getCompiledPattern(type) {
+    if (!this.compiledPatterns[type] && this.patterns[type]) {
+      this.compiledPatterns[type] = new RegExp(this.patterns[type].source, 'i');
+    }
+    return this.compiledPatterns[type];
   }
   
   /**
@@ -50,19 +76,18 @@ window.UnitConverter.ConversionDetector = class {
     let length, width, height, unit;
     
     // Try pattern with units on each number first (e.g., "6m × 4m × 2.5m")
-    if (this.patterns.dimensionsWithUnits) {
-      const patternWithUnits = new RegExp(this.patterns.dimensionsWithUnits.source, 'i');
-      match = text.match(patternWithUnits);
+    const dimensionsWithUnitsPattern = this.getCompiledPattern('dimensionsWithUnits');
+    if (dimensionsWithUnitsPattern) {
+      match = text.match(dimensionsWithUnitsPattern);
       if (match && match.length >= 5) {
         // [fullMatch, length, unit, width, height] - pattern: (\d+(?:\.\d+)?)\s*(unit)\s*(?:x|×|by|\*)\s*(\d+(?:\.\d+)?)\s*\2\s*(?:x|×|by|\*)\s*(\d+(?:\.\d+)?)\s*\2
         [, length, unit, width, height] = match;
       }
     }
     
-    // If no match, try pattern with unit at the end (e.g., "6 × 4 × 2.5 m")
-    if (!match) {
-      const pattern = new RegExp(this.patterns.dimensions.source, 'i');
-      match = text.match(pattern);
+    const dimensionsPattern = this.getCompiledPattern('dimensions');
+    if (!match && dimensionsPattern) {
+      match = text.match(dimensionsPattern);
       if (match && match.length >= 5) {
         // [fullMatch, length, width, height, unit]
         [, length, width, height, unit] = match;
@@ -149,9 +174,9 @@ window.UnitConverter.ConversionDetector = class {
       const targetCurrency = userSettings.currencyUnit || 'USD';
       const currencyConverter = window.UnitConverter.currencyConverter;
       
-      // Create a non-global version of the pattern for single match with capture groups
-      const pattern = new RegExp(this.patterns.currency.source, 'i');
-      const match = text.match(pattern);
+      // Get compiled pattern (compiles on-demand if not yet available)
+      const currencyPattern = this.getCompiledPattern('currency');
+      const match = currencyPattern ? text.match(currencyPattern) : null;
       if (!match) return null;
       
       let amount, symbol;
@@ -206,10 +231,10 @@ window.UnitConverter.ConversionDetector = class {
    */
   detectUnit(text, userSettings) {
     // Try unit types in priority order (torque before weight to avoid lb conflicts)
-    const priorityOrder = ['timezone', 'area', 'torque', 'speed', 'acceleration', 'flowRate', 'pressure', 'temperature', 'volume', 'weight', 'length'];
+    const priorityOrder = ['torque', 'timezone', 'time', 'area', 'speed', 'acceleration', 'flowRate', 'pressure', 'temperature', 'volume', 'weight', 'length'];
     
     for (const unitType of priorityOrder) {
-      const pattern = this.patterns[unitType];
+      const pattern = this.getCompiledPattern(unitType);
       if (!pattern) continue;
       
       // Special handling for timezone conversion
@@ -219,9 +244,8 @@ window.UnitConverter.ConversionDetector = class {
         continue;
       }
       
-      // Create a non-global version of the pattern for single match with capture groups
-      const nonGlobalPattern = new RegExp(pattern.source, 'i');
-      const match = text.match(nonGlobalPattern);
+      // Use pre-compiled pattern
+      const match = text.match(pattern);
       if (!match || match.length < 3) continue; // Need at least [fullMatch, value, unit]
       
       const [fullMatch, value, unit] = match;
@@ -263,15 +287,14 @@ window.UnitConverter.ConversionDetector = class {
    * Detect and convert timezone in selected text
    * @param {string} text - Selected text
    * @param {Object} userSettings - User settings
-   * @returns {Object|null} - Conversion result or null
+   * @returns {Object|nulgetCompiledPattern('timezone') null
    */
   detectTimezone(text, userSettings) {
-    const pattern = this.patterns.timezone;
+    const pattern = this.compiledPatterns.timezone;
     if (!pattern) return null;
     
-    // Create a non-global version of the pattern to get capture groups
-    const nonGlobalPattern = new RegExp(pattern.source, 'i');
-    const match = text.match(nonGlobalPattern);
+    // Use pre-compiled pattern
+    const match = text.match(pattern);
     if (!match) return null;
     
     // Extract time and timezone information

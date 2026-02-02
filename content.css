@@ -42,7 +42,7 @@
   align-items: center;
   gap: 12px;
   border-bottom: 1px solid #333;
-  animation: fadeIn 0.4s ease-out;
+  animation: fadeIn 0.3s ease-out;
 }
 
 .unit-converter-item:last-child {

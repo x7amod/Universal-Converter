@@ -1,4 +1,4 @@
-// Country Name to Currency Code mapping from Currency-Converter
+// Country Name to Currency Code mapping
 const countryNameToCurrencyCode = {
     'Afghan Afghani': 'AFN',
     'Albanian Lek': 'ALL',

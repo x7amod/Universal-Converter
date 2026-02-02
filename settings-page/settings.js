@@ -86,7 +86,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
   }
   
-  // Populate select list function (from Currency-Converter)
+  // Populate select list function
   function populateSelectList(selectElement, dataList, defaultOption) {
     for (const key in dataList) {
       const option = document.createElement('option');

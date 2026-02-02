@@ -1,4 +1,4 @@
-// Global namespace for currency converter
+// Global namespace
 window.UnitConverter = window.UnitConverter || {};
 
 /**
@@ -13,8 +13,7 @@ window.UnitConverter.CurrencyConverter = class {
     }
 
     /**
-     * Extract currency symbol from text (from Currency-Converter)
-     * Enhanced to detect explicit currency codes like "$89.99 CAD" or "CAD 89.99"
+     * Extract currency symbol from text 
      */
     extractCurrencySymbol(str) {
         // Check if str is valid
@@ -43,7 +42,7 @@ window.UnitConverter.CurrencyConverter = class {
     }
 
     /**
-     * Extract number from text (from Currency-Converter)
+     * Extract number from text
      */
     extractNumber(str) {
         // Check if str is valid
@@ -91,7 +90,7 @@ window.UnitConverter.CurrencyConverter = class {
     }
 
     /**
-     * Detect currency from symbol (from Currency-Converter)
+     * Detect currency from symbol
      */
     detectCurrency(currencySymbol) {
         const currencyCode = window.currencySymbolToCurrencyCode[currencySymbol];
@@ -104,7 +103,7 @@ window.UnitConverter.CurrencyConverter = class {
     }
 
     /**
-     * Guess currency code when multiple options available (from Currency-Converter)
+     * Guess currency code when multiple options available
      */
     guessCountryByCurrencyCode(currencyCodes) {
         const pageCountryCode = this.getPageCountryCode();
@@ -177,7 +176,7 @@ window.UnitConverter.CurrencyConverter = class {
     }
 
     /**
-     * Format currency display (from Currency-Converter)
+     * Format currency display
      * Shows both currency code and symbol, e.g., "7.52 USD $"
      */
     formatCurrency(amount, currencyCode, userLocale = navigator.language) {

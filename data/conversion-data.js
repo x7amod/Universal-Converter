@@ -4,6 +4,10 @@
 // Global namespace for unit converter data
 window.UnitConverterData = window.UnitConverterData || {};
 
+// ============================================================================
+// CONVERSION RATIOS
+// ============================================================================
+
 window.UnitConverterData.CONVERSION_RATIOS = {
   length: {
     m: 1,
@@ -109,6 +113,134 @@ window.UnitConverterData.CONVERSION_RATIOS = {
   }
 };
 
+// ============================================================================
+// UNIT SCALING RULES
+// ============================================================================
+
+/**
+ * Configuration for automatic unit scaling based on value magnitude
+ * Used by getBestUnit() to determine the most appropriate display unit
+ */
+window.UnitConverterData.UNIT_SCALING_RULES = {
+  length: {
+    m: [
+      { threshold: 1000, direction: 'up', targetUnit: 'km' },
+      { threshold: 1, direction: 'down', targetUnit: 'cm', minValue: 1 },
+      { threshold: 1, direction: 'down', targetUnit: 'mm' }
+    ],
+    ft: [
+      { threshold: 5280, direction: 'up', targetUnit: 'mi' },
+      { threshold: 1, direction: 'down', targetUnit: 'in' }
+    ],
+    yd: [
+      { threshold: 1, direction: 'down', targetUnit: 'ft', minValue: 1 },
+      { threshold: 1, direction: 'down', targetUnit: 'in' }
+    ]
+  },
+  weight: {
+    kg: [
+      { threshold: 1000, direction: 'up', targetUnit: 't' },
+      { threshold: 1, direction: 'down', targetUnit: 'g' }
+    ],
+    lb: [
+      { threshold: 1, direction: 'down', targetUnit: 'oz' }
+    ]
+  },
+  volume: {
+    l: [
+      { threshold: 1, direction: 'down', targetUnit: 'ml' }
+    ],
+    gal: [
+      { threshold: 1, direction: 'down', targetUnit: 'qt', minValue: 1 },
+      { threshold: 1, direction: 'down', targetUnit: 'pt', minValue: 1 },
+      { threshold: 1, direction: 'down', targetUnit: 'cup', minValue: 1 },
+      { threshold: 1, direction: 'down', targetUnit: 'floz' }
+    ]
+  },
+  area: {
+    m2: [
+      { threshold: 1000000, direction: 'up', targetUnit: 'km2' },
+      { threshold: 1, direction: 'down', targetUnit: 'cm2', minValue: 1 },
+      { threshold: 1, direction: 'down', targetUnit: 'mm2' }
+    ],
+    ft2: [
+      { threshold: 43560, direction: 'up', targetUnit: 'acre' },
+      { threshold: 1, direction: 'down', targetUnit: 'in2' }
+    ]
+  },
+  speed: {
+    ms: [
+      { threshold: 1000, direction: 'up', targetUnit: 'kms' },
+      { threshold: 50, direction: 'up', targetUnit: 'kmh', convertFn: (v, u) => v / u.kmh },
+      { threshold: 1, direction: 'down', targetUnit: 'cms' }
+    ],
+    kmh: [
+      { threshold: 3600, direction: 'up', targetUnit: 'kms', convertFn: (v, u) => v * u.kmh * u.kms },
+      { threshold: 1, direction: 'down', targetUnit: 'ms', convertFn: (v, u) => v * u.kmh }
+    ],
+    mph: [
+      { threshold: 3600, direction: 'up', targetUnit: 'mis', convertFn: (v, u) => v * u.mph * u.mis },
+      { threshold: 1, direction: 'down', targetUnit: 'fps', convertFn: (v, u) => v * u.mph / u.fps }
+    ],
+    fps: [
+      { threshold: 5280, direction: 'up', targetUnit: 'mph', convertFn: (v, u) => v * u.fps / u.mph }
+    ]
+  },
+  acceleration: {
+    ms2: [
+      { threshold: 1000, direction: 'up', targetUnit: 'kms2', excludeSource: 'kms2' },
+      { threshold: 0.01, direction: 'down', targetUnit: 'cms2', excludeSource: 'cms2' }
+    ],
+    fts2: [
+      { threshold: 1, direction: 'down', targetUnit: 'ins2' }
+    ],
+    cms2: [
+      { threshold: 100, direction: 'up', targetUnit: 'ms2', convertFn: (v, u) => v / u.cms2 }
+    ],
+    kms2: [
+      { threshold: 1, direction: 'down', targetUnit: 'ms2', convertFn: (v, u) => v / u.kms2 }
+    ]
+  },
+  flowRate: {
+    lmin: [
+      { threshold: 1000, direction: 'up', targetUnit: 'm3min' },
+      { threshold: 60, direction: 'up', targetUnit: 'ls', excludeSource: 'ls' },
+      { threshold: 1, direction: 'down', targetUnit: 'mlmin', excludeSource: 'mlmin' }
+    ],
+    galmin: [
+      { threshold: 60, direction: 'up', targetUnit: 'gals' },
+      { threshold: 1, direction: 'down', targetUnit: 'galh' }
+    ],
+    mlmin: [
+      { threshold: 1000, direction: 'up', targetUnit: 'lmin', convertFn: (v, u) => v / u.mlmin },
+      { threshold: 60, direction: 'up', targetUnit: 'mls', convertFn: (v, u) => v * u.mlmin / u.mls }
+    ],
+    ls: [
+      { threshold: 1, direction: 'down', targetUnit: 'lmin', convertFn: (v, u) => v / u.ls }
+    ],
+    m3s: [
+      { threshold: 0.001, direction: 'down', targetUnit: 'lmin', convertFn: (v, u) => v / u.m3s }
+    ]
+  },
+  pressure: {
+    pa: [
+      { threshold: 100000, direction: 'up', targetUnit: 'bar', convertFn: (v, u) => v / u.bar },
+      { threshold: 1000, direction: 'up', targetUnit: 'kpa', convertFn: (v, u) => v / u.kpa }
+    ],
+    kpa: [
+      { threshold: 100, direction: 'up', targetUnit: 'bar', convertFn: (v, u) => v / (u.bar / u.kpa) },
+      { threshold: 1, direction: 'down', targetUnit: 'pa', convertFn: (v, u) => v * u.kpa / u.pa }
+    ],
+    bar: [
+      { threshold: 0.01, direction: 'down', targetUnit: 'kpa', convertFn: (v, u) => v * u.bar / u.kpa }
+    ]
+  }
+};
+
+// ============================================================================
+// UNIT PATTERNS (REGEX)
+// ============================================================================
+
 window.UnitConverterData.UNIT_PATTERNS = {
   length: /(?:^|\s|^[\s]*|[\s]*$)(\d+(?:\.\d+)?)\s*-?\s*(m|cm|mm|km|in|inch|inches|ft|foot|feet|yd|yard|yards|mi|mile|miles|meter|meters|centimeter|centimeters|millimeter|millimeters|kilometer|kilometers)(?=\s*$|\s*[.,!?;:]|\s*\n|\s*\r)/gi,
   weight: /(?:^|\s|^[\s]*|[\s]*$)(\d+(?:\.\d+)?)\s*(kg|g|mg|lb(?![\s\.\-⋅\/]*(?:ft|foot|feet|in|inch|inches))|lbs|oz(?![\s\.\-⋅\/]*(?:in|inch|inches))|ounce|ounces|pound(?![\s\-]*(?:foot|feet|inch|inches))|pounds(?![\s\-]*(?:foot|feet|inch|inches))|kilogram|kilograms|gram|grams|milligram|milligrams|tonne|tonnes|t)(?=\s*$|\s*[.,!?;:]|\s*\n|\s*\r)/gi,
@@ -127,6 +259,10 @@ window.UnitConverterData.UNIT_PATTERNS = {
   // Currency pattern will be generated dynamically from currency mappings
   currency: null 
 };
+
+// ============================================================================
+// UNIT ALIASES
+// ============================================================================
 
 window.UnitConverterData.UNIT_ALIASES = {
   // Length aliases
@@ -233,6 +369,10 @@ window.UnitConverterData.UNIT_ALIASES = {
   'megapascal': 'mpa', 'megapascals': 'mpa', 'MPa': 'mpa'
 };
 
+// ============================================================================
+// DEFAULT UNITS
+// ============================================================================
+
 window.UnitConverterData.DEFAULT_UNITS = {
   length: 'm',
   weight: 'kg',
@@ -248,6 +388,10 @@ window.UnitConverterData.DEFAULT_UNITS = {
   currency: 'usd'
 };
 
+// ============================================================================
+// AREA TO LINEAR MAPPING
+// ============================================================================
+
 window.UnitConverterData.AREA_TO_LINEAR_MAP = {
   'm2': 'm', 
   'cm2': 'cm', 
@@ -257,7 +401,10 @@ window.UnitConverterData.AREA_TO_LINEAR_MAP = {
   'in2': 'in'
 };
 
-// Timezone mappings for common timezone abbreviations
+// ============================================================================
+// TIMEZONE MAPPINGS
+// ============================================================================
+
 window.UnitConverterData.TIMEZONE_MAPPINGS = {
   // US Timezones
   'PST': -8, 'PDT': -7, 'PT': -8, 'PACIFIC': -8,
@@ -317,6 +464,10 @@ window.UnitConverterData.TIMEZONE_MAPPINGS = {
   'PET': -5, // Peru Time
   'COT': -5 // Colombia Time
 };
+
+// ============================================================================
+// UTILITY FUNCTIONS
+// ============================================================================
 
 /**
  * Get user's current timezone offset

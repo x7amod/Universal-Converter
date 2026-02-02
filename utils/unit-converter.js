@@ -9,6 +9,18 @@ window.UnitConverter.UnitConverter = class {
     this.unitAliases = window.UnitConverterData.UNIT_ALIASES;
     this.defaultUnits = window.UnitConverterData.DEFAULT_UNITS;
     this.areaToLinearMap = window.UnitConverterData.AREA_TO_LINEAR_MAP;
+    
+    // Build unit-to-type lookup map for O(1) performance instead of O(n) linear search
+    this.unitToTypeMap = {};
+    for (const [type, units] of Object.entries(this.conversions)) {
+      if (type === 'temperature') continue; // Handle temperature separately
+      for (const unit of Object.keys(units)) {
+        this.unitToTypeMap[unit] = type;
+      }
+    }
+    
+    // Load unit scaling rules from data file
+    this.unitScalingRules = window.UnitConverterData.UNIT_SCALING_RULES;
   }
   
   /**
@@ -28,16 +40,18 @@ window.UnitConverter.UnitConverter = class {
    */
   getUnitType(unit) {
     const normalizedUnit = this.normalizeUnit(unit);
-    for (const [type, units] of Object.entries(this.conversions)) {
-      if (type === 'temperature') continue;      if (units.hasOwnProperty(normalizedUnit)) {
-        return type;
-      }
+    
+    // O(1) lookup using pre-built map
+    if (this.unitToTypeMap[normalizedUnit]) {
+      return this.unitToTypeMap[normalizedUnit];
     }
+    
+    // Check temperature units
     if (['c', 'f', 'k'].includes(normalizedUnit)) {
       return 'temperature';
     }
     
-    // Check if it's a currency using Currency-Converter detection
+    // Check if it's a currency
     if (window.UnitConverter.currencyConverter) {
       const currencyConverter = window.UnitConverter.currencyConverter;
       const detectedCurrency = currencyConverter.detectCurrency(unit);
@@ -412,256 +426,53 @@ window.UnitConverter.UnitConverter = class {
   }
     /**
    * Get the best unit for displaying a value (auto-size detection)
+   * Uses lookup table configuration for maintainable scaling logic
    * @param {number} value - The converted value
    * @param {string} unitType - The unit type (length, weight, etc.)
    * @param {string} defaultUnit - The default target unit
+   * @param {string} sourceUnit - Optional source unit to avoid circular conversions
    * @returns {Object} - {value, unit} with the best unit choice
    */
   getBestUnit(value, unitType, defaultUnit, sourceUnit = null) {
-    switch (unitType) {
-      case 'length': {
-        const units = this.conversions.length;
-        
-        // If less than 1 and default is meters, use smaller units
-        if (value < 1 && defaultUnit === 'm') {
-          const cmValue = value * units.cm;
-          if (cmValue >= 1) return { value: cmValue, unit: 'cm' };
-          const mmValue = value * units.mm;
-          return { value: mmValue, unit: 'mm' };
-        }
-        
-        // If less than 1 and default is feet, use inches
-        if (value < 1 && defaultUnit === 'ft') {
-          const inValue = value * units.in;
-          return { value: inValue, unit: 'in' };
-        }
-        
-        // If less than 1 and default is yards, use feet or inches
-        if (value < 1 && defaultUnit === 'yd') {
-          const ftValue = value * units.ft;
-          if (ftValue >= 1) return { value: ftValue, unit: 'ft' };
-          const inValue = value * units.in;
-          return { value: inValue, unit: 'in' };
-        }
-        
-        // If too large, use larger unit
-        if (value > 1000 && defaultUnit === 'm') {
-          return { value: value * units.km, unit: 'km' };
-        }
-        if (value > 5280 && defaultUnit === 'ft') {
-          return { value: value * units.mi, unit: 'mi' };
-        }
-        break;
+    const typeRules = this.unitScalingRules[unitType];
+    if (!typeRules || !typeRules[defaultUnit]) {
+      return { value, unit: defaultUnit };
+    }
+    
+    const units = this.conversions[unitType];
+    const rules = typeRules[defaultUnit];
+    
+    for (const rule of rules) {
+      // Check if source unit should be excluded from this rule
+      if (rule.excludeSource && sourceUnit === rule.excludeSource) {
+        continue;
       }
       
-      case 'weight': {
-        const units = this.conversions.weight;
-        
-        // If less than 1 and default is kg, use grams
-        if (value < 1 && defaultUnit === 'kg') {
-          return { value: value * units.g, unit: 'g' };
-        }
-        
-        // If less than 1 and default is pounds, use ounces
-        if (value < 1 && defaultUnit === 'lb') {
-          return { value: value * units.oz, unit: 'oz' };
-        }
-        
-        // If too large, use larger unit
-        if (value > 1000 && defaultUnit === 'kg') {
-          return { value: value * units.t, unit: 't' };
-        }
-        break;
+      // Check threshold condition based on direction
+      const meetsThreshold = rule.direction === 'up' 
+        ? value >= rule.threshold 
+        : value < rule.threshold;
+      
+      if (!meetsThreshold) {
+        continue;
       }
       
-      case 'volume': {
-        const units = this.conversions.volume;
-        
-        // If less than 1 and default is liters, use ml
-        if (value < 1 && defaultUnit === 'l') {
-          return { value: value * units.ml, unit: 'ml' };
-        }
-        
-        // If less than 1 and default is gallons, use smaller units
-        if (value < 1 && defaultUnit === 'gal') {
-          const qtValue = value * units.qt;
-          if (qtValue >= 1) return { value: qtValue, unit: 'qt' };
-          const ptValue = value * units.pt;
-          if (ptValue >= 1) return { value: ptValue, unit: 'pt' };
-          const cupValue = value * units.cup;
-          if (cupValue >= 1) return { value: cupValue, unit: 'cup' };
-          const flozValue = value * units.floz;
-          return { value: flozValue, unit: 'floz' };
-        }
-        break;
+      // Calculate converted value
+      let convertedValue;
+      if (rule.convertFn) {
+        // Custom conversion function
+        convertedValue = rule.convertFn(value, units);
+      } else {
+        // Standard conversion using ratio
+        convertedValue = value * units[rule.targetUnit];
       }
       
-      case 'area': {
-        const units = this.conversions.area;
-        
-        // If less than 1 and default is m², use smaller units
-        if (value < 1 && defaultUnit === 'm2') {
-          const cm2Value = value * units.cm2;
-          if (cm2Value >= 1) return { value: cm2Value, unit: 'cm2' };
-          const mm2Value = value * units.mm2;
-          return { value: mm2Value, unit: 'mm2' };
-        }
-        
-        // If less than 1 and default is ft², use in²
-        if (value < 1 && defaultUnit === 'ft2') {
-          const in2Value = value * units.in2;
-          return { value: in2Value, unit: 'in2' };
-        }
-        
-        // If too large, use larger unit
-        if (value > 1000000 && defaultUnit === 'm2') {
-          return { value: value * units.km2, unit: 'km2' };
-        }
-        if (value > 43560 && defaultUnit === 'ft2') {
-          return { value: value * units.acre, unit: 'acre' };
-        }
-        break;
+      // Check if converted value meets minimum threshold (for cascading down-scaling)
+      if (rule.minValue !== undefined && convertedValue < rule.minValue) {
+        continue;
       }
       
-      case 'speed': {
-        const units = this.conversions.speed;
-        
-        // Auto-size speed based on magnitude
-        if (defaultUnit === 'ms') {
-          if (value >= 1000) {
-            // Very large values → km/s
-            return { value: value * units.kms, unit: 'kms' };
-          } else if (value >= 50) {
-            // Large values → km/h
-            return { value: value / units.kmh, unit: 'kmh' };
-          } else if (value < 1) {
-            // Small values → cm/s
-            return { value: value * units.cms, unit: 'cms' };
-          }
-        } else if (defaultUnit === 'kmh') {
-          if (value < 1) {
-            // Small values → m/s
-            return { value: value * units.kmh, unit: 'ms' };
-          } else if (value >= 3600) {
-            // Very large values → km/s
-            return { value: value * units.kmh * units.kms, unit: 'kms' };
-          }
-        } else if (defaultUnit === 'mph') {
-          if (value < 1) {
-            // Small values → ft/s
-            return { value: value * units.mph / units.fps, unit: 'fps' };
-          } else if (value >= 3600) {
-            // Very large values → mi/s
-            return { value: value * units.mph * units.mis, unit: 'mis' };
-          }
-        } else if (defaultUnit === 'fps') {
-          if (value >= 5280) {
-            // Large values → mph
-            return { value: value * units.fps / units.mph, unit: 'mph' };
-          }
-        }
-        break;
-      }
-      
-      case 'acceleration': {
-        const units = this.conversions.acceleration;
-        
-        // Auto-size acceleration based on magnitude
-        if (defaultUnit === 'ms2') {
-          if (value >= 1000 && sourceUnit !== 'kms2') {
-            // Very large values → km/s² (but not if source is already km/s²)
-            return { value: value * units.kms2, unit: 'kms2' };
-          } else if (value < 0.01 && sourceUnit !== 'cms2') {
-            // Very small values → cm/s² (but not if source is already cm/s²)
-            return { value: value * units.cms2, unit: 'cms2' };
-          }
-        } else if (defaultUnit === 'fts2') {
-          if (value < 1) {
-            // Small values → in/s²
-            return { value: value * units.ins2, unit: 'ins2' };
-          }
-        } else if (defaultUnit === 'cms2') {
-          if (value >= 100) {
-            // Large values → m/s²
-            return { value: value / units.cms2, unit: 'ms2' };
-          }
-        } else if (defaultUnit === 'kms2') {
-          if (value < 1) {
-            // Small values → m/s²
-            return { value: value / units.kms2, unit: 'ms2' };
-          }
-        }
-        break;
-      }
-      
-      case 'flowRate': {
-        const units = this.conversions.flowRate;
-        
-        // Auto-size flow rate based on magnitude
-        if (defaultUnit === 'lmin') {
-          if (value >= 1000) {
-            // Very large values → m³/min
-            return { value: value * units.m3min, unit: 'm3min' };
-          } else if (value >= 60 && sourceUnit !== 'ls') {
-            // Large values → L/s (but not if source is already L/s)
-            return { value: value * units.ls, unit: 'ls' };
-          } else if (value < 1 && sourceUnit !== 'mlmin') {
-            // Small values → mL/min (but not if source is already mL/min)
-            return { value: value * units.mlmin, unit: 'mlmin' };
-          }
-        } else if (defaultUnit === 'galmin') {
-          if (value >= 60) {
-            // Large values → gal/s
-            return { value: value * units.gals, unit: 'gals' };
-          } else if (value < 1) {
-            // Small values → gal/h
-            return { value: value * units.galh, unit: 'galh' };
-          }
-        } else if (defaultUnit === 'mlmin') {
-          if (value >= 1000) {
-            // Large values → L/min
-            return { value: value / units.mlmin, unit: 'lmin' };
-          } else if (value >= 60) {
-            // Medium-large values → mL/s
-            return { value: value * units.mlmin / units.mls, unit: 'mls' };
-          }
-        } else if (defaultUnit === 'ls') {
-          if (value < 1) {
-            // Small values → L/min
-            return { value: value / units.ls, unit: 'lmin' };
-          }
-        } else if (defaultUnit === 'm3s') {
-          if (value < 0.001) {
-            // Very small values → L/min
-            return { value: value / units.m3s, unit: 'lmin' };
-          }
-        }
-        break;
-      }
-      
-      case 'pressure': {
-        const units = this.conversions.pressure;
-        
-        // Auto-size pressure based on magnitude
-        if (defaultUnit === 'pa') {
-          if (value >= 100000) {
-            return { value: value / units.bar, unit: 'bar' };
-          } else if (value >= 1000) {
-            return { value: value / units.kpa, unit: 'kpa' };
-          }
-        } else if (defaultUnit === 'kpa') {
-          if (value < 1) {
-            return { value: value * units.kpa / units.pa, unit: 'pa' };
-          } else if (value >= 100) {
-            return { value: value / (units.bar / units.kpa), unit: 'bar' };
-          }
-        } else if (defaultUnit === 'bar') {
-          if (value < 0.01) {
-            return { value: value * units.bar / units.kpa, unit: 'kpa' };
-          }
-        }
-        break;
-      }
+      return { value: convertedValue, unit: rule.targetUnit };
     }
     
     return { value, unit: defaultUnit };

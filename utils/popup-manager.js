@@ -7,18 +7,25 @@ window.UnitConverter.PopupManager = class {
   constructor() {
     this.conversionPopup = null;
   }
+
   
   /**
    * Show conversion popup with results
    * @param {Array} conversions - Array of conversion objects
-   * @param {Selection} selection - Text selection object
+   * @param {DOMRect} selectionRect - Pre-captured bounding rectangle of the selection
    */
-  async showConversionPopup(conversions, selection) {
+  async showConversionPopup(conversions, selectionRect) {
     this.hidePopup();
     
     // Validate conversions is an array
     if (!Array.isArray(conversions) || conversions.length === 0) {
       console.warn('Invalid conversions data provided to showConversionPopup');
+      return;
+    }
+    
+    // Validate selectionRect
+    if (!selectionRect) {
+      console.warn('Invalid selectionRect provided to showConversionPopup');
       return;
     }
     
@@ -46,13 +53,11 @@ window.UnitConverter.PopupManager = class {
       return conv;
     });
     
-    const range = selection.getRangeAt(0);
-    const rect = range.getBoundingClientRect();
-    
+    // Use the pre-captured selectionRect (already extracted before async operations)
     this.conversionPopup = this.createPopupElement(processedConversions);
     document.body.appendChild(this.conversionPopup);
     
-    this.positionPopup(rect);
+    this.positionPopup(selectionRect);
     this.attachEventListeners();
   }
   
@@ -139,23 +144,37 @@ window.UnitConverter.PopupManager = class {
     const popupRect = this.conversionPopup.getBoundingClientRect();
     const viewportHeight = window.innerHeight;
     const viewportWidth = window.innerWidth;
+    const margin = 10;
     
-    let top = selectionRect.bottom + window.scrollY + 10;
-    let left = selectionRect.left + window.scrollX;
+    // Calculate selection center point
+    const selectionCenterX = selectionRect.left + (selectionRect.width / 2);
     
-    // Adjust if popup would go below viewport
-    if (selectionRect.bottom + popupRect.height + 10 > viewportHeight) {
-      top = selectionRect.top + window.scrollY - popupRect.height - 10;
+    // Vertical positioning: prefer below, but go above if not enough space
+    let top;
+    const spaceBelow = viewportHeight - selectionRect.bottom;
+    const spaceAbove = selectionRect.top;
+    
+    if (spaceBelow >= popupRect.height + margin || spaceBelow >= spaceAbove) {
+      // Place below selection
+      top = selectionRect.bottom + window.scrollY + margin;
+    } else {
+      // Place above selection
+      top = selectionRect.top + window.scrollY - popupRect.height - margin;
     }
     
+    // Horizontal positioning: center with selection, but keep within viewport bounds
+    let left = selectionCenterX - (popupRect.width / 2) + window.scrollX;
     
-    if (left + popupRect.width > viewportWidth) {
-      left = viewportWidth - popupRect.width - 10;
+    // Ensure popup doesn't overflow right edge
+    const maxLeft = viewportWidth + window.scrollX - popupRect.width - margin;
+    if (left > maxLeft) {
+      left = maxLeft;
     }
     
-    
-    if (left < 10) {
-      left = 10;
+    // Ensure popup doesn't overflow left edge
+    const minLeft = window.scrollX + margin;
+    if (left < minLeft) {
+      left = minLeft;
     }
     
     this.conversionPopup.style.top = `${top}px`;
@@ -178,10 +197,6 @@ window.UnitConverter.PopupManager = class {
       this.conversionPopup.remove();
       this.conversionPopup = null;
     }
-    
-    // Also clean up any orphaned popups that might be stuck
-    const orphanedPopups = document.querySelectorAll('.unit-converter-popup');
-    orphanedPopups.forEach(popup => popup.remove());
   }
   
   /**
