@@ -83,22 +83,12 @@ A powerful Browser Extension that automatically detects and converts units in se
 
 ## 🧪 Testing & Development
 
-For  testing documentation, build instructions, and development setup:
-
-**→ [See TESTING.md](TESTING.md)**
-
 **Quick Commands:**
 ```bash
 npm test          # Run all automated tests
 npm run validate  # Validate extension structure  
 npm run build     # Build for distribution
 ```
-
-For Contribution Guidelines:
-
-**→ [See CONTRIBUTING.md](CONTRIBUTING.md)**
-
-
 
 ## 📁 Project Structure
 
@@ -149,11 +139,6 @@ Universal Converter/
 - **Uses Currency Data from an API**: this extension uses [Fawaz Exchange API](https://github.com/fawazahmed0/exchange-api).
 - **No Data Collection**: Zero tracking or analytics
 
-## 🤝 Contributing
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidelines.
-
-See [TESTING.md](tests/TESTING.md) for testing procedures.
 
 ## 🙏 Credits & Acknowledgments
 
