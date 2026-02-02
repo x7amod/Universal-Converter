@@ -119,11 +119,11 @@ class PopupInteractionTester {
   async runAllTests() {
     await this.testPopupCreation();
     await this.testPopupDismissOnClick();
-    await this.testPopupDismissOnScroll();
-    await this.testPopupDismissOnResize();
+    await this.testPopupPersistsOnScroll();
+    await this.testPopupPersistsOnResize();
     await this.testSelectionRectCapture();
     await this.testInvalidSelectionHandling();
-    await this.testTemporaryListenerCleanup();
+    await this.testPopupCleanup();
   }
 
   async testPopupCreation() {
@@ -236,8 +236,8 @@ class PopupInteractionTester {
     }
   }
 
-  async testPopupDismissOnScroll() {
-    const testName = 'Popup Dismiss on Scroll (One-time Listener)';
+  async testPopupPersistsOnScroll() {
+    const testName = 'Popup Persists on Scroll';
     try {
       const PopupManager = window.UnitConverter.PopupManager;
       const popupManager = new PopupManager();
@@ -260,9 +260,9 @@ class PopupInteractionTester {
         throw new Error('Popup was not created');
       }
       
-      // Verify scroll listener was attached
-      if (!popupManager.scrollListener) {
-        throw new Error('Scroll listener was not attached');
+      // Verify scroll listener is NOT attached (new behavior)
+      if (popupManager.scrollListener) {
+        throw new Error('Scroll listener should not be attached');
       }
       
       // Simulate scroll event
@@ -276,25 +276,23 @@ class PopupInteractionTester {
       // Small delay to allow event processing
       await new Promise(resolve => setTimeout(resolve, 50));
       
-      // Check if popup was removed
+      // Popup should still exist after scroll (new behavior)
       popup = document.querySelector('.unit-converter-popup');
-      if (popup) {
-        throw new Error('Popup was not dismissed after scroll');
-      }
-      
-      // Verify listener was cleaned up
-      if (popupManager.scrollListener !== null) {
-        throw new Error('Scroll listener was not cleaned up');
+      if (!popup) {
+        throw new Error('Popup should persist after scroll');
       }
       
       this.pass(testName);
+      
+      // Cleanup
+      popupManager.hidePopup();
     } catch (error) {
       this.fail(testName, error.message);
     }
   }
 
-  async testPopupDismissOnResize() {
-    const testName = 'Popup Dismiss on Resize (One-time Listener)';
+  async testPopupPersistsOnResize() {
+    const testName = 'Popup Persists on Resize';
     try {
       const PopupManager = window.UnitConverter.PopupManager;
       const popupManager = new PopupManager();
@@ -317,9 +315,9 @@ class PopupInteractionTester {
         throw new Error('Popup was not created');
       }
       
-      // Verify resize listener was attached
-      if (!popupManager.resizeListener) {
-        throw new Error('Resize listener was not attached');
+      // Verify resize listener is NOT attached (new behavior)
+      if (popupManager.resizeListener) {
+        throw new Error('Resize listener should not be attached');
       }
       
       // Simulate resize event
@@ -333,18 +331,16 @@ class PopupInteractionTester {
       // Small delay to allow event processing
       await new Promise(resolve => setTimeout(resolve, 50));
       
-      // Check if popup was removed
+      // Popup should still exist after resize (new behavior)
       popup = document.querySelector('.unit-converter-popup');
-      if (popup) {
-        throw new Error('Popup was not dismissed after resize');
-      }
-      
-      // Verify listener was cleaned up
-      if (popupManager.resizeListener !== null) {
-        throw new Error('Resize listener was not cleaned up');
+      if (!popup) {
+        throw new Error('Popup should persist after resize');
       }
       
       this.pass(testName);
+      
+      // Cleanup
+      popupManager.hidePopup();
     } catch (error) {
       this.fail(testName, error.message);
     }
@@ -426,10 +422,24 @@ class PopupInteractionTester {
         type: 'currency'
       }];
       
+      // Suppress only the expected "Invalid selectionRect" warnings
+      const originalWarn = console.warn;
+      console.warn = (message, ...args) => {
+        // Only suppress the specific warning we're testing for
+        if (typeof message === 'string' && message.includes('Invalid selectionRect')) {
+          return; // Suppress this specific warning
+        }
+        // Let all other warnings through
+        originalWarn(message, ...args);
+      };
+      
       await popupManager.showConversionPopup(conversions, null);
       
+      // Small delay for async operations
+      await new Promise(resolve => setTimeout(resolve, 10));
+      
       // Verify popup was NOT created with invalid rect
-      const popup = document.querySelector('.unit-converter-popup');
+      let popup = document.querySelector('.unit-converter-popup');
       if (popup) {
         throw new Error('Popup should not be created with null selectionRect');
       }
@@ -437,10 +447,15 @@ class PopupInteractionTester {
       // Test with undefined rect
       await popupManager.showConversionPopup(conversions, undefined);
       
-      const popup2 = document.querySelector('.unit-converter-popup');
-      if (popup2) {
+      await new Promise(resolve => setTimeout(resolve, 10));
+      
+      popup = document.querySelector('.unit-converter-popup');
+      if (popup) {
         throw new Error('Popup should not be created with undefined selectionRect');
       }
+      
+      // Restore console.warn
+      console.warn = originalWarn;
       
       this.pass(testName);
     } catch (error) {
@@ -448,8 +463,8 @@ class PopupInteractionTester {
     }
   }
 
-  async testTemporaryListenerCleanup() {
-    const testName = 'Temporary Listener Cleanup';
+  async testPopupCleanup() {
+    const testName = 'Popup Cleanup';
     try {
       const PopupManager = window.UnitConverter.PopupManager;
       const popupManager = new PopupManager();
@@ -467,29 +482,32 @@ class PopupInteractionTester {
       // Show popup
       await popupManager.showConversionPopup(conversions, mockRect);
       
-      // Verify listeners are attached
-      if (!popupManager.scrollListener) {
-        throw new Error('Scroll listener not attached');
+      // Verify popup exists
+      let popup = document.querySelector('.unit-converter-popup');
+      if (!popup) {
+        throw new Error('Popup was not created');
       }
-      if (!popupManager.resizeListener) {
-        throw new Error('Resize listener not attached');
+      
+      // Verify no listeners are attached (new behavior)
+      if (popupManager.scrollListener) {
+        throw new Error('Scroll listener should not exist');
+      }
+      if (popupManager.resizeListener) {
+        throw new Error('Resize listener should not exist');
       }
       
       // Manually hide popup
       popupManager.hidePopup();
       
-      // Verify listeners are cleaned up
-      if (popupManager.scrollListener !== null) {
-        throw new Error('Scroll listener not cleaned up after hidePopup');
-      }
-      if (popupManager.resizeListener !== null) {
-        throw new Error('Resize listener not cleaned up after hidePopup');
-      }
-      
       // Verify popup is removed
-      const popup = document.querySelector('.unit-converter-popup');
+      popup = document.querySelector('.unit-converter-popup');
       if (popup) {
         throw new Error('Popup element not removed');
+      }
+      
+      // Verify conversionPopup property is null
+      if (popupManager.conversionPopup !== null) {
+        throw new Error('conversionPopup property should be null after hiding');
       }
       
       this.pass(testName);
