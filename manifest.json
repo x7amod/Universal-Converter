@@ -8,7 +8,12 @@
     "storage",
     "contextMenus",
     "management"
-  ],  "action": {
+  ],
+  "host_permissions": [
+    "https://api.exchangerate.fun/latest*",
+    "https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/*"
+  ],
+    "action": {
     "default_title": "Universal Converter: Convert units and currencies"
   },
   "content_scripts": [
