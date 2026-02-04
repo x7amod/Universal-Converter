@@ -84,6 +84,7 @@ A powerful Browser Extension that automatically detects and converts units in se
 ## 🧪 Testing & Development
 
 **Quick Commands:**
+
 ```bash
 npm test          # Run all automated tests
 npm run validate  # Validate extension structure  
@@ -155,10 +156,10 @@ Universal Converter/
 - **Permissions**: 
   - `activeTab` - Access to current tab for text conversion
   - `storage` - Save user preferences
-  - `management` - Detect development mode (for developer tools in context menu)
+  - `contextMenus` - Add settings option to extension icon menu
   - `host permissions` - Fetch real-time currency rates from APIs
 - **No Data Collection** - Zero tracking or analytics
-- **Local Processing** - All conversions happen on your device
+- **Local Processing** - All conversions happen on your device (only uses API's to fetch Currency Rates)
 
 ## 🌐 APIs Used
 

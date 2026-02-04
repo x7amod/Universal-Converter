@@ -670,44 +670,35 @@ function createContextMenu() {
     }
     
     // Only add developer tools in development mode
-    // Check if we're in development by looking for unpacked extension
-    try {
-      chrome.management.getSelf((extensionInfo) => {
-        if (chrome.runtime.lastError) {
-          console.error('Error getting extension info:', chrome.runtime.lastError);
-          isCreatingContextMenu = false;
-          return;
-        }
-        
-        if (extensionInfo.installType === 'development') {
-          chrome.contextMenus.create({
-            id: 'clear-currency-cache',
-            title: 'Clear Currency Cache',
-            contexts: ['action']
-          }, () => {
-            if (chrome.runtime.lastError && !chrome.runtime.lastError.message.includes('duplicate')) {
-              console.error('Error creating cache menu:', chrome.runtime.lastError);
-            }
-          });
-          
-          chrome.contextMenus.create({
-            id: 'reload-extension',
-            title: 'Reload Extension',
-            contexts: ['action']
-          }, () => {
-            if (chrome.runtime.lastError && !chrome.runtime.lastError.message.includes('duplicate')) {
-              console.error('Error creating reload menu:', chrome.runtime.lastError);
-            }
-            // Reset flag after all menus are created
-            isCreatingContextMenu = false;
-          });
-        } else {
-          // Reset flag if not in development mode
-          isCreatingContextMenu = false;
+    // Check if we're in development by looking for update_url in manifest
+    // Published extensions have update_url, unpacked/dev extensions don't
+    const manifest = chrome.runtime.getManifest();
+    const isDevelopment = !manifest.update_url;
+    
+    if (isDevelopment) {
+      chrome.contextMenus.create({
+        id: 'clear-currency-cache',
+        title: 'Clear Currency Cache',
+        contexts: ['action']
+      }, () => {
+        if (chrome.runtime.lastError && !chrome.runtime.lastError.message.includes('duplicate')) {
+          console.error('Error creating cache menu:', chrome.runtime.lastError);
         }
       });
-    } catch (error) {
-      console.error('Error in chrome.management.getSelf:', error);
+      
+      chrome.contextMenus.create({
+        id: 'reload-extension',
+        title: 'Reload Extension',
+        contexts: ['action']
+      }, () => {
+        if (chrome.runtime.lastError && !chrome.runtime.lastError.message.includes('duplicate')) {
+          console.error('Error creating reload menu:', chrome.runtime.lastError);
+        }
+        // Reset flag after all menus are created
+        isCreatingContextMenu = false;
+      });
+    } else {
+      // Reset flag if not in development mode
       isCreatingContextMenu = false;
     }
   });

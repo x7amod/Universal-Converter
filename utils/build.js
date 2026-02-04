@@ -309,13 +309,12 @@ class ExtensionBuilder {
           }
         },
         
-        // Permissions
-        permissions: chromeManifest.permissions || [
+        // Permissions (excluding management for Firefox)
+        permissions: (chromeManifest.permissions || [
           "activeTab",
           "storage",
-          "contextMenus",
-          "management"
-        ],
+          "contextMenus"
+        ]).filter(perm => perm !== "management"),
         
         // Firefox uses 'scripts' array instead of 'service_worker'
         background: {

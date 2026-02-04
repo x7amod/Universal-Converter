@@ -258,7 +258,7 @@ class ExtensionValidator {
       this.check(Array.isArray(manifest.permissions), 'Firefox permissions array exists');
       this.check(manifest.permissions.includes('activeTab'), 'Firefox activeTab permission granted');
       this.check(manifest.permissions.includes('storage'), 'Firefox storage permission granted');
-      this.check(manifest.permissions.includes('management'), 'Firefox management permission granted');
+      this.check(!manifest.permissions.includes('management'), 'Firefox management permission not present (not needed)');
 
       // Check action (V3) - Firefox V3 uses 'action' not 'browser_action'
       this.check(manifest.action && manifest.action.default_title, 'Firefox action configured');
