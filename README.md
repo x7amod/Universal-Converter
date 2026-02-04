@@ -14,7 +14,7 @@ Instantly convert any unit, currency or timezone by simply selecting them on any
 
 A powerful Browser Extension that automatically detects and converts units in selected text, supporting length, weight, temperature, volume, area measurements, and real-time currency conversions with smart auto-sizing and dimension support.
 
-## ✨ Key Features
+## Key Features
 
 - **Single-Selection Conversion** - Select individual measurements for precise, instant conversions
 - **Real-Time Currency Conversion** - Live exchange rates for 150+ currencies with Arabic/Unicode symbol support
@@ -22,7 +22,7 @@ A powerful Browser Extension that automatically detects and converts units in se
 - **Dimension Support** - Handles formats like "8ft × 4ft × 30in", "6m × 4m × 2.5m"
 - **Auto-Save Settings** - With Metric/Imperial presets and manual overrides
 
-## 🚀 Installation
+## Installation
 **One Click Installation**
 - [Chrome Webstore](https://chromewebstore.google.com/detail/ediegfdjholeejhjdenagnjjjlhafgbl)
 - [Firefox Add-Ons](https://addons.mozilla.org/addon/universalconverter/)
@@ -35,7 +35,7 @@ A powerful Browser Extension that automatically detects and converts units in se
 
 ## Supported Units
 
-### 🚀 **Acceleration**
+### **Acceleration**
 - **Units**: meters per second squared (m/s²), feet per second squared (ft/s²), g-force (g)
 
 ### 📐 **Area**
@@ -81,7 +81,7 @@ A powerful Browser Extension that automatically detects and converts units in se
 - **Metric**: kilogram (kg), gram (g), milligram (mg), tonne (t)
 - **Imperial**: pound (lb), ounce (oz)
 
-## 🧪 Testing & Development
+## Testing & Development
 
 **Quick Commands:**
 
@@ -91,7 +91,7 @@ npm run validate  # Validate extension structure
 npm run build     # Build for distribution
 ```
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 Universal Converter/
@@ -151,7 +151,7 @@ Universal Converter/
         └── ci.yml             # Continuous integration (auto-testing)
 ```
 
-## 🔒 Privacy & Security
+## Privacy & Security
 
 - **Permissions**: 
   - `activeTab` - Access to current tab for text conversion
@@ -161,21 +161,21 @@ Universal Converter/
 - **No Data Collection** - Zero tracking or analytics
 - **Local Processing** - All conversions happen on your device (only uses API's to fetch Currency Rates)
 
-## 🌐 APIs Used
+## APIs Used
 
-**Currency Exchange Rates:**
+**Currency Exchange Rate:**
 1. **Primary API**: [Exchange Rate Fun API](https://api.exchangerate.fun/) - Real-time currency rates
    - Endpoint: `https://api.exchangerate.fun/latest`
-   - 60-minute cache with smart refresh
+   - 60-minute cache
    
-2. **Fallback API**: [Fawaz Ahmed's Currency API](https://github.com/fawazahmed0/exchange-api) - Backup currency data
+2. **Fallback API**: [Fawaz Ahmed's Currency API](https://github.com/fawazahmed0/exchange-api) - Backup currency API
    - Endpoint: `https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/`
    - Used only when primary API fails
 
-## 🙏 Credits & Acknowledgments
+## Credits & Acknowledgments
 
-This project integrates currency conversion functionality from [Currency-Converter](https://github.com/adampawelczyk/Currency-Converter) by Adam Pawełczyk. The currency detection, symbol mapping, and real-time exchange rate features are based on this open-source project.
+This project uses currency conversion functionality from [Currency-Converter](https://github.com/adampawelczyk/Currency-Converter) by Adam Pawełczyk. The currency detection, symbol mapping, and real-time exchange rate features are based on this open-source project.
 
-## 📄 License
+## License
 
 MIT License - Feel free to use, modify, and distribute.
