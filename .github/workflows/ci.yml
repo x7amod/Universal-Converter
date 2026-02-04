@@ -60,6 +60,8 @@ jobs:
         node-version: 24.x
         cache: 'npm'
         
+    - name: Install dependencies
+      run: npm ci
       
     - name: Test extension build
       run: npm run build
