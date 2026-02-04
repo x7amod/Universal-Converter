@@ -227,7 +227,8 @@ async function processCurrencyConversions(conversions) {
       try {
         // Check if extension context is still valid before making API call
         if (!isExtensionContextValid()) {
-          console.warn('Extension context invalidated, skipping currency conversion');
+          conversion.converted = 'Extension reloaded - refresh page';
+          conversion.needsAsyncProcessing = false;
           continue;
         }
         
