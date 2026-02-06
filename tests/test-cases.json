@@ -2027,5 +2027,156 @@
       "expected": 28.3168,
       "tolerance": 0.01
     }
+  ],
+  "Decimal Detection": [
+    {
+      "name": "Currency: extractNumber should handle 0.029 USD$ correctly",
+      "type": "currencyExtractNumber",
+      "input": {
+        "text": "0.029 USD$"
+      },
+      "expected": 0.029
+    },
+    {
+      "name": "Currency: extractNumber should handle $0.029 correctly",
+      "type": "currencyExtractNumber",
+      "input": {
+        "text": "$0.029"
+      },
+      "expected": 0.029
+    },
+    {
+      "name": "Currency: extractNumber should handle 0.123 EUR correctly",
+      "type": "currencyExtractNumber",
+      "input": {
+        "text": "0.123 EUR"
+      },
+      "expected": 0.123
+    },
+    {
+      "name": "Currency: extractNumber should handle 1.234 correctly (not 1234)",
+      "type": "currencyExtractNumber",
+      "input": {
+        "text": "1.234"
+      },
+      "expected": 1.234
+    },
+    {
+      "name": "Currency: extractNumber should handle 1234.567 as thousands separator",
+      "type": "currencyExtractNumber",
+      "input": {
+        "text": "1234.567"
+      },
+      "expected": 1234567
+    },
+    {
+      "name": "Currency: extractNumber should handle 999.999 as decimal (not thousands)",
+      "type": "currencyExtractNumber",
+      "input": {
+        "text": "999.999"
+      },
+      "expected": 999.999
+    },
+    {
+      "name": "Currency: extractNumber should handle 1.000.00 (multiple dots European format)",
+      "type": "currencyExtractNumber",
+      "input": {
+        "text": "1.000.00"
+      },
+      "expected": 1000.00
+    },
+    {
+      "name": "Currency: extractNumber should handle 12.345.67 (multiple dots)",
+      "type": "currencyExtractNumber",
+      "input": {
+        "text": "12.345.67"
+      },
+      "expected": 12345.67
+    },
+    {
+      "name": "Currency: extractNumber should handle 1.000.000.99 (many dots)",
+      "type": "currencyExtractNumber",
+      "input": {
+        "text": "1.000.000.99"
+      },
+      "expected": 1000000.99
+    },
+    {
+      "name": "Length: 0.029 m should be detected and parsed correctly",
+      "type": "decimalValueDetection",
+      "input": {
+        "text": "0.029 m",
+        "userSettings": {
+          "lengthUnit": "ft"
+        }
+      },
+      "expected": 0.029
+    },
+    {
+      "name": "Weight: 0.123 kg should be detected and parsed correctly",
+      "type": "decimalValueDetection",
+      "input": {
+        "text": "0.123 kg",
+        "userSettings": {
+          "weightUnit": "lb"
+        }
+      },
+      "expected": 0.123
+    },
+    {
+      "name": "Temperature: 0.5 C should be detected and parsed correctly",
+      "type": "decimalValueDetection",
+      "input": {
+        "text": "0.5 C",
+        "userSettings": {
+          "temperatureUnit": "f"
+        }
+      },
+      "expected": 0.5
+    },
+    {
+      "name": "Volume: 0.029 l should be detected and parsed correctly",
+      "type": "decimalValueDetection",
+      "input": {
+        "text": "0.029 l",
+        "userSettings": {
+          "volumeUnit": "gal"
+        }
+      },
+      "expected": 0.029
+    },
+    {
+      "name": "Area: 1.234 m2 should be detected and parsed correctly",
+      "type": "decimalValueDetection",
+      "input": {
+        "text": "1.234 m2",
+        "userSettings": {
+          "areaUnit": "ft2"
+        }
+      },
+      "expected": 1.234
+    },
+    {
+      "name": "Speed: 0.5 km/h should be detected and parsed correctly",
+      "type": "decimalValueDetection",
+      "input": {
+        "text": "0.5 km/h",
+        "userSettings": {
+          "speedUnit": "mph"
+        }
+      },
+      "expected": 0.5
+    },
+    {
+      "name": "Pressure: 0.123 bar should be detected and parsed correctly",
+      "type": "decimalValueDetection",
+      "input": {
+        "text": "0.123 bar",
+        "userSettings": {
+          "pressureUnit": "psi"
+        }
+      },
+      "expected": 0.123
+    }
   ]
 }

@@ -78,10 +78,19 @@ window.UnitConverter.CurrencyConverter = class {
             }
         } else if (cleanedString.includes('.')) {
             // If only a dot is present, determine if it's decimal or thousands separator
-            if (cleanedString.match(/\.\d{3}$/)) {
-                // Dot as thousands separator
+            const dotCount = (cleanedString.match(/\./g) || []).length;
+            
+            if (dotCount > 1) {
+                // Multiple dots: all but the last are thousands separators (e.g., "1.000.00" = 1000.00)
+                const lastDotIndex = cleanedString.lastIndexOf('.');
+                cleanedString = cleanedString.substring(0, lastDotIndex).replace(/\./g, '') + 
+                               cleanedString.substring(lastDotIndex);
+            } else if (cleanedString.match(/^\d{4,}\.\d{3}$/)) {
+                // Single dot as thousands separator (e.g., "1234.567" = 1234567)
+                // Only applies if 4+ digits before dot and exactly 3 after
                 cleanedString = cleanedString.replace(/\./g, '');
             }
+            // Otherwise, treat single dot as decimal point
         }
 
         let result = parseFloat(cleanedString);

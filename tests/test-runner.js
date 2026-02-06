@@ -315,6 +315,40 @@ class JSONUnitConverterTester {
         }
         break;
 
+      case 'currencyExtractNumber':
+        // Test currency number extraction (for decimal detection bug fix)
+        const currencyConv = global.window.UnitConverter.currencyConverter;
+        if (currencyConv) {
+          const extractedValue = currencyConv.extractNumber(input.text);
+          this.assert(
+            extractedValue === expected,
+            name,
+            expected,
+            extractedValue
+          );
+        } else {
+          this.assert(false, name, expected, 'currency converter not available');
+        }
+        break;
+
+      case 'decimalValueDetection':
+        // Test that units correctly detect and parse decimal values
+        const detectedConversions = this.detector.findConversions(input.text, input.userSettings);
+        // Extract the numeric value from the input text
+        const match = input.text.match(/(\d+(?:\.\d+)?)/);
+        if (match) {
+          const parsedValue = parseFloat(match[1]);
+          this.assert(
+            Math.abs(parsedValue - expected) < 0.0001,
+            name,
+            expected,
+            parsedValue
+          );
+        } else {
+          this.assert(false, name, expected, 'Failed to extract value from text');
+        }
+        break;
+
       // Handle legacy test formats that might not follow standard structure
       default:
         // Check if this is a legacy dimension format test
@@ -415,6 +449,7 @@ class JSONUnitConverterTester {
     this.runTestSuite('Autosizing Tests', this.testCases.Autosizing);
     this.runTestSuite('Conversion Tests', this.testCases.Conversions);
     this.runTestSuite('Other Tests', this.testCases.OtherTests);
+    this.runTestSuite('Decimal Detection Tests', this.testCases['Decimal Detection']);
   }
 }
 
