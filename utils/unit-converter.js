@@ -29,7 +29,15 @@ window.UnitConverter.UnitConverter = class {
    * @returns {string} - Normalized unit string
    */
   normalizeUnit(unit) {
-    const normalized = unit.toLowerCase().replace(/\s+/g, ' ').trim();
+    const trimmed = unit.replace(/\s+/g, ' ').trim();
+    
+    // Check for case-sensitive aliases first (e.g., "Nm" for Newton-meter vs "nm" for nanometer)
+    if (this.unitAliases[trimmed]) {
+      return this.unitAliases[trimmed];
+    }
+    
+    // Then check lowercase version
+    const normalized = trimmed.toLowerCase();
     return this.unitAliases[normalized] || normalized;
   }
   

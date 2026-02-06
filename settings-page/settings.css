@@ -106,6 +106,27 @@ hr {
   font-weight: 600;
   color: var(--text-primary);
   margin-bottom: 0.1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.help-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: help;
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+  position: relative;
+}
+
+.help-icon:hover {
+  opacity: 1;
+}
+
+.help-icon .material-symbols-outlined {
+  font-size: 1.125rem;
 }
 
 /* Preset Buttons */

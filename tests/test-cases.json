@@ -986,6 +986,162 @@
       "expected": {
         "hasMatch": true
       }
+    },
+    {
+      "name": "Pattern: \"1 mi2\" detected (square mile)",
+      "type": "patternDetection",
+      "input": {
+        "text": "1 mi2",
+        "userSettings": {
+          "areaUnit": "km2"
+        }
+      },
+      "expected": {
+        "minConversions": 1
+      }
+    },
+    {
+      "name": "Pattern: \"100 yd2\" detected (square yard)",
+      "type": "patternDetection",
+      "input": {
+        "text": "100 yd2",
+        "userSettings": {
+          "areaUnit": "m2"
+        }
+      },
+      "expected": {
+        "minConversions": 1
+      }
+    },
+    {
+      "name": "Pattern: \"500 cfh\" detected (cubic feet/hour)",
+      "type": "patternDetection",
+      "input": {
+        "text": "500 cfh",
+        "userSettings": {
+          "flowRateUnit": "lmin"
+        }
+      },
+      "expected": {
+        "minConversions": 1
+      }
+    },
+    {
+      "name": "Pattern: \"1000 um\" detected (micrometer)",
+      "type": "patternDetection",
+      "input": {
+        "text": "1000 um",
+        "userSettings": {
+          "lengthUnit": "mm"
+        }
+      },
+      "expected": {
+        "minConversions": 1
+      }
+    },
+    {
+      "name": "Pattern: \"500 nm\" detected (nanometer)",
+      "type": "patternDetection",
+      "input": {
+        "text": "500 nm",
+        "userSettings": {
+          "lengthUnit": "um"
+        }
+      },
+      "expected": {
+        "minConversions": 1
+      }
+    },
+    {
+      "name": "Pattern: \"500 nanometers\" detected",
+      "type": "patternDetection",
+      "input": {
+        "text": "500 nanometers",
+        "userSettings": {
+          "lengthUnit": "um"
+        }
+      },
+      "expected": {
+        "minConversions": 1
+      }
+    },
+    {
+      "name": "Pattern: \"2 tbsp\" detected (tablespoon)",
+      "type": "patternDetection",
+      "input": {
+        "text": "2 tbsp",
+        "userSettings": {
+          "volumeUnit": "ml"
+        }
+      },
+      "expected": {
+        "minConversions": 1
+      }
+    },
+    {
+      "name": "Pattern: \"1 tsp\" detected (teaspoon)",
+      "type": "patternDetection",
+      "input": {
+        "text": "1 tsp",
+        "userSettings": {
+          "volumeUnit": "ml"
+        }
+      },
+      "expected": {
+        "minConversions": 1
+      }
+    },
+    {
+      "name": "Pattern: \"1013.25 mbar\" detected (millibar)",
+      "type": "patternDetection",
+      "input": {
+        "text": "1013.25 mbar",
+        "userSettings": {
+          "pressureUnit": "bar"
+        }
+      },
+      "expected": {
+        "minConversions": 1
+      }
+    },
+    {
+      "name": "Pattern: \"15 Nm\" detected (Newton-meter)",
+      "type": "patternDetection",
+      "input": {
+        "text": "15 Nm",
+        "userSettings": {
+          "torqueUnit": "lbft"
+        }
+      },
+      "expected": {
+        "minConversions": 1
+      }
+    },
+    {
+      "name": "Pattern: \"2.5 square miles\" detected",
+      "type": "patternDetection",
+      "input": {
+        "text": "2.5 square miles",
+        "userSettings": {
+          "areaUnit": "km2"
+        }
+      },
+      "expected": {
+        "minConversions": 1
+      }
+    },
+    {
+      "name": "Pattern: \"50 square yards\" detected",
+      "type": "patternDetection",
+      "input": {
+        "text": "50 square yards",
+        "userSettings": {
+          "areaUnit": "m2"
+        }
+      },
+      "expected": {
+        "minConversions": 1
+      }
     }
   ],
   "Autosizing": [
@@ -1257,6 +1413,66 @@
         "unit": "kpa",
         "value": 1
       }
+    },
+    {
+      "name": "Auto-size: 1000000 nm → mm",
+      "type": "bestUnit",
+      "input": {
+        "value": 1000000,
+        "unitType": "length",
+        "sourceUnit": "nm"
+      },
+      "expected": "mm"
+    },
+    {
+      "name": "Auto-size: 500 nm → um",
+      "type": "bestUnit",
+      "input": {
+        "value": 500,
+        "unitType": "length",
+        "sourceUnit": "nm"
+      },
+      "expected": "um"
+    },
+    {
+      "name": "Auto-size: 5000 um → mm",
+      "type": "bestUnit",
+      "input": {
+        "value": 5000,
+        "unitType": "length",
+        "sourceUnit": "um"
+      },
+      "expected": "mm"
+    },
+    {
+      "name": "Auto-size: 1000 mbar → bar",
+      "type": "bestUnit",
+      "input": {
+        "value": 1000,
+        "unitType": "pressure",
+        "sourceUnit": "mbar"
+      },
+      "expected": "bar"
+    },
+    {
+      "name": "Auto-size: 6 tsp → tbsp",
+      "type": "bestUnit",
+      "input": {
+        "value": 6,
+        "unitType": "volume",
+        "sourceUnit": "tsp"
+      },
+      "expected": "tbsp"
+    },
+    {
+      "name": "Auto-size: 0.5 tbsp → tsp",
+      "type": "bestUnit",
+      "input": {
+        "value": 0.5,
+        "unitType": "volume",
+        "sourceUnit": "tbsp"
+      },
+      "expected": "tsp"
     }
   ],
   "Conversions": [
@@ -1677,7 +1893,7 @@
       "type": "conversion",
       "input": {
         "value": 1,
-        "from": "nm",
+        "from": "Nm",
         "to": "lbft"
       },
       "expected": 0.737562,
@@ -1689,7 +1905,7 @@
       "input": {
         "value": 100,
         "from": "lbft",
-        "to": "nm"
+        "to": "Nm"
       },
       "expected": 135.582,
       "tolerance": 0.01
@@ -1836,6 +2052,204 @@
       },
       "expected": "12:30 PM PST",
       "tolerance": 0
+    },
+    {
+      "name": "Area: 1 mi2 = 2.59 km2",
+      "type": "conversion",
+      "input": {
+        "value": 1,
+        "from": "mi2",
+        "to": "km2"
+      },
+      "expected": 2.59,
+      "tolerance": 0.01
+    },
+    {
+      "name": "Area: 1 yd2 = 0.836 m2",
+      "type": "conversion",
+      "input": {
+        "value": 1,
+        "from": "yd2",
+        "to": "m2"
+      },
+      "expected": 0.836,
+      "tolerance": 0.001
+    },
+    {
+      "name": "Flow Rate: 500 cfh = 235.97 L/min",
+      "type": "conversion",
+      "input": {
+        "value": 500,
+        "from": "cfh",
+        "to": "lmin"
+      },
+      "expected": 235.97,
+      "tolerance": 0.01
+    },
+    {
+      "name": "Length: 1000 um = 1 mm",
+      "type": "conversion",
+      "input": {
+        "value": 1000,
+        "from": "um",
+        "to": "mm"
+      },
+      "expected": 1,
+      "tolerance": 0.001
+    },
+    {
+      "name": "Length: 500 nm = 0.5 um",
+      "type": "conversion",
+      "input": {
+        "value": 500,
+        "from": "nm",
+        "to": "um"
+      },
+      "expected": 0.5,
+      "tolerance": 0.001
+    },
+    {
+      "name": "Length: 1000000 nm = 1 mm",
+      "type": "conversion",
+      "input": {
+        "value": 1000000,
+        "from": "nm",
+        "to": "mm"
+      },
+      "expected": 1,
+      "tolerance": 0.001
+    },
+    {
+      "name": "Volume: 2 tbsp = 29.57 mL",
+      "type": "conversion",
+      "input": {
+        "value": 2,
+        "from": "tbsp",
+        "to": "ml"
+      },
+      "expected": 29.57,
+      "tolerance": 0.01
+    },
+    {
+      "name": "Volume: 1 tsp = 4.93 mL",
+      "type": "conversion",
+      "input": {
+        "value": 1,
+        "from": "tsp",
+        "to": "ml"
+      },
+      "expected": 4.93,
+      "tolerance": 0.01
+    },
+    {
+      "name": "Volume: 3 tsp = 1 tbsp",
+      "type": "conversion",
+      "input": {
+        "value": 3,
+        "from": "tsp",
+        "to": "tbsp"
+      },
+      "expected": 1,
+      "tolerance": 0.001
+    },
+    {
+      "name": "Volume: 29.57 mL = 2 tbsp",
+      "type": "conversion",
+      "input": {
+        "value": 29.57,
+        "from": "ml",
+        "to": "tbsp"
+      },
+      "expected": 2,
+      "tolerance": 0.01
+    },
+    {
+      "name": "Volume: 4.93 mL = 1 tsp",
+      "type": "conversion",
+      "input": {
+        "value": 4.93,
+        "from": "ml",
+        "to": "tsp"
+      },
+      "expected": 1,
+      "tolerance": 0.01
+    },
+    {
+      "name": "Volume: 15 mL = 3.04 tsp",
+      "type": "conversion",
+      "input": {
+        "value": 15,
+        "from": "ml",
+        "to": "tsp"
+      },
+      "expected": 3.04,
+      "tolerance": 0.01
+    },
+    {
+      "name": "Volume: 50 mL = 3.38 tbsp",
+      "type": "conversion",
+      "input": {
+        "value": 50,
+        "from": "ml",
+        "to": "tbsp"
+      },
+      "expected": 3.38,
+      "tolerance": 0.01
+    },
+    {
+      "name": "Pressure: 1013.25 mbar = 1.013 bar",
+      "type": "conversion",
+      "input": {
+        "value": 1013.25,
+        "from": "mbar",
+        "to": "bar"
+      },
+      "expected": 1.013,
+      "tolerance": 0.001
+    },
+    {
+      "name": "Pressure: 1000 mbar = 100000 Pa",
+      "type": "conversion",
+      "input": {
+        "value": 1000,
+        "from": "mbar",
+        "to": "pa"
+      },
+      "expected": 100000,
+      "tolerance": 1
+    },
+    {
+      "name": "Torque: 15 Nm = 11.06 lb·ft",
+      "type": "conversion",
+      "input": {
+        "value": 15,
+        "from": "Nm",
+        "to": "lbft"
+      },
+      "expected": 11.06,
+      "tolerance": 0.01
+    },
+    {
+      "name": "Area: 2.5 mi2 = 6.475 km2",
+      "type": "conversion",
+      "input": {
+        "value": 2.5,
+        "from": "mi2",
+        "to": "km2"
+      },
+      "expected": 6.475,
+      "tolerance": 0.01
+    },
+    {
+      "name": "Area: 100 yd2 = 83.6 m2",
+      "type": "conversion",
+      "input": {
+        "value": 100,
+        "from": "yd2",
+        "to": "m2"
+      },
+      "expected": 83.6,
+      "tolerance": 0.1
     }
   ],
   "OtherTests": [

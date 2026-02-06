@@ -13,6 +13,8 @@ window.UnitConverterData.CONVERSION_RATIOS = {
     m: 1,
     cm: 100,
     mm: 1000,
+    um: 1000000,
+    nm: 1000000000,
     km: 0.001,
     in: 39.3701,
     ft: 3.28084,
@@ -39,7 +41,9 @@ window.UnitConverterData.CONVERSION_RATIOS = {
     qt: 1.05669,
     pt: 2.11338,
     cup: 4.22675,
-    fl_oz: 33.814
+    fl_oz: 33.814,
+    tbsp: 67.628,
+    tsp: 202.884
   },
   area: {
     m2: 1,
@@ -48,6 +52,8 @@ window.UnitConverterData.CONVERSION_RATIOS = {
     km2: 0.000001,
     ft2: 10.7639,
     in2: 1550,
+    yd2: 1.19599,
+    mi2: 3.861e-7,
     acre: 0.000247105
   },
   speed: {
@@ -84,10 +90,11 @@ window.UnitConverterData.CONVERSION_RATIOS = {
     'm3h': 0.06, // m³/h
     'm3min': 0.001, // m³/min (for auto-sizing)
     'cfm': 0.0353147, // cubic feet per minute
-    'cfs': 0.000588578 // cubic feet per second
+    'cfs': 0.000588578, // cubic feet per second
+    'cfh': 2.11888 // cubic feet per hour
   },
   torque: {
-    'nm': 1,
+    'Nm': 1,
     'lbft': 1.35582,
     'lbin': 0.112985,
     'kgm': 9.80665,
@@ -97,6 +104,7 @@ window.UnitConverterData.CONVERSION_RATIOS = {
   pressure: {
     'pa': 1,
     'bar': 100000,
+    'mbar': 100, // millibar
     'psi': 6894.76,
     'atm': 101325,
     'mmhg': 133.322,
@@ -135,6 +143,14 @@ window.UnitConverterData.UNIT_SCALING_RULES = {
     yd: [
       { threshold: 1, direction: 'down', targetUnit: 'ft', minValue: 1 },
       { threshold: 1, direction: 'down', targetUnit: 'in' }
+    ],
+    nm: [
+      { threshold: 1000000, direction: 'up', targetUnit: 'mm' },
+      { threshold: 100, direction: 'up', targetUnit: 'um' }
+    ],
+    um: [
+      { threshold: 1000, direction: 'up', targetUnit: 'mm' },
+      { threshold: 1, direction: 'down', targetUnit: 'nm' }
     ]
   },
   weight: {
@@ -155,6 +171,12 @@ window.UnitConverterData.UNIT_SCALING_RULES = {
       { threshold: 1, direction: 'down', targetUnit: 'pt', minValue: 1 },
       { threshold: 1, direction: 'down', targetUnit: 'cup', minValue: 1 },
       { threshold: 1, direction: 'down', targetUnit: 'floz' }
+    ],
+    tbsp: [
+      { threshold: 1, direction: 'down', targetUnit: 'tsp' }
+    ],
+    tsp: [
+      { threshold: 3, direction: 'up', targetUnit: 'tbsp' }
     ]
   },
   area: {
@@ -233,6 +255,9 @@ window.UnitConverterData.UNIT_SCALING_RULES = {
     ],
     bar: [
       { threshold: 0.01, direction: 'down', targetUnit: 'kpa', convertFn: (v, u) => v * u.bar / u.kpa }
+    ],
+    mbar: [
+      { threshold: 1000, direction: 'up', targetUnit: 'bar' }
     ]
   }
 };
@@ -242,19 +267,19 @@ window.UnitConverterData.UNIT_SCALING_RULES = {
 // ============================================================================
 
 window.UnitConverterData.UNIT_PATTERNS = {
-  length: /(?:^|\s|^[\s]*|[\s]*$)(\d+(?:\.\d+)?)\s*-?\s*(m|cm|mm|km|in|inch|inches|ft|foot|feet|yd|yard|yards|mi|mile|miles|meter|meters|centimeter|centimeters|millimeter|millimeters|kilometer|kilometers)(?=\s*$|\s*[.,!?;:]|\s*\n|\s*\r)/gi,
+  length: /(?:^|\s|^[\s]*|[\s]*$)(\d+(?:\.\d+)?)\s*-?\s*(m|cm|mm|um|nm|km|in|inch|inches|ft|foot|feet|yd|yard|yards|mi|mile|miles|meter|meters|centimeter|centimeters|millimeter|millimeters|micrometer|micrometers|micron|microns|nanometer|nanometers|kilometer|kilometers)(?=\s*$|\s*[.,!?;:]|\s*\n|\s*\r)/gi,
   weight: /(?:^|\s|^[\s]*|[\s]*$)(\d+(?:\.\d+)?)\s*(kg|g|mg|lb(?![\s\.\-⋅\/]*(?:ft|foot|feet|in|inch|inches))|lbs|oz(?![\s\.\-⋅\/]*(?:in|inch|inches))|ounce|ounces|pound(?![\s\-]*(?:foot|feet|inch|inches))|pounds(?![\s\-]*(?:foot|feet|inch|inches))|kilogram|kilograms|gram|grams|milligram|milligrams|tonne|tonnes|t)(?=\s*$|\s*[.,!?;:]|\s*\n|\s*\r)/gi,
   temperature: /(?:^|\s|^[\s]*|[\s]*$)(\d+(?:\.\d+)?)\s*°?\s*(c|f|k|celsius|fahrenheit|kelvin|degrees?\s*celsius|degrees?\s*fahrenheit)(?=\s*$|\s*[.,!?;:]|\s*\n|\s*\r)/gi,
-  volume: /(?:^|\s|^[\s]*|[\s]*$)(\d+(?:\.\d+)?)\s*(l|ml|gal|gallon|gallons|qt|quart|quarts|pt|pint|pints|cup|cups|fl\s*oz|fluid\s*ounce|fluid\s*ounces|liter|liters|milliliter|milliliters)(?=\s*$|\s*[.,!?;:]|\s*\n|\s*\r)/gi,
-  area: /(?:^|\s|^[\s]*|[\s]*$)(\d+(?:\.\d+)?)\s*-?\s*(m²|cm²|mm²|km²|ft²|in²|m2|cm2|mm2|km2|ft2|in2|acre|acres|square\s*meter|square\s*meters|square\s*centimeter|square\s*centimeters|square\s*millimeter|square\s*millimeters|square\s*kilometer|square\s*kilometers|square\s*foot|square\s*feet|square\s*inch|square\s*inches|meters?\s*squared|meter\s*squared|feet\s*squared|foot\s*squared|inches?\s*squared|inch\s*squared|centimeters?\s*squared|centimeter\s*squared|millimeters?\s*squared|millimeter\s*squared|kilometers?\s*squared|kilometer\s*squared)(?=\s*$|\s*[.,!?;:]|\s*\n|\s*\r)/gi,
+  volume: /(?:^|\s|^[\s]*|[\s]*$)(\d+(?:\.\d+)?)\s*(l|ml|gal|gallon|gallons|qt|quart|quarts|pt|pint|pints|cup|cups|fl\s*oz|fluid\s*ounce|fluid\s*ounces|tbsp|tablespoon|tablespoons|tsp|teaspoon|teaspoons|liter|liters|milliliter|milliliters)(?=\s*$|\s*[.,!?;:]|\s*\n|\s*\r)/gi,
+  area: /(?:^|\s|^[\s]*|[\s]*$)(\d+(?:\.\d+)?)\s*-?\s*(m²|cm²|mm²|km²|ft²|in²|yd²|mi²|m2|cm2|mm2|km2|ft2|in2|yd2|mi2|acre|acres|square\s*meter|square\s*meters|square\s*centimeter|square\s*centimeters|square\s*millimeter|square\s*millimeters|square\s*kilometer|square\s*kilometers|square\s*foot|square\s*feet|square\s*inch|square\s*inches|square\s*yard|square\s*yards|square\s*mile|square\s*miles|meters?\s*squared|meter\s*squared|feet\s*squared|foot\s*squared|inches?\s*squared|inch\s*squared|yards?\s*squared|yard\s*squared|miles?\s*squared|mile\s*squared|centimeters?\s*squared|centimeter\s*squared|millimeters?\s*squared|millimeter\s*squared|kilometers?\s*squared|kilometer\s*squared)(?=\s*$|\s*[.,!?;:]|\s*\n|\s*\r)/gi,
   // Two dimension patterns: with units on each number, and with unit at the end
-  dimensionsWithUnits: /(?:^|\s|^[\s]*|[\s]*$)(\d+(?:\.\d+)?)\s*(m|cm|mm|km|in|inch|inches|ft|foot|feet|yd|yard|yards|mi|mile|miles|meter|meters|centimeter|centimeters|millimeter|millimeters|kilometer|kilometers)\s*(?:x|×|by|\*)\s*(\d+(?:\.\d+)?)\s*\2\s*(?:x|×|by|\*)\s*(\d+(?:\.\d+)?)\s*\2(?=\s*$|\s*[.,!?;:]|\s*\n|\s*\r)/gi,
-  dimensions: /(?:^|\s|^[\s]*|[\s]*$)(\d+(?:\.\d+)?)\s*(?:x|×|by|\*)\s*(\d+(?:\.\d+)?)\s*(?:x|×|by|\*)\s*(\d+(?:\.\d+)?)\s*-?\s*(m|cm|mm|km|in|inch|inches|ft|foot|feet|yd|yard|yards|mi|mile|miles|meter|meters|centimeter|centimeters|millimeter|millimeters|kilometer|kilometers)(?=\s*$|\s*[.,!?;:]|\s*\n|\s*\r)/gi,
+  dimensionsWithUnits: /(?:^|\s|^[\s]*|[\s]*$)(\d+(?:\.\d+)?)\s*(m|cm|mm|um|nm|km|in|inch|inches|ft|foot|feet|yd|yard|yards|mi|mile|miles|meter|meters|centimeter|centimeters|millimeter|millimeters|micrometer|micrometers|micron|microns|nanometer|nanometers|kilometer|kilometers)\s*(?:x|×|by|\*)\s*(\d+(?:\.\d+)?)\s*\2\s*(?:x|×|by|\*)\s*(\d+(?:\.\d+)?)\s*\2(?=\s*$|\s*[.,!?;:]|\s*\n|\s*\r)/gi,
+  dimensions: /(?:^|\s|^[\s]*|[\s]*$)(\d+(?:\.\d+)?)\s*(?:x|×|by|\*)\s*(\d+(?:\.\d+)?)\s*(?:x|×|by|\*)\s*(\d+(?:\.\d+)?)\s*-?\s*(m|cm|mm|um|nm|km|in|inch|inches|ft|foot|feet|yd|yard|yards|mi|mile|miles|meter|meters|centimeter|centimeters|millimeter|millimeters|micrometer|micrometers|micron|microns|nanometer|nanometers|kilometer|kilometers)(?=\s*$|\s*[.,!?;:]|\s*\n|\s*\r)/gi,
   speed: /(?:^|\s|^[\s]*|[\s]*$)(\d+(?:\.\d+)?)\s*-?\s*(m\/s|ms|cm\/s|cms|km\/s|kms|km\/h|kmh|km\/hr|mph|mi\/h|mi\/s|mis|ft\/s|fps|knots?|kn|nautical\s*miles?\s*per\s*hour|mach|meters?\s*per\s*second|centimeters?\s*per\s*second|kilometers?\s*per\s*second|kilometers?\s*per\s*hour|miles?\s*per\s*hour|miles?\s*per\s*second|feet\s*per\s*second)(?=\s*$|\s*[.,!?;:]|\s*\n|\s*\r)/gi,
   acceleration: /(?:^|\s|^[\s]*|[\s]*$)(\d+(?:\.\d+)?)\s*-?\s*(m\/s²|m\/s2|ms2|cm\/s²|cm\/s2|cms2|km\/s²|km\/s2|kms2|ft\/s²|ft\/s2|fts2|in\/s²|in\/s2|ins2|g-force|gee|meters?\s*per\s*second\s*squared|centimeters?\s*per\s*second\s*squared|kilometers?\s*per\s*second\s*squared|feet\s*per\s*second\s*squared|inches?\s*per\s*second\s*squared)(?=\s*$|\s*[.,!?;:]|\s*\n|\s*\r)/gi,
-  flowRate: /(?:^|\s|^[\s]*|[\s]*$)(\d+(?:\.\d+)?)\s*-?\s*(L\/min|l\/min|lpm|lmin|mL\/min|ml\/min|mlmin|mL\/s|ml\/s|mls|L\/s|l\/s|ls|L\/h|l\/h|lh|gal\/min|gpm|gal\/s|gals|gal\/h|galh|m³\/s|m3\/s|m3s|m³\/min|m3\/min|m3min|m³\/h|m3\/h|m3h|cubic\s*meters?\s*per\s*second|cubic\s*meters?\s*per\s*minute|cubic\s*meters?\s*per\s*hour|cfm|cfs|cubic\s*feet\s*per\s*minute|cubic\s*feet\s*per\s*second|liters?\s*per\s*minute|milliliters?\s*per\s*minute|milliliters?\s*per\s*second|liters?\s*per\s*second|liters?\s*per\s*hour|gallons?\s*per\s*minute|gallons?\s*per\s*second|gallons?\s*per\s*hour)(?=\s*$|\s*[.,!?;:]|\s*\n|\s*\r)/gi,
-  torque: /(?:^|\s|^[\s]*|[\s]*$)(\d+(?:\.\d+)?)\s*-?\s*(N[\s\.\-⋅]?m|Nm|lb[\s\.\-⋅]?ft|lbft|ft[\s\.\-⋅]?lbs?|lb[\s\.\-⋅]?in|lbin|in[\s\.\-⋅]?lbs?|kg[\s\.\-⋅]?m|kgm|kgf[\s\.\-⋅]?m|oz[\s\.\-⋅]?in|ozin|newton[\s\-]?meters?|pound[\s\-]?feet|foot[\s\-]?pounds?|pound[\s\-]?inches?|inch[\s\-]?pounds?|kilogram[\s\-]?force[\s\-]?meters?)(?=\s*$|\s*[.,!?;:]|\s*\n|\s*\r)/gi,
-  pressure: /(?:^|\s|^[\s]*|[\s]*$)(\d+(?:\.\d+)?)\s*-?\s*(Pa|bar|psi|atm|mmHg|inHg|torr|kPa|MPa|psf|pascal|atmosphere|atmospheres|pounds?\s*per\s*square\s*inch|pounds?\s*per\s*square\s*foot|millimeters?\s*of\s*mercury|inches?\s*of\s*mercury)(?=\s*$|\s*[.,!?;:]|\s*\n|\s*\r)/gi,
+  flowRate: /(?:^|\s|^[\s]*|[\s]*$)(\d+(?:\.\d+)?)\s*-?\s*(L\/min|l\/min|lpm|lmin|mL\/min|ml\/min|mlmin|mL\/s|ml\/s|mls|L\/s|l\/s|ls|L\/h|l\/h|lh|gal\/min|gpm|gal\/s|gals|gal\/h|galh|m³\/s|m3\/s|m3s|m³\/min|m3\/min|m3min|m³\/h|m3\/h|m3h|cubic\s*meters?\s*per\s*second|cubic\s*meters?\s*per\s*minute|cubic\s*meters?\s*per\s*hour|cfm|cfs|cfh|cubic\s*feet\s*per\s*minute|cubic\s*feet\s*per\s*second|cubic\s*feet\s*per\s*hour|liters?\s*per\s*minute|milliliters?\s*per\s*minute|milliliters?\s*per\s*second|liters?\s*per\s*second|liters?\s*per\s*hour|gallons?\s*per\s*minute|gallons?\s*per\s*second|gallons?\s*per\s*hour)(?=\s*$|\s*[.,!?;:]|\s*\n|\s*\r)/gi,
+  torque: /(?:^|\s|^[\s]*|[\s]*$)(\d+(?:\.\d+)?)\s*-?\s*(N[\s\.\-⋅]?m|N\.m|N·m|N⋅m|lb[\s\.\-⋅]?ft|lbft|ft[\s\.\-⋅]?lbs?|lb[\s\.\-⋅]?in|lbin|in[\s\.\-⋅]?lbs?|kg[\s\.\-⋅]?m|kgm|kgf[\s\.\-⋅]?m|oz[\s\.\-⋅]?in|ozin|newton[\s\-]?meters?|pound[\s\-]?feet|foot[\s\-]?pounds?|pound[\s\-]?inches?|inch[\s\-]?pounds?|kilogram[\s\-]?force[\s\-]?meters?)(?=\s*$|\s*[.,!?;:]|\s*\n|\s*\r)/gi,
+  pressure: /(?:^|\s|^[\s]*|[\s]*$)(\d+(?:\.\d+)?)\s*-?\s*(Pa|bar|mbar|psi|atm|mmHg|inHg|torr|kPa|MPa|psf|pascal|millibar|atmosphere|atmospheres|pounds?\s*per\s*square\s*inch|pounds?\s*per\s*square\s*foot|millimeters?\s*of\s*mercury|inches?\s*of\s*mercury)(?=\s*$|\s*[.,!?;:]|\s*\n|\s*\r)/gi,
   timezone: /\b(\d{1,2})(?::(\d{2}))?\s*(AM|PM|am|pm)?\s*((EST|EDT|ET|PST|PDT|PT|CST|CDT|CT|MST|MDT|MT|AST|ADT|NST|NDT|HST|AKST|AKDT|EASTERN|PACIFIC|CENTRAL|MOUNTAIN|GMT|UTC|CET|CEST|EET|EEST|WET|WEST|BST|MSK|FET|IST|PKT|ICT|SGT|HKT|JST|KST|ACST|ACDT|AEST|AEDT|AWST|AWDT|NZST|NZDT|IRST|IDT|CAT|EAT|WAT|SAST|ART|BRT|BRST|CLT|CLST|PET|COT)([+-]\d{1,2})?|([+-]\d{1,2}):?(\d{2})?)/gi,
   // Currency pattern will be generated dynamically from currency mappings
   currency: null 
@@ -273,6 +298,8 @@ window.UnitConverterData.UNIT_ALIASES = {
   'meter': 'm', 'meters': 'm',
   'centimeter': 'cm', 'centimeters': 'cm',
   'millimeter': 'mm', 'millimeters': 'mm',
+  'micrometer': 'um', 'micrometers': 'um', 'micron': 'um', 'microns': 'um',
+  'nanometer': 'nm', 'nanometers': 'nm',
   'kilometer': 'km', 'kilometers': 'km',
     // Weight aliases
   'kilogram': 'kg', 'kilograms': 'kg',
@@ -294,7 +321,9 @@ window.UnitConverterData.UNIT_ALIASES = {
   'quart': 'qt', 'quarts': 'qt',
   'pint': 'pt', 'pints': 'pt',
   'cup': 'cup', 'cups': 'cup',
-  'fl oz': 'fl_oz', 'fluid ounce': 'fl_oz', 'fluid ounces': 'fl_oz',  
+  'fl oz': 'fl_oz', 'fluid ounce': 'fl_oz', 'fluid ounces': 'fl_oz',
+  'tablespoon': 'tbsp', 'tablespoons': 'tbsp',
+  'teaspoon': 'tsp', 'teaspoons': 'tsp',  
   // Area aliases
   'square meter': 'm2', 'square meters': 'm2',
   'square centimeter': 'cm2', 'square centimeters': 'cm2',
@@ -302,16 +331,20 @@ window.UnitConverterData.UNIT_ALIASES = {
   'square kilometer': 'km2', 'square kilometers': 'km2',
   'square foot': 'ft2', 'square feet': 'ft2',
   'square inch': 'in2', 'square inches': 'in2',
+  'square yard': 'yd2', 'square yards': 'yd2',
+  'square mile': 'mi2', 'square miles': 'mi2',
   'meters squared': 'm2', 'meter squared': 'm2',
   'feet squared': 'ft2', 'foot squared': 'ft2',
   'inches squared': 'in2', 'inch squared': 'in2',
+  'yards squared': 'yd2', 'yard squared': 'yd2',
+  'miles squared': 'mi2', 'mile squared': 'mi2',
   'centimeters squared': 'cm2', 'centimeter squared': 'cm2',
   'millimeters squared': 'mm2', 'millimeter squared': 'mm2',
   'kilometers squared': 'km2', 'kilometer squared': 'km2',
   'acre': 'acre', 'acres': 'acre',
   // Unicode area symbols
   'm²': 'm2', 'cm²': 'cm2', 'mm²': 'mm2', 'km²': 'km2',
-  'ft²': 'ft2', 'in²': 'in2',
+  'ft²': 'ft2', 'in²': 'in2', 'yd²': 'yd2', 'mi²': 'mi2',
   
   // Speed aliases
   'm/s': 'ms', 'ms': 'ms', 'meters per second': 'ms', 'meter per second': 'ms',
@@ -345,9 +378,10 @@ window.UnitConverterData.UNIT_ALIASES = {
   'm³/h': 'm3h', 'm3/h': 'm3h', 'm3h': 'm3h', 'cubic meters per hour': 'm3h', 'cubic meter per hour': 'm3h',
   'cfm': 'cfm', 'cubic feet per minute': 'cfm', 'cubic foot per minute': 'cfm',
   'cfs': 'cfs', 'cubic feet per second': 'cfs', 'cubic foot per second': 'cfs',
+  'cfh': 'cfh', 'cubic feet per hour': 'cfh', 'cubic foot per hour': 'cfh',
   
   // Torque aliases
-  'n.m': 'nm', 'n·m': 'nm', 'n⋅m': 'nm', 'n-m': 'nm', 'newton meter': 'nm', 'newton meters': 'nm', 'newton-meters': 'nm', 'newton-meter': 'nm',
+  'n.m': 'Nm', 'n·m': 'Nm', 'n⋅m': 'Nm', 'n-m': 'Nm', 'Nm': 'Nm', 'newton meter': 'Nm', 'newton meters': 'Nm', 'newton-meters': 'Nm', 'newton-meter': 'Nm',
   'lb.ft': 'lbft', 'lb·ft': 'lbft', 'lb⋅ft': 'lbft', 'lb-ft': 'lbft', 'pound foot': 'lbft', 'pound feet': 'lbft', 'pound-feet': 'lbft', 'pound-foot': 'lbft',
   'foot pound': 'lbft', 'foot pounds': 'lbft', 'foot-pounds': 'lbft', 'foot-pound': 'lbft', 'ft-lbs': 'lbft', 'ft⋅lbs': 'lbft',
   'lb.in': 'lbin', 'lb·in': 'lbin', 'lb⋅in': 'lbin', 'lb-in': 'lbin', 'pound inch': 'lbin', 'pound inches': 'lbin', 'pound-inches': 'lbin', 'pound-inch': 'lbin',
@@ -358,6 +392,7 @@ window.UnitConverterData.UNIT_ALIASES = {
   
   // Pressure aliases
   'pascal': 'pa', 'pascals': 'pa',
+  'millibar': 'mbar',
   'atmosphere': 'atm', 'atmospheres': 'atm',
   'pounds per square inch': 'psi', 'pound per square inch': 'psi',
   'pounds per square foot': 'psf', 'pound per square foot': 'psf',
@@ -382,7 +417,7 @@ window.UnitConverterData.DEFAULT_UNITS = {
   speed: 'ms',
   acceleration: 'ms2',
   flowRate: 'lmin',
-  torque: 'nm',
+  torque: 'Nm',
   pressure: 'pa',
   timezone: 'auto', // Will be auto-detected
   currency: 'usd'
@@ -398,7 +433,9 @@ window.UnitConverterData.AREA_TO_LINEAR_MAP = {
   'mm2': 'mm', 
   'km2': 'km',
   'ft2': 'ft', 
-  'in2': 'in'
+  'in2': 'in',
+  'yd2': 'yd',
+  'mi2': 'mi'
 };
 
 // ============================================================================

@@ -105,7 +105,12 @@
 
     <!-- Unit Preferences Section -->
     <section class="card">
-      <h2 class="section-title">Unit Preferences</h2>
+      <h2 class="section-title">
+        Unit Preferences
+        <span class="help-icon" title="Select your preferred units for displaying conversion results">
+          <span class="material-symbols-outlined">help</span>
+        </span>
+      </h2>
       <hr>
       
       <div class="unit-preferences-grid">
@@ -117,9 +122,9 @@
           <span>Acceleration</span>
         </div>
         <select id="accelerationUnit">
-          <option value="ms2">m/s²</option>
-          <option value="fts2">ft/s²</option>
-          <option value="gforce">g-force</option>
+          <option value="ms2">Metric (m/s², km/h²...)</option>
+          <option value="fts2">Imperial (ft/s², mph²...)</option>
+          <option value="gforce">g (G-Force)</option>
         </select>
       </div>
 
@@ -131,12 +136,8 @@
           <span>Area</span>
         </div>
         <select id="areaUnit">
-          <option value="m2">Square Meters (m²)</option>
-          <option value="cm2">Square Centimeters (cm²)</option>
-          <option value="km2">Square Kilometers (km²)</option>
-          <option value="ft2">Square Feet (ft²)</option>
-          <option value="in2">Square Inches (in²)</option>
-          <option value="acre">Acres</option>
+          <option value="m2">Metric (m², cm², km²)</option>
+          <option value="ft2">Imperial (ft², in², acre)</option>
         </select>
       </div>
 
@@ -148,11 +149,8 @@
           <span>Flow Rate</span>
         </div>
         <select id="flowRateUnit">
-          <option value="lmin">Liters/Minute (L/min)</option>
-          <option value="galmin">Gallons/Minute (gal/min)</option>
-          <option value="m3s">m³/s</option>
-          <option value="m3h">m³/h</option>
-          <option value="cfm">CFM</option>
+          <option value="lmin">Metric (L/min, m³/min...)</option>
+          <option value="galmin">Imperial (CFM, CFS, gal/min...)</option>
         </select>
       </div>
 
@@ -164,14 +162,8 @@
           <span>Length</span>
         </div>
         <select id="lengthUnit">
-          <option value="m">Meters (m)</option>
-          <option value="cm">Centimeters (cm)</option>
-          <option value="mm">Millimeters (mm)</option>
-          <option value="km">Kilometers (km)</option>
-          <option value="in">Inches (in)</option>
-          <option value="ft">Feet (ft)</option>
-          <option value="yd">Yards (yd)</option>
-          <option value="mi">Miles (mi)</option>
+          <option value="m">Metric (m, km...)</option>
+          <option value="ft">Imperial (in, ft...)</option>
         </select>
       </div>
 
@@ -183,13 +175,13 @@
           <span>Pressure</span>
         </div>
         <select id="pressureUnit">
-          <option value="pa">Pascal (Pa)</option>
-          <option value="kpa">Kilopascals (kPa)</option>
-          <option value="bar">Bar</option>
-          <option value="psi">PSI</option>
-          <option value="atm">Atmospheres (atm)</option>
-          <option value="mmhg">mmHg</option>
-          <option value="torr">Torr</option>
+          <option value="pa">Pa (Pascals)</option>
+          <option value="kpa">kPa (Kilopascals)</option>
+          <option value="bar">bar (Bar)</option>
+          <option value="psi">PSI (Pounds per Sq. Inch)</option>
+          <option value="atm">atm (Atmospheres)</option>
+          <option value="mmhg">mmHg (mm of Mercury)</option>
+          <option value="torr">torr</option>
         </select>
       </div>
 
@@ -201,11 +193,9 @@
           <span>Speed</span>
         </div>
         <select id="speedUnit">
-          <option value="kmh">Kilometers/Hour (km/h)</option>
-          <option value="ms">Meters/Second (m/s)</option>
-          <option value="mph">Miles/Hour (mph)</option>
-          <option value="fps">Feet/Second (ft/s)</option>
-          <option value="kn">Knots (kn)</option>
+          <option value="kmh">Metric (km/h, m/s)</option>
+          <option value="mph">Imperial (mph, ft/s)</option>
+          <option value="kn">Nautical (knots)</option>
           <option value="mach">Mach</option>
         </select>
       </div>
@@ -218,8 +208,8 @@
           <span>Temperature</span>
         </div>
         <select id="temperatureUnit">
-          <option value="c">Celsius (°C)</option>
-          <option value="f">Fahrenheit (°F)</option>
+          <option value="c">Metric (°C)</option>
+          <option value="f">Imperial (°F)</option>
           <option value="k">Kelvin (K)</option>
         </select>
       </div>
@@ -232,11 +222,8 @@
           <span>Torque</span>
         </div>
         <select id="torqueUnit">
-          <option value="nm">Newton-Meters (N·m)</option>
-          <option value="lbft">Pound-Feet (lb·ft)</option>
-          <option value="lbin">Pound-Inches (lb·in)</option>
-          <option value="kgm">Kilogram-Meters (kg·m)</option>
-          <option value="ozin">Ounce-Inches (oz·in)</option>
+          <option value="nm">Metric (N·m, kg·m...)</option>
+          <option value="lbft">Imperial (lb·ft, lb·in..)</option>
         </select>
       </div>
 
@@ -248,13 +235,8 @@
           <span>Volume</span>
         </div>
         <select id="volumeUnit">
-          <option value="l">Liters (L)</option>
-          <option value="ml">Milliliters (ml)</option>
-          <option value="gal">Gallons (gal)</option>
-          <option value="qt">Quarts (qt)</option>
-          <option value="pt">Pints (pt)</option>
-          <option value="cup">Cups</option>
-          <option value="fl_oz">Fluid Ounces (fl oz)</option>
+          <option value="l">Metric (L, ml...)</option>
+          <option value="gal">Imperial (gal, qt, pt, cup...)</option>
         </select>
       </div>
 
@@ -266,11 +248,8 @@
           <span>Weight</span>
         </div>
         <select id="weightUnit">
-          <option value="kg">Kilograms (kg)</option>
-          <option value="g">Grams (g)</option>
-          <option value="lb">Pounds (lb)</option>
-          <option value="oz">Ounces (oz)</option>
-          <option value="t">Tonnes (t)</option>
+          <option value="kg">Metric (gram, kg, ton...)</option>
+          <option value="lb">Imperial (lb, oz)</option>
         </select>
       </div>
       </div>

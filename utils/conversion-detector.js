@@ -230,8 +230,10 @@ window.UnitConverter.ConversionDetector = class {
    * @returns {Object|null} - Conversion result or null
    */
   detectUnit(text, userSettings) {
-    // Try unit types in priority order (torque before weight to avoid lb conflicts)
-    const priorityOrder = ['torque', 'timezone', 'time', 'area', 'speed', 'acceleration', 'flowRate', 'pressure', 'temperature', 'volume', 'weight', 'length'];
+    // Try unit types in priority order
+    // Length before torque to prioritize nm (nanometer) over nm (Newton-meter, which should be N·m)
+    // Torque before weight to avoid lb conflicts
+    const priorityOrder = ['length', 'torque', 'timezone', 'time', 'area', 'speed', 'acceleration', 'flowRate', 'pressure', 'temperature', 'volume', 'weight'];
     
     for (const unitType of priorityOrder) {
       const pattern = this.getCompiledPattern(unitType);

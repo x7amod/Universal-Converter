@@ -35,10 +35,7 @@ document.addEventListener('DOMContentLoaded', async function() {
       accelerationUnit: 'ms2',
       flowRateUnit: 'lmin',
       torqueUnit: 'nm',
-      pressureUnit: 'kpa',
-      timezoneUnit: 'auto',
-      is12hr: true, // true = 12hr, false = 24hr
-      currencyUnit: 'EUR'
+      pressureUnit: 'bar'
     },
     imperial: {
       lengthUnit: 'ft',
@@ -50,10 +47,7 @@ document.addEventListener('DOMContentLoaded', async function() {
       accelerationUnit: 'fts2',
       flowRateUnit: 'galmin',
       torqueUnit: 'lbft',
-      pressureUnit: 'psi',
-      timezoneUnit: 'auto',
-      is12hr: true, // true = 12hr, false = 24hr
-      currencyUnit: 'USD'
+      pressureUnit: 'psi'
     }
   };
   
@@ -168,21 +162,84 @@ document.addEventListener('DOMContentLoaded', async function() {
     saveSettings();
   });
   
+  // Migrate old unit values to new simplified options
+  function migrateUnitSettings(settings) {
+    const unitMappings = {
+      // Length mappings
+      lengthUnit: { 
+        'm': 'm', 'cm': 'm', 'mm': 'm', 'km': 'm',  // All metric -> m
+        'in': 'ft', 'ft': 'ft', 'yd': 'ft', 'mi': 'ft'  // All imperial -> ft
+      },
+      // Area mappings
+      areaUnit: {
+        'm2': 'm2', 'cm2': 'm2', 'km2': 'm2',  // All metric -> m2
+        'ft2': 'ft2', 'in2': 'ft2', 'acre': 'ft2'  // All imperial -> ft2
+      },
+      // Speed mappings
+      speedUnit: {
+        'kmh': 'kmh', 'ms': 'kmh',  // Metric -> kmh
+        'mph': 'mph', 'fps': 'mph',  // Imperial -> mph
+        'kn': 'kn',  // Nautical stays
+        'mach': 'mach'  // Mach stays
+      },
+      // Acceleration mappings
+      accelerationUnit: {
+        'ms2': 'ms2', 'cms2': 'ms2', 'kms2': 'ms2',  // Metric -> ms2
+        'fts2': 'fts2', 'ins2': 'fts2',  // Imperial -> fts2
+        'gforce': 'gforce'  // g-force stays
+      },
+      // Flow Rate mappings
+      flowRateUnit: {
+        'lmin': 'lmin', 'lpm': 'lmin', 'mlmin': 'lmin', 'mls': 'lmin', 
+        'ls': 'lmin', 'lh': 'lmin', 'm3s': 'lmin', 'm3h': 'lmin', 'm3min': 'lmin',  // All metric -> lmin
+        'galmin': 'galmin', 'gpm': 'galmin', 'gals': 'galmin', 'galh': 'galmin', 
+        'cfm': 'galmin', 'cfs': 'galmin'  // All imperial -> galmin
+      },
+      // Torque mappings
+      torqueUnit: {
+        'nm': 'nm', 'kgm': 'nm', 'kgfm': 'nm',  // Metric -> nm
+        'lbft': 'lbft', 'lbin': 'lbft', 'ozin': 'lbft'  // Imperial -> lbft
+      },
+      // Volume mappings
+      volumeUnit: {
+        'l': 'l', 'ml': 'l',  // Metric -> l
+        'gal': 'gal', 'qt': 'gal', 'pt': 'gal', 'cup': 'gal', 'fl_oz': 'gal'  // Imperial -> gal
+      },
+      // Weight mappings
+      weightUnit: {
+        'kg': 'kg', 'g': 'kg', 't': 'kg', 'mg': 'kg',  // Metric -> kg
+        'lb': 'lb', 'oz': 'lb'  // Imperial -> lb
+      }
+    };
+    
+    // Apply migrations
+    for (const [unitType, mappings] of Object.entries(unitMappings)) {
+      if (settings[unitType] && mappings[settings[unitType]]) {
+        settings[unitType] = mappings[settings[unitType]];
+      }
+    }
+    
+    return settings;
+  }
+
   async function loadSettings() {
     try {
       const result = await chrome.storage.sync.get(['unitSettings']);
-      const settings = result.unitSettings || presets.metric;
+      let settings = result.unitSettings || presets.metric;
+      
+      // Migrate old settings to new simplified options
+      settings = migrateUnitSettings(settings);
       
       elements.lengthUnit.value = settings.lengthUnit || 'm';
       elements.weightUnit.value = settings.weightUnit || 'kg';
       elements.temperatureUnit.value = settings.temperatureUnit || 'c';
       elements.volumeUnit.value = settings.volumeUnit || 'l';
       elements.areaUnit.value = settings.areaUnit || 'm2';
-      elements.speedUnit.value = settings.speedUnit || 'ms';
+      elements.speedUnit.value = settings.speedUnit || 'kmh';
       elements.accelerationUnit.value = settings.accelerationUnit || 'ms2';
       elements.flowRateUnit.value = settings.flowRateUnit || 'lmin';
       elements.torqueUnit.value = settings.torqueUnit || 'nm';
-      elements.pressureUnit.value = settings.pressureUnit || 'pa';
+      elements.pressureUnit.value = settings.pressureUnit || 'bar';
       elements.timezoneUnit.value = settings.timezoneUnit || 'auto';
       
       // Set time format buttons based on settings
@@ -207,9 +264,6 @@ document.addEventListener('DOMContentLoaded', async function() {
   function applyPreset(presetName) {
     if (presetName !== 'custom' && presets[presetName]) {
       const preset = presets[presetName];
-      // Store current currency and timezone selection before applying preset
-      const currentCurrency = elements.currencyUnit.value;
-      const currentTimezone = elements.timezoneUnit.value;
       
       elements.lengthUnit.value = preset.lengthUnit;
       elements.weightUnit.value = preset.weightUnit;
@@ -221,10 +275,6 @@ document.addEventListener('DOMContentLoaded', async function() {
       elements.flowRateUnit.value = preset.flowRateUnit;
       elements.torqueUnit.value = preset.torqueUnit;
       elements.pressureUnit.value = preset.pressureUnit;
-      
-      // Restore currency and timezone selection - don't change them with presets
-      elements.currencyUnit.value = currentCurrency;
-      elements.timezoneUnit.value = currentTimezone;
     }
     updateActivePreset(presetName);
   }
