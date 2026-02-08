@@ -33,7 +33,7 @@
 }
 
 .unit-converter-results {
-  padding: 10px;
+  padding: 8px;
   overflow: visible;
 }
 
@@ -66,8 +66,8 @@
   color: #ccc;
   font-size: 13px;
   background-color: #333;
-  padding: 4px 8px;
-  border-radius: 4px;
+  padding: 6px 10px;
+  border-radius: 6px;
   min-width: fit-content;
 }
 
