@@ -376,6 +376,32 @@
       }
     },
     {
+      "name": "Pattern Detection: \"95+10\" should not match timezone (math expression, not time)",
+      "type": "patternDetection",
+      "input": {
+        "text": "95+10",
+        "userSettings": {
+          "timezoneUnit": "PST"
+        }
+      },
+      "expected": {
+        "minConversions": 0
+      }
+    },
+    {
+      "name": "Pattern Detection: \"45-2\" should not match timezone (math expression, not time)",
+      "type": "patternDetection",
+      "input": {
+        "text": "45-2",
+        "userSettings": {
+          "timezoneUnit": "PST"
+        }
+      },
+      "expected": {
+        "minConversions": 0
+      }
+    },
+    {
       "name": "Timezone Detection: \"3:30 PM EST\" detected",
       "type": "patternDetection",
       "input": {
