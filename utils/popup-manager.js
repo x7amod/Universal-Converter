@@ -221,9 +221,11 @@ window.UnitConverter.PopupManager = class {
    * Hide and remove the popup
    */
   hidePopup() {
-    // Only cancel operations if there's actually a popup being removed
+    // Always cancel any in-flight operation, even if popup hasn't mounted yet
+    // (there's an async gap in showConversionPopup between setting currentOperationId
+    // and attaching the DOM element, during which hidePopup must still cancel)
+    this.cancelCurrentOperation();
     if (this.conversionPopup) {
-      this.cancelCurrentOperation();
       this.conversionPopup.remove();
       this.conversionPopup = null;
     }

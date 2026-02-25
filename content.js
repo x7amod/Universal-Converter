@@ -101,11 +101,6 @@ function handleClick(event) {
     return;
   }
   
-  // Only cancel operations if there's a popup to dismiss
-  if (popupManager.conversionPopup) {
-    popupManager.cancelCurrentOperation();
-  }
-  
   // Hide popup when clicking outside
   popupManager.hidePopup();
   currentlyDisplayedText = null;
