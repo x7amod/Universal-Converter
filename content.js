@@ -111,6 +111,9 @@ function handleClick(event) {
  * @param {Event} event - Mouse up event
  */
 async function handleTextSelection(event) {
+  // Generate unique operation ID for this conversion
+  const operationId = popupManager.generateOperationId();
+  
   const selection = window.getSelection();
   const selectedText = selection.toString().trim();
   
@@ -166,8 +169,8 @@ async function handleTextSelection(event) {
       }];
       
       try {
-        await processCurrencyConversions(conversions);
-        await popupManager.showConversionPopup(conversions, selectionRect);
+        await processCurrencyConversions(conversions, operationId);
+        await popupManager.showConversionPopup(conversions, selectionRect, operationId);
         currentlyDisplayedText = selectedText;
       } catch (error) {
         console.error('Error showing currency conversion popup:', error);
@@ -186,8 +189,8 @@ async function handleTextSelection(event) {
   }
   
   try {
-    await processCurrencyConversions(conversions);
-    await popupManager.showConversionPopup(conversions, selectionRect);
+    await processCurrencyConversions(conversions, operationId);
+    await popupManager.showConversionPopup(conversions, selectionRect, operationId);
     currentlyDisplayedText = selectedText;
   } catch (error) {
     console.error('Error showing conversion popup:', error);
@@ -209,8 +212,9 @@ function isMultiLine(text) {
  * Process currency conversions that need async API calls
  * Now requests rates from background worker instead of direct API calls
  * @param {Array} conversions - Array of conversion objects
+ * @param {string} operationId - Operation ID to validate before updating conversions
  */
-async function processCurrencyConversions(conversions) {
+async function processCurrencyConversions(conversions, operationId) {
   // Validate conversions array
   if (!Array.isArray(conversions) || conversions.length === 0) {
     console.warn('Invalid conversions array provided to processCurrencyConversions');
