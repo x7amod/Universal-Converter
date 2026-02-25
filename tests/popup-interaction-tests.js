@@ -124,6 +124,9 @@ class PopupInteractionTester {
     await this.testSelectionRectCapture();
     await this.testInvalidSelectionHandling();
     await this.testPopupCleanup();
+    await this.testRaceConditionPrevention();
+    await this.testSpamClickScenario();
+    await this.testNormalOperationAfterSpamClick();
   }
 
   async testPopupCreation() {
@@ -511,6 +514,195 @@ class PopupInteractionTester {
       }
       
       this.pass(testName);
+    } catch (error) {
+      this.fail(testName, error.message);
+    }
+  }
+
+  async testRaceConditionPrevention() {
+    const testName = 'Race Condition Prevention';
+    try {
+      const PopupManager = window.UnitConverter.PopupManager;
+      const popupManager = new PopupManager();
+      
+      const conversions = [{
+        original: '100 USD',
+        converted: '€85.50',
+        type: 'currency'
+      }];
+      
+      const mockRect = {
+        top: 100, left: 200, bottom: 120, right: 300, width: 100, height: 20
+      };
+      
+      // Simulate rapid spam-clicking by creating multiple operations quickly
+      const operation1Id = popupManager.generateOperationId();
+      const operation2Id = popupManager.generateOperationId();
+      const operation3Id = popupManager.generateOperationId();
+      
+      // Verify operation IDs are unique
+      if (operation1Id === operation2Id || operation2Id === operation3Id) {
+        throw new Error('Operation IDs should be unique');
+      }
+      
+      // Start first operation
+      const promise1 = popupManager.showConversionPopup(conversions, mockRect, operation1Id);
+      
+      // Immediately start second operation (simulates quick re-selection)
+      await new Promise(resolve => setTimeout(resolve, 10));
+      const promise2 = popupManager.showConversionPopup(conversions, mockRect, operation2Id);
+      
+      // User clicks away before operations complete
+      await new Promise(resolve => setTimeout(resolve, 10));
+      if (popupManager.conversionPopup) {
+        popupManager.cancelCurrentOperation();
+      }
+      popupManager.hidePopup();
+      
+      // Start third operation after clicking away
+      await new Promise(resolve => setTimeout(resolve, 10));
+      const promise3 = popupManager.showConversionPopup(conversions, mockRect, operation3Id);
+      
+      // Wait for all operations to complete
+      await Promise.all([promise1, promise2, promise3]);
+      
+      // Wait a bit for async operations to settle
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      // Only the last operation should have created a popup
+      const popups = document.querySelectorAll('.unit-converter-popup');
+      if (popups.length !== 1) {
+        throw new Error(`Expected 1 popup, found ${popups.length}`);
+      }
+      
+      // Verify the popup is from operation3 (the valid one)
+      if (popupManager.currentOperationId !== operation3Id) {
+        throw new Error('Current operation ID should match the last operation');
+      }
+      
+      this.pass(testName);
+      
+      // Cleanup
+      popupManager.hidePopup();
+    } catch (error) {
+      this.fail(testName, error.message);
+    }
+  }
+
+  async testSpamClickScenario() {
+    const testName = 'Spam Click Scenario';
+    try {
+      const PopupManager = window.UnitConverter.PopupManager;
+      const popupManager = new PopupManager();
+      
+      const conversions = [{
+        original: '5 meters',
+        converted: '16.4 feet',
+        type: 'length'
+      }];
+      
+      const mockRect = {
+        top: 150, left: 150, bottom: 170, right: 350, width: 100, height: 20
+      };
+      
+      // Spam-click scenario: rapid creation and cancellation
+      const operations = [];
+      for (let i = 0; i < 5; i++) {
+        const opId = popupManager.generateOperationId();
+        operations.push(opId);
+        const promise = popupManager.showConversionPopup(conversions, mockRect, opId);
+        
+        // Cancel all but the last one
+        if (i < 4) {
+          await new Promise(resolve => setTimeout(resolve, 5));
+          if (popupManager.conversionPopup) {
+            popupManager.cancelCurrentOperation();
+          }
+          popupManager.hidePopup();
+        } else {
+          // Let the last one complete
+          await promise;
+        }
+      }
+      
+      // Wait for operations to settle
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      // Should have exactly one popup from the last operation
+      const popups = document.querySelectorAll('.unit-converter-popup');
+      if (popups.length !== 1) {
+        throw new Error(`Expected 1 popup after spam clicks, found ${popups.length}`);
+      }
+      
+      // Verify it's the last operation
+      const lastOpId = operations[operations.length - 1];
+      if (popupManager.currentOperationId !== lastOpId) {
+        throw new Error('Current operation should be the last one');
+      }
+      
+      this.pass(testName);
+      
+      // Cleanup
+      popupManager.hidePopup();
+    } catch (error) {
+      this.fail(testName, error.message);
+    }
+  }
+
+  async testNormalOperationAfterSpamClick() {
+    const testName = 'Normal Operation After Spam Click';
+    try {
+      const PopupManager = window.UnitConverter.PopupManager;
+      const popupManager = new PopupManager();
+      
+      const conversions = [{
+        original: '10 kg',
+        converted: '22.05 lbs',
+        type: 'weight'
+      }];
+      
+      const mockRect = {
+        top: 180, left: 180, bottom: 200, right: 380, width: 100, height: 20
+      };
+      
+      // First: Spam-click scenario
+      for (let i = 0; i < 3; i++) {
+        const opId = popupManager.generateOperationId();
+        popupManager.showConversionPopup(conversions, mockRect, opId);
+        await new Promise(resolve => setTimeout(resolve, 5));
+        popupManager.hidePopup();
+      }
+      
+      await new Promise(resolve => setTimeout(resolve, 50));
+      
+      // Now do a normal single operation
+      const normalOpId = popupManager.generateOperationId();
+      await popupManager.showConversionPopup(conversions, mockRect, normalOpId);
+      
+      // Wait for operation to complete
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      // Should show popup normally
+      const popups = document.querySelectorAll('.unit-converter-popup');
+      if (popups.length !== 1) {
+        throw new Error(`Expected 1 popup after normal operation, found ${popups.length}`);
+      }
+      
+      // Verify correct operation ID
+      if (popupManager.currentOperationId !== normalOpId) {
+        throw new Error('Current operation ID should match the normal operation');
+      }
+      
+      // Verify popup has content
+      const popup = document.querySelector('.unit-converter-popup');
+      if (!popup.textContent.includes('kg') || !popup.textContent.includes('lbs')) {
+        throw new Error('Popup should contain conversion content');
+      }
+      
+      this.pass(testName);
+      
+      // Cleanup
+      popupManager.hidePopup();
     } catch (error) {
       this.fail(testName, error.message);
     }

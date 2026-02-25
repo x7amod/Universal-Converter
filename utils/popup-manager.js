@@ -6,6 +6,23 @@ window.UnitConverter = window.UnitConverter || {};
 window.UnitConverter.PopupManager = class {
   constructor() {
     this.conversionPopup = null;
+    this.currentOperationId = null;
+    this.operationCounter = 0;
+  }
+
+  /**
+   * Generate a unique operation ID
+   * @returns {string} - Unique operation identifier
+   */
+  generateOperationId() {
+    return `${Date.now()}-${++this.operationCounter}`;
+  }
+
+  /**
+   * Cancel the current operation to prevent stale async operations from showing popups
+   */
+  cancelCurrentOperation() {
+    this.currentOperationId = null;
   }
 
   
@@ -13,9 +30,14 @@ window.UnitConverter.PopupManager = class {
    * Show conversion popup with results
    * @param {Array} conversions - Array of conversion objects
    * @param {DOMRect} selectionRect - Pre-captured bounding rectangle of the selection
+   * @param {string} operationId - Unique identifier for this operation to prevent race conditions
    */
-  async showConversionPopup(conversions, selectionRect) {
+  async showConversionPopup(conversions, selectionRect, operationId = null) {
     this.hidePopup();
+    
+    // Set or generate operation ID for this popup creation
+    const thisOperationId = operationId || this.generateOperationId();
+    this.currentOperationId = thisOperationId;
     
     // Validate conversions is an array
     if (!Array.isArray(conversions) || conversions.length === 0) {
@@ -52,6 +74,12 @@ window.UnitConverter.PopupManager = class {
       }
       return conv;
     });
+    
+    // Validate operation is still current before showing popup (prevents race condition)
+    if (thisOperationId !== this.currentOperationId) {
+      // This operation was cancelled, don't show popup
+      return;
+    }
     
     // Use the pre-captured selectionRect (already extracted before async operations)
     this.conversionPopup = this.createPopupElement(processedConversions);
@@ -193,7 +221,9 @@ window.UnitConverter.PopupManager = class {
    * Hide and remove the popup
    */
   hidePopup() {
+    // Only cancel operations if there's actually a popup being removed
     if (this.conversionPopup) {
+      this.cancelCurrentOperation();
       this.conversionPopup.remove();
       this.conversionPopup = null;
     }
