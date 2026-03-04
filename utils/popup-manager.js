@@ -209,17 +209,15 @@ window.UnitConverter.PopupManager = class {
     this.conversionPopup.style.left = `${left}px`;
   }
   
-  /**
-   * Attach event listeners to the popup
-   */
+
+  //Attach event listeners to the popup
   attachEventListeners() {
     if (!this.conversionPopup) return;
     
     this.conversionPopup.addEventListener('click', (e) => e.stopPropagation());
   }
-    /**
-   * Hide and remove the popup
-   */
+
+    //Hide and remove the popup 
   hidePopup() {
     // Always cancel any in-flight operation, even if popup hasn't mounted yet
     // (there's an async gap in showConversionPopup between setting currentOperationId

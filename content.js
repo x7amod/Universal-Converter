@@ -14,6 +14,11 @@ const ACTIVITY_PING_THROTTLE = 5 * 60 * 1000; // 5 minutes
 // Track currently displayed text to prevent redundant popup updates
 let currentlyDisplayedText = null;
 
+// Flag set synchronously in handleTextSelection when async conversion work is about
+// to start. Consumed once by handleClick so the paired click from the same
+// mouseup->click gesture does not cancel the in-flight popup operation.
+let _conversionInFlight = false;
+
 /**
  * Check if extension context is still valid
  */
@@ -100,7 +105,15 @@ function handleClick(event) {
   if (event.target.closest('.unit-converter-popup')) {
     return;
   }
-  
+
+  // If a conversion was just triggered by the preceding mouseup, this click is
+  // the tail of that same gesture. Consume the flag and let the async popup
+  // operation finish without cancelling it.
+  if (_conversionInFlight) {
+    _conversionInFlight = false;
+    return;
+  }
+
   // Hide popup when clicking outside
   popupManager.hidePopup();
   currentlyDisplayedText = null;
@@ -168,11 +181,14 @@ async function handleTextSelection(event) {
         converted: '...'
       }];
       
+      // Async work is starting — tell handleClick to stand down for this click
+      _conversionInFlight = true;
       try {
         await processCurrencyConversions(conversions, operationId);
         await popupManager.showConversionPopup(conversions, selectionRect, operationId);
         currentlyDisplayedText = selectedText;
       } catch (error) {
+        _conversionInFlight = false;
         console.error('Error showing currency conversion popup:', error);
       }
       return;
@@ -188,11 +204,14 @@ async function handleTextSelection(event) {
     return;
   }
   
+  // Async work is starting — tell handleClick to stand down for this click
+  _conversionInFlight = true;
   try {
     await processCurrencyConversions(conversions, operationId);
     await popupManager.showConversionPopup(conversions, selectionRect, operationId);
     currentlyDisplayedText = selectedText;
   } catch (error) {
+    _conversionInFlight = false;
     console.error('Error showing conversion popup:', error);
     popupManager.hidePopup();
     currentlyDisplayedText = null;
