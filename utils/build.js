@@ -72,6 +72,61 @@ class ExtensionBuilder {
     }
   }
   
+  cleanOldBuildArtifacts() {
+    // Skip on CI — fresh checkouts never have stale artifacts
+    if (process.env.CI) {
+      console.log(`${colors.yellow}⏭️  Skipping old artifact cleanup (CI environment)${colors.reset}`);
+      return;
+    }
+
+    console.log(`${colors.blue}🗑️  Cleaning old build artifacts...${colors.reset}`);
+
+    const artifactPatterns = [
+      /^universal-converter-v[\d.]+\.zip$/,
+      /^universal-converter-firefox-v[\d.]+\.zip$/,
+      /^universal-converter-firefox-v[\d.]+\.xpi$/,
+      /^universal-converter-v[\d.]+\.crx$/,
+    ];
+
+    let removed = 0;
+
+    try {
+      const files = fs.readdirSync(this.rootDir);
+
+      for (const file of files) {
+        const filePath = path.join(this.rootDir, file);
+
+        try {
+          if (fs.statSync(filePath).isDirectory()) continue;
+        } catch {
+          continue;
+        }
+
+        if (!artifactPatterns.some(p => p.test(file))) continue;
+
+        // Leave current-version files alone — they are overwritten by the archive steps
+        if (file.includes(`v${this.version}`)) continue;
+
+        try {
+          fs.unlinkSync(filePath);
+          console.log(`${colors.yellow}  🗑️  Removed old artifact: ${file}${colors.reset}`);
+          removed++;
+        } catch (err) {
+          console.warn(`${colors.yellow}  ⚠️  Could not remove ${file}: ${err.message}${colors.reset}`);
+        }
+      }
+
+      if (removed === 0) {
+        console.log(`${colors.green}  ✅ No old artifacts to clean${colors.reset}`);
+      } else {
+        console.log(`${colors.green}  ✅ Removed ${removed} old artifact(s)${colors.reset}`);
+      }
+    } catch (error) {
+      // Non-fatal — warn and continue so the build is never aborted by cleanup
+      console.warn(`${colors.yellow}  ⚠️  Could not scan for old artifacts: ${error.message}${colors.reset}`);
+    }
+  }
+
   cleanBuildDir() {
     console.log(`${colors.blue}🧹 Cleaning build directories...${colors.reset}`);
     
@@ -684,7 +739,8 @@ if (typeof browser !== 'undefined' && typeof chrome === 'undefined') {
         }
       }
       
-      // Step 1: Clean build directory
+      // Step 1: Remove old versioned artifacts, then clean build directories
+      this.cleanOldBuildArtifacts();
       this.cleanBuildDir();
       
       // Step 2: Copy extension files
