@@ -131,8 +131,8 @@ class PopupInteractionTester {
     }
 
     // Wait for content.js init() to complete: it awaits loadUserSettings()
-    // which uses the storage mock (10ms), so 80ms is plenty.
-    await this.wait(80);
+    // which uses the storage mock (10ms). Use 300ms to match CI timing headroom.
+    await this.wait(300);
   }
 
   loadScript(relPath) {
@@ -240,7 +240,7 @@ class PopupInteractionTester {
 
       // Wait for async pipeline: processCurrencyConversions (sync no-op for units)
       // -> showConversionPopup -> chrome.storage.sync.get (10ms mock) -> popup shown
-      await this.wait(80);
+      await this.wait(300);
 
       const popup = this.doc.querySelector('.unit-converter-popup');
       if (!popup) throw new Error('Popup not shown for unit conversion');
@@ -274,7 +274,7 @@ class PopupInteractionTester {
       this.fireClick(this.doc.body);
 
       // Step 3: let the async pipeline finish
-      await this.wait(80);
+      await this.wait(300);
 
       const popup = this.doc.querySelector('.unit-converter-popup');
       if (!popup) {
@@ -300,7 +300,7 @@ class PopupInteractionTester {
 
       this.fireMouseup(this.doc);
       this.fireClick(this.doc.body); // gesture click -- absorbed
-      await this.wait(80);
+      await this.wait(300);
 
       if (!this.doc.querySelector('.unit-converter-popup')) {
         throw new Error('Prerequisite failed: popup did not appear');
@@ -334,7 +334,7 @@ class PopupInteractionTester {
 
       // Currency path: processCurrencyConversions awaits sendMessage (10ms mock)
       // + showConversionPopup awaits storage (10ms mock) -- allow 150ms total.
-      await this.wait(150);
+      await this.wait(300);
 
       const popup = this.doc.querySelector('.unit-converter-popup');
       if (!popup) throw new Error('Popup not shown for currency conversion');
@@ -354,7 +354,7 @@ class PopupInteractionTester {
       nodes.push(this.setSelection('hello world'));
 
       this.fireMouseup(this.doc);
-      await this.wait(80);
+      await this.wait(300);
 
       const popup = this.doc.querySelector('.unit-converter-popup');
       if (popup) throw new Error('Popup shown for non-convertible text');
@@ -375,7 +375,7 @@ class PopupInteractionTester {
       nodes.push(this.setSelection('50 EUR'));
 
       this.fireMouseup(this.doc);
-      await this.wait(80);
+      await this.wait(300);
 
       const popup = this.doc.querySelector('.unit-converter-popup');
       if (popup) throw new Error('Popup shown for same-currency conversion (EUR -> EUR)');
@@ -397,7 +397,7 @@ class PopupInteractionTester {
 
       this.fireMouseup(this.doc);
       this.fireClick(this.doc.body);
-      await this.wait(80);
+      await this.wait(300);
 
       const popup = this.doc.querySelector('.unit-converter-popup');
       if (!popup) throw new Error('Prerequisite failed: popup did not appear');
@@ -436,7 +436,7 @@ class PopupInteractionTester {
       this.fireMouseup(this.doc);
       this.fireClick(this.doc.body);
 
-      await this.wait(80);
+      await this.wait(300);
 
       const popups = this.doc.querySelectorAll('.unit-converter-popup');
       if (popups.length !== 1) {
