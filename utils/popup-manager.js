@@ -1,262 +1,122 @@
-// DOM manipulation and popup management
-
 // Global namespace for popup manager
 window.UnitConverter = window.UnitConverter || {};
 
 window.UnitConverter.PopupManager = class {
   constructor() {
-    this.conversionPopup = null;
-    this.currentOperationId = null;
-    this.operationCounter = 0;
+    this.activePopup = null;
+    this.suppressNextOutsideClick = false;
+    
+    // Bind to this instance for the event listener
+    this.handleGlobalClick = this.handleGlobalClick.bind(this);
+    
+    // Add one global event listener to dismiss the popup when clicking outside it
+    document.addEventListener('click', this.handleGlobalClick);
   }
 
-  /**
-   * Generate a unique operation ID
-   * @returns {string} - Unique operation identifier
-   */
-  generateOperationId() {
-    return `${Date.now()}-${++this.operationCounter}`;
+  handleGlobalClick(event) {
+    if (this.suppressNextOutsideClick) {
+      this.suppressNextOutsideClick = false;
+      return;
+    }
+
+    if (this.activePopup && !this.activePopup.contains(event.target)) {
+      this.removePopup();
+    }
   }
 
-  /**
-   * Cancel the current operation to prevent stale async operations from showing popups
-   */
-  cancelCurrentOperation() {
-    this.currentOperationId = null;
+  suppressGestureClickOnce() {
+    this.suppressNextOutsideClick = true;
   }
 
-  
-  /**
-   * Show conversion popup with results
-   * @param {Array} conversions - Array of conversion objects
-   * @param {DOMRect} selectionRect - Pre-captured bounding rectangle of the selection
-   * @param {string} operationId - Unique identifier for this operation to prevent race conditions
-   */
-  async showConversionPopup(conversions, selectionRect, operationId = null) {
-    this.hidePopup();
-    
-    // Set or generate operation ID for this popup creation
-    const thisOperationId = operationId || this.generateOperationId();
-    this.currentOperationId = thisOperationId;
-    
-    // Validate conversions is an array
-    if (!Array.isArray(conversions) || conversions.length === 0) {
-      console.warn('Invalid conversions data provided to showConversionPopup');
-      return;
-    }
-    
-    // Validate selectionRect
-    if (!selectionRect) {
-      console.warn('Invalid selectionRect provided to showConversionPopup');
-      return;
-    }
-    
-    // Get user settings for time format preference
-    let userSettings = {};
-    try {
-      // Check if chrome.storage is available and extension context is valid
-      if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.sync && chrome.runtime?.id) {
-        const result = await chrome.storage.sync.get(['unitSettings']);
-        userSettings = result.unitSettings || {};
-      } else {
-        userSettings = { is12hr: true };
-      }
-    } catch (error) {
-      // If storage is not available (e.g., extension context invalidated or in tests), use defaults
-      userSettings = { is12hr: true };
-    }
-    
-    // Apply time format conversion to timezone results
-    const processedConversions = conversions.map(conv => {
-      if (conv.type === 'timezone') {
-        const converted = this.convertTimeFormat(conv.converted, userSettings.is12hr !== false);
-        return { ...conv, converted };
-      }
-      return conv;
-    });
-    
-    // Validate operation is still current before showing popup (prevents race condition)
-    if (thisOperationId !== this.currentOperationId) {
-      // This operation was cancelled, don't show popup
-      return;
-    }
-    
-    // Use the pre-captured selectionRect (already extracted before async operations)
-    this.conversionPopup = this.createPopupElement(processedConversions);
-    document.body.appendChild(this.conversionPopup);
-    
-    this.positionPopup(selectionRect);
-    this.attachEventListeners();
-  }
-  
-  /**
-   * Create the popup DOM element
-   * @param {Array} conversions - Array of conversion objects
-   * @returns {HTMLElement} - The popup element
-   */
-  createPopupElement(conversions) {
-    // Ensure conversions is an array
-    if (!Array.isArray(conversions)) {
-      console.error('createPopupElement received non-array conversions:', conversions);
-      conversions = [];
-    }
-    
-    // Create popup structure using DOM API (safer and more performant)
-    const popup = document.createElement('div');
-    popup.className = 'unit-converter-popup';
-    
+  buildPopupNode(conversions) {
     const content = document.createElement('div');
     content.className = 'unit-converter-content';
-    
+
     const results = document.createElement('div');
     results.className = 'unit-converter-results';
-    
-    // Create each conversion item
+
     conversions.forEach(conv => {
       const item = document.createElement('div');
       item.className = 'unit-converter-item';
-      
-      // Original value
+
       const original = document.createElement('div');
       original.className = 'original';
       original.textContent = conv.original;
       item.appendChild(original);
-      
-      // Arrow
+
       const arrow = document.createElement('div');
       arrow.className = 'arrow';
       arrow.textContent = '➜';
       item.appendChild(arrow);
-      
-      // Converted value
+
       const converted = document.createElement('div');
       converted.className = 'converted';
       converted.textContent = conv.converted;
-      
-      // Add fallback warning if needed
+
       if (conv.usedFallback) {
         const fallbackWarning = document.createElement('span');
         fallbackWarning.className = 'fallback-warning';
-        
+
         const warningIcon = document.createElement('span');
         warningIcon.className = 'warning-icon';
         warningIcon.textContent = '⚠';
         fallbackWarning.appendChild(warningIcon);
-        
+
         const warningTooltip = document.createElement('span');
         warningTooltip.className = 'warning-tooltip';
         warningTooltip.textContent = 'Currency rate may be up to 24 hours old';
         fallbackWarning.appendChild(warningTooltip);
-        
+
         converted.appendChild(document.createTextNode(' '));
         converted.appendChild(fallbackWarning);
       }
-      
+
       item.appendChild(converted);
       results.appendChild(item);
     });
-    
+
     content.appendChild(results);
-    popup.appendChild(content);
-    
-    return popup;
-  }
-  
-  /**
-   * Position the popup relative to the selected text
-   * @param {DOMRect} selectionRect - Bounding rectangle of the selection
-   */
-  positionPopup(selectionRect) {
-    if (!this.conversionPopup) return;
-    
-    const popupRect = this.conversionPopup.getBoundingClientRect();
-    const viewportHeight = window.innerHeight;
-    const viewportWidth = window.innerWidth;
-    const margin = 10;
-    
-    // Calculate selection center point
-    const selectionCenterX = selectionRect.left + (selectionRect.width / 2);
-    
-    // Vertical positioning: prefer below, but go above if not enough space
-    let top;
-    const spaceBelow = viewportHeight - selectionRect.bottom;
-    const spaceAbove = selectionRect.top;
-    
-    if (spaceBelow >= popupRect.height + margin || spaceBelow >= spaceAbove) {
-      // Place below selection
-      top = selectionRect.bottom + window.scrollY + margin;
-    } else {
-      // Place above selection
-      top = selectionRect.top + window.scrollY - popupRect.height - margin;
-    }
-    
-    // Horizontal positioning: center with selection, but keep within viewport bounds
-    let left = selectionCenterX - (popupRect.width / 2) + window.scrollX;
-    
-    // Ensure popup doesn't overflow right edge
-    const maxLeft = viewportWidth + window.scrollX - popupRect.width - margin;
-    if (left > maxLeft) {
-      left = maxLeft;
-    }
-    
-    // Ensure popup doesn't overflow left edge
-    const minLeft = window.scrollX + margin;
-    if (left < minLeft) {
-      left = minLeft;
-    }
-    
-    this.conversionPopup.style.top = `${top}px`;
-    this.conversionPopup.style.left = `${left}px`;
-  }
-  
-
-  //Attach event listeners to the popup
-  attachEventListeners() {
-    if (!this.conversionPopup) return;
-    
-    this.conversionPopup.addEventListener('click', (e) => e.stopPropagation());
+    return content;
   }
 
-    //Hide and remove the popup 
-  hidePopup() {
-    // Always cancel any in-flight operation, even if popup hasn't mounted yet
-    // (there's an async gap in showConversionPopup between setting currentOperationId
-    // and attaching the DOM element, during which hidePopup must still cancel)
-    this.cancelCurrentOperation();
-    if (this.conversionPopup) {
-      this.conversionPopup.remove();
-      this.conversionPopup = null;
+  showPopup(contentNode, x, y) {
+    // Remove any existing popup first
+    this.removePopup();
+
+    // Create a DOM element for the popup
+    const popup = document.createElement('div');
+    popup.className = 'unit-converter-popup';
+    popup.style.position = 'absolute';
+    popup.style.left = x + 'px';
+    popup.style.top = y === undefined ? x + 'px' : y + 'px';
+    
+    // Prevent clicks inside the popup from bubbling up and closing it
+    popup.addEventListener('click', (e) => e.stopPropagation());
+
+    // Append the provided content
+    if (contentNode instanceof HTMLElement || contentNode instanceof DocumentFragment) {
+      popup.appendChild(contentNode);
+    } else {
+      popup.textContent = contentNode;
+    }
+
+    // Append to document.body
+    document.body.appendChild(popup);
+
+    // Store direct reference
+    this.activePopup = popup;
+  }
+
+  removePopup() {
+    if (this.activePopup) {
+      this.activePopup.remove();
+      this.activePopup = null;
     }
   }
   
-  /**
-   * Convert time format in a string from 12hr to 24hr or vice versa
-   * @param {string} timeString - String containing time (e.g., "3:30 PM GMT+5")
-   * @param {boolean} to12hr - true to convert to 12hr, false to convert to 24hr
-   * @returns {string} - String with converted time format
-   */
-  convertTimeFormat(timeString, to12hr = true) {
-    // Match time patterns: 3:30 PM, 15:30, etc.
-    const time12hrPattern = /(\d{1,2}):(\d{2})\s*(AM|PM)/gi;
-    const time24hrPattern = /(\d{1,2}):(\d{2})(?!\s*(AM|PM))/gi;
-    
-    if (to12hr) {
-      // Convert 24hr to 12hr
-      return timeString.replace(time24hrPattern, (match, hours, minutes) => {
-        const h = parseInt(hours);
-        const period = h >= 12 ? 'PM' : 'AM';
-        const displayHours = h === 0 ? 12 : h > 12 ? h - 12 : h;
-        return `${displayHours}:${minutes} ${period}`;
-      });
-    } else {
-      // Convert 12hr to 24hr
-      return timeString.replace(time12hrPattern, (match, hours, minutes, period) => {
-        let h = parseInt(hours);
-        if (period.toUpperCase() === 'PM' && h !== 12) h += 12;
-        if (period.toUpperCase() === 'AM' && h === 12) h = 0;
-        const displayHours = h.toString().padStart(2, '0');
-        return `${displayHours}:${minutes}`;
-      });
-    }
+  destroy() {
+    this.removePopup();
+    document.removeEventListener('click', this.handleGlobalClick);
   }
 };
+

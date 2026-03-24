@@ -289,7 +289,7 @@ window.UnitConverter.ConversionDetector = class {
    * Detect and convert timezone in selected text
    * @param {string} text - Selected text
    * @param {Object} userSettings - User settings
-   * @returns {Object|nulgetCompiledPattern('timezone') null
+    * @returns {Object|null} - Conversion result or null
    */
   detectTimezone(text, userSettings) {
     const pattern = this.compiledPatterns.timezone;

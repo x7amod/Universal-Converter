@@ -1,18 +1,9 @@
 /**
  * Popup Interaction Tests
  *
- * Real integration tests that load the full extension pipeline (content.js +
+ * integration tests that load the full extension pipeline (content.js +
  * popup-manager.js + all dependencies) into a JSDOM environment and exercise
- * the actual mouseup -> click event sequence that caused the race condition
- * where unit-conversion popups were suppressed but currency ones were not.
- *
- * What makes these tests meaningful:
- *   - chrome.storage.sync.get returns a real async Promise (10ms delay) so the
- *     `await` inside showConversionPopup() genuinely yields to the macro-task
- *     queue, reproducing the exact timing of the race condition.
- *   - content.js is loaded and its event listeners are registered on document,
- *     so tests fire native DOM events instead of calling internal methods.
- *   - The _conversionInFlight flag is exercised indirectly through the event flow.
+ * the actual mouseup -> click event sequence that can cause multiple issues.
  */
 
 const { JSDOM } = require('jsdom');
@@ -184,6 +175,15 @@ class PopupInteractionTester {
     );
   }
 
+  fireClickNextTask(target) {
+    return new Promise(resolve => {
+      setTimeout(() => {
+        this.fireClick(target);
+        resolve();
+      }, 0);
+    });
+  }
+
   wait(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
@@ -217,7 +217,6 @@ class PopupInteractionTester {
     await this.testRapidReselectionShowsOnePopup();
 
     // -- Unit tests: PopupManager in isolation --------------------------------
-    await this.testPopupManagerRaceGuard();
     await this.testPopupPersistsOnScroll();
     await this.testPopupPersistsOnResize();
     await this.testPopupCleanup();
@@ -264,16 +263,12 @@ class PopupInteractionTester {
     try {
       nodes.push(this.setSelection('100 miles'));
 
-      // Step 1: fire mouseup -- handleTextSelection runs synchronously until the
-      // first `await`. Before that first await, _conversionInFlight is set to
-      // true. dispatchEvent returns here with the flag already set.
+      // Fire mouseup first, then click on the next task to emulate browser gesture
+      // sequencing more accurately than same-tick dispatch.
       this.fireMouseup(this.doc);
+      await this.fireClickNextTask(this.doc.body);
 
-      // Step 2: fire click in the SAME synchronous tick -- the paired gesture
-      // click. handleClick must see _conversionInFlight === true and stand down.
-      this.fireClick(this.doc.body);
-
-      // Step 3: let the async pipeline finish
+      // Let the async pipeline finish.
       await this.wait(300);
 
       const popup = this.doc.querySelector('.unit-converter-popup');
@@ -455,45 +450,6 @@ class PopupInteractionTester {
   // PopupManager unit tests (isolated, no content.js event flow)
   // ---------------------------------------------------------------------------
 
-  async testPopupManagerRaceGuard() {
-    const name = 'PopupManager race guard prevents stale operation from showing popup';
-    try {
-      const PM   = this.win.UnitConverter.PopupManager;
-      const pm   = new PM();
-      const rect = { top: 0, left: 0, bottom: 20, right: 100, width: 100, height: 20 };
-      const convs = [{ original: '1 km', converted: '0.62 mi', type: 'length' }];
-
-      const op1 = pm.generateOperationId();
-      const op2 = pm.generateOperationId();
-
-      // Start op1 but cancel it before the storage mock (10ms) resolves
-      const promise1 = pm.showConversionPopup(convs, rect, op1);
-      await this.wait(5);
-      pm.cancelCurrentOperation();
-      pm.hidePopup();
-
-      // Start op2 -- this one should win
-      await pm.showConversionPopup(convs, rect, op2);
-      await promise1; // op1 should have been rejected quietly by the race guard
-
-      await this.wait(30);
-
-      const popups = this.doc.querySelectorAll('.unit-converter-popup');
-      if (popups.length !== 1) {
-        throw new Error(`Expected 1 popup, found ${popups.length}`);
-      }
-      if (pm.currentOperationId !== op2) {
-        throw new Error(`Expected currentOperationId to be op2, got ${pm.currentOperationId}`);
-      }
-
-      this.pass(name);
-      pm.hidePopup();
-    } catch (e) {
-      this.fail(name, e.message);
-      this.doc.querySelectorAll('.unit-converter-popup').forEach(p => p.remove());
-    }
-  }
-
   async testPopupPersistsOnScroll() {
     const name = 'Popup persists after scroll event';
     try {
@@ -502,7 +458,7 @@ class PopupInteractionTester {
       const rect = { top: 100, left: 200, bottom: 120, right: 300, width: 100, height: 20 };
       const convs = [{ original: '100 cm', converted: '39.37 in', type: 'length' }];
 
-      await pm.showConversionPopup(convs, rect);
+      await pm.showPopup(convs, rect);
       if (!this.doc.querySelector('.unit-converter-popup')) throw new Error('Popup not created');
 
       this.doc.dispatchEvent(new this.win.Event('scroll', { bubbles: true }));
@@ -513,7 +469,7 @@ class PopupInteractionTester {
       }
 
       this.pass(name);
-      pm.hidePopup();
+      pm.removePopup();
     } catch (e) {
       this.fail(name, e.message);
       this.doc.querySelector('.unit-converter-popup')?.remove();
@@ -528,7 +484,7 @@ class PopupInteractionTester {
       const rect = { top: 100, left: 200, bottom: 120, right: 300, width: 100, height: 20 };
       const convs = [{ original: '72 F', converted: '22.22 C', type: 'temperature' }];
 
-      await pm.showConversionPopup(convs, rect);
+      await pm.showPopup(convs, rect);
       if (!this.doc.querySelector('.unit-converter-popup')) throw new Error('Popup not created');
 
       this.win.dispatchEvent(new this.win.Event('resize', { bubbles: true }));
@@ -539,7 +495,7 @@ class PopupInteractionTester {
       }
 
       this.pass(name);
-      pm.hidePopup();
+      pm.removePopup();
     } catch (e) {
       this.fail(name, e.message);
       this.doc.querySelector('.unit-converter-popup')?.remove();
@@ -547,23 +503,23 @@ class PopupInteractionTester {
   }
 
   async testPopupCleanup() {
-    const name = 'hidePopup() removes the DOM element and nulls the reference';
+    const name = 'removePopup() removes the DOM element and nulls the reference';
     try {
       const PM   = this.win.UnitConverter.PopupManager;
       const pm   = new PM();
       const rect = { top: 100, left: 200, bottom: 120, right: 300, width: 100, height: 20 };
       const convs = [{ original: '1 mile', converted: '1.61 km', type: 'distance' }];
 
-      await pm.showConversionPopup(convs, rect);
+      await pm.showPopup(convs, rect);
       if (!this.doc.querySelector('.unit-converter-popup')) throw new Error('Popup not created');
 
-      pm.hidePopup();
+      pm.removePopup();
 
       if (this.doc.querySelector('.unit-converter-popup')) {
         throw new Error('Popup DOM element was not removed');
       }
-      if (pm.conversionPopup !== null) {
-        throw new Error('conversionPopup reference not nulled after hidePopup()');
+      if (pm.activePopup !== null) {
+        throw new Error('conversionPopup reference not nulled after removePopup()');
       }
 
       this.pass(name);
