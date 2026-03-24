@@ -173,6 +173,13 @@ window.UnitConverter.ConversionDetector = class {
     try {
       const targetCurrency = userSettings.currencyUnit || 'USD';
       const currencyConverter = window.UnitConverter.currencyConverter;
+
+      // Prefer explicit context from the full selection (e.g., "AUD", "AU $", "CAD $")
+      // before symbol-only disambiguation for generic symbols like "$".
+      const explicitCurrencyToken = currencyConverter.extractCurrencySymbol(text);
+      const explicitDetectedCurrency = explicitCurrencyToken
+        ? currencyConverter.detectCurrency(explicitCurrencyToken)
+        : 'Unknown currency';
       
       // Get compiled pattern (compiles on-demand if not yet available)
       const currencyPattern = this.getCompiledPattern('currency');
@@ -194,7 +201,10 @@ window.UnitConverter.ConversionDetector = class {
         return null;
       }
       
-      const detectedCurrency = currencyConverter.detectCurrency(symbol);
+      let detectedCurrency = explicitDetectedCurrency;
+      if (detectedCurrency === 'Unknown currency') {
+        detectedCurrency = currencyConverter.detectCurrency(symbol);
+      }
       
       if (detectedCurrency === 'Unknown currency') return null;
       

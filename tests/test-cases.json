@@ -296,6 +296,306 @@
       }
     },
     {
+      "name": "Currency: \"AU $58.80\" should detect as AUD",
+      "type": "currencyCodeDetection",
+      "input": {
+        "text": "AU $58.80"
+      },
+      "expected": {
+        "currencyCode": "AUD"
+      }
+    },
+    {
+      "name": "Currency: \"$100 USD\" should detect as USD",
+      "type": "currencyCodeDetection",
+      "input": {
+        "text": "$100 USD"
+      },
+      "expected": {
+        "currencyCode": "USD"
+      }
+    },
+    {
+      "name": "Currency: \"$100 ARS\" should detect as ARS",
+      "type": "currencyCodeDetection",
+      "input": {
+        "text": "$100 ARS"
+      },
+      "expected": {
+        "currencyCode": "ARS"
+      }
+    },
+    {
+      "name": "Currency: \"$100 AUD\" should detect as AUD",
+      "type": "currencyCodeDetection",
+      "input": {
+        "text": "$100 AUD"
+      },
+      "expected": {
+        "currencyCode": "AUD"
+      }
+    },
+    {
+      "name": "Currency: \"$100 BBD\" should detect as BBD",
+      "type": "currencyCodeDetection",
+      "input": {
+        "text": "$100 BBD"
+      },
+      "expected": {
+        "currencyCode": "BBD"
+      }
+    },
+    {
+      "name": "Currency: \"$100 BMD\" should detect as BMD",
+      "type": "currencyCodeDetection",
+      "input": {
+        "text": "$100 BMD"
+      },
+      "expected": {
+        "currencyCode": "BMD"
+      }
+    },
+    {
+      "name": "Currency: \"$100 BND\" should detect as BND",
+      "type": "currencyCodeDetection",
+      "input": {
+        "text": "$100 BND"
+      },
+      "expected": {
+        "currencyCode": "BND"
+      }
+    },
+    {
+      "name": "Currency: \"$100 BZD\" should detect as BZD",
+      "type": "currencyCodeDetection",
+      "input": {
+        "text": "$100 BZD"
+      },
+      "expected": {
+        "currencyCode": "BZD"
+      }
+    },
+    {
+      "name": "Currency: \"$100 CAD\" should detect as CAD",
+      "type": "currencyCodeDetection",
+      "input": {
+        "text": "$100 CAD"
+      },
+      "expected": {
+        "currencyCode": "CAD"
+      }
+    },
+    {
+      "name": "Currency: \"$100 CLP\" should detect as CLP",
+      "type": "currencyCodeDetection",
+      "input": {
+        "text": "$100 CLP"
+      },
+      "expected": {
+        "currencyCode": "CLP"
+      }
+    },
+    {
+      "name": "Currency: \"$100 COP\" should detect as COP",
+      "type": "currencyCodeDetection",
+      "input": {
+        "text": "$100 COP"
+      },
+      "expected": {
+        "currencyCode": "COP"
+      }
+    },
+    {
+      "name": "Currency: \"$100 CUP\" should detect as CUP",
+      "type": "currencyCodeDetection",
+      "input": {
+        "text": "$100 CUP"
+      },
+      "expected": {
+        "currencyCode": "CUP"
+      }
+    },
+    {
+      "name": "Currency: \"$100 DOP\" should detect as DOP",
+      "type": "currencyCodeDetection",
+      "input": {
+        "text": "$100 DOP"
+      },
+      "expected": {
+        "currencyCode": "DOP"
+      }
+    },
+    {
+      "name": "Currency: \"$100 FJD\" should detect as FJD",
+      "type": "currencyCodeDetection",
+      "input": {
+        "text": "$100 FJD"
+      },
+      "expected": {
+        "currencyCode": "FJD"
+      }
+    },
+    {
+      "name": "Currency: \"$100 GYD\" should detect as GYD",
+      "type": "currencyCodeDetection",
+      "input": {
+        "text": "$100 GYD"
+      },
+      "expected": {
+        "currencyCode": "GYD"
+      }
+    },
+    {
+      "name": "Currency: \"$100 HKD\" should detect as HKD",
+      "type": "currencyCodeDetection",
+      "input": {
+        "text": "$100 HKD"
+      },
+      "expected": {
+        "currencyCode": "HKD"
+      }
+    },
+    {
+      "name": "Currency: \"$100 JMD\" should detect as JMD",
+      "type": "currencyCodeDetection",
+      "input": {
+        "text": "$100 JMD"
+      },
+      "expected": {
+        "currencyCode": "JMD"
+      }
+    },
+    {
+      "name": "Currency: \"$100 KYD\" should detect as KYD",
+      "type": "currencyCodeDetection",
+      "input": {
+        "text": "$100 KYD"
+      },
+      "expected": {
+        "currencyCode": "KYD"
+      }
+    },
+    {
+      "name": "Currency: \"$100 LRD\" should detect as LRD",
+      "type": "currencyCodeDetection",
+      "input": {
+        "text": "$100 LRD"
+      },
+      "expected": {
+        "currencyCode": "LRD"
+      }
+    },
+    {
+      "name": "Currency: \"$100 MOP\" should detect as MOP",
+      "type": "currencyCodeDetection",
+      "input": {
+        "text": "$100 MOP"
+      },
+      "expected": {
+        "currencyCode": "MOP"
+      }
+    },
+    {
+      "name": "Currency: \"$100 MXN\" should detect as MXN",
+      "type": "currencyCodeDetection",
+      "input": {
+        "text": "$100 MXN"
+      },
+      "expected": {
+        "currencyCode": "MXN"
+      }
+    },
+    {
+      "name": "Currency: \"$100 NAD\" should detect as NAD",
+      "type": "currencyCodeDetection",
+      "input": {
+        "text": "$100 NAD"
+      },
+      "expected": {
+        "currencyCode": "NAD"
+      }
+    },
+    {
+      "name": "Currency: \"$100 NIO\" should detect as NIO",
+      "type": "currencyCodeDetection",
+      "input": {
+        "text": "$100 NIO"
+      },
+      "expected": {
+        "currencyCode": "NIO"
+      }
+    },
+    {
+      "name": "Currency: \"$100 NZD\" should detect as NZD",
+      "type": "currencyCodeDetection",
+      "input": {
+        "text": "$100 NZD"
+      },
+      "expected": {
+        "currencyCode": "NZD"
+      }
+    },
+    {
+      "name": "Currency: \"$100 SBD\" should detect as SBD",
+      "type": "currencyCodeDetection",
+      "input": {
+        "text": "$100 SBD"
+      },
+      "expected": {
+        "currencyCode": "SBD"
+      }
+    },
+    {
+      "name": "Currency: \"$100 SGD\" should detect as SGD",
+      "type": "currencyCodeDetection",
+      "input": {
+        "text": "$100 SGD"
+      },
+      "expected": {
+        "currencyCode": "SGD"
+      }
+    },
+    {
+      "name": "Currency: \"$100 SRD\" should detect as SRD",
+      "type": "currencyCodeDetection",
+      "input": {
+        "text": "$100 SRD"
+      },
+      "expected": {
+        "currencyCode": "SRD"
+      }
+    },
+    {
+      "name": "Currency: \"$100 TTD\" should detect as TTD",
+      "type": "currencyCodeDetection",
+      "input": {
+        "text": "$100 TTD"
+      },
+      "expected": {
+        "currencyCode": "TTD"
+      }
+    },
+    {
+      "name": "Currency: \"$100 TWD\" should detect as TWD",
+      "type": "currencyCodeDetection",
+      "input": {
+        "text": "$100 TWD"
+      },
+      "expected": {
+        "currencyCode": "TWD"
+      }
+    },
+    {
+      "name": "Currency: \"$100 XCD\" should detect as XCD",
+      "type": "currencyCodeDetection",
+      "input": {
+        "text": "$100 XCD"
+      },
+      "expected": {
+        "currencyCode": "XCD"
+      }
+    },
+    {
       "name": "Currency: \"$100\" with no explicit code should detect based on context",
       "type": "currencyCodeDetection",
       "input": {

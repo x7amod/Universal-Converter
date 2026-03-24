@@ -31,6 +31,16 @@ class CrossPlatformTestRunner {
   constructor() {
     this.testFiles = [
       {
+        name: 'Extension Validation',
+        script: 'tests/validate-extension.js',
+        description: 'Chrome extension structure validation'
+      },
+      {
+        name: 'Currency Cache Lifecycle Tests',
+        script: 'tests/currency-cache-lifecycle.test.js',
+        description: 'Currency rate service cache behavior tests'
+      },
+      {
         name: 'Unit Converter Tests',
         script: 'tests/test-runner.js',
         description: 'Core unit conversion logic tests'
@@ -44,16 +54,6 @@ class CrossPlatformTestRunner {
         name: 'Popup Interaction Tests (DOM Tests)',
         script: 'tests/popup-interaction-tests.js',
         description: 'Popup creation and dismissal behavior tests'
-      },
-      {
-        name: 'Currency Cache Lifecycle Tests',
-        script: 'tests/currency-cache-lifecycle.test.js',
-        description: 'Currency rate service cache behavior tests'
-      },
-      {
-        name: 'Extension Validation',
-        script: 'tests/validate-extension.js',
-        description: 'Chrome extension structure validation'
       }
     ];
     

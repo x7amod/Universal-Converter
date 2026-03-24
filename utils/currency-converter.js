@@ -20,6 +20,24 @@ window.UnitConverter.CurrencyConverter = class {
         if (!str || typeof str !== 'string') {
             return '';
         }
+
+        // Support 2-letter uppercase country prefixes around "$" (e.g., "AU $58.80", "$58 CA")
+        // and map them to their configured currency code when available.
+        const countryPrefixBeforeDollar = str.match(/\b([A-Z]{2})\s*\$/);
+        if (countryPrefixBeforeDollar) {
+            const mappedCurrency = window.countryCodeToCurrencyCode?.[countryPrefixBeforeDollar[1]];
+            if (mappedCurrency && window.currencyCodeToSymbol?.[mappedCurrency]) {
+                return mappedCurrency;
+            }
+        }
+
+        const countryPrefixAfterDollar = str.match(/\$\s*([A-Z]{2})\b/);
+        if (countryPrefixAfterDollar) {
+            const mappedCurrency = window.countryCodeToCurrencyCode?.[countryPrefixAfterDollar[1]];
+            if (mappedCurrency && window.currencyCodeToSymbol?.[mappedCurrency]) {
+                return mappedCurrency;
+            }
+        }
         
         // First, check for explicit 3-letter currency codes (case insensitive)
         // These take priority over symbols since they're unambiguous
@@ -27,7 +45,7 @@ window.UnitConverter.CurrencyConverter = class {
         if (explicitCodeMatch) {
             const code = explicitCodeMatch[1].toUpperCase();
             // Check if this is a valid currency code
-            if (window.currencySymbolToCurrencyCode && window.currencySymbolToCurrencyCode[code]) {
+            if (window.currencyCodeToSymbol?.[code]) {
                 return code;
             }
         }
@@ -102,6 +120,17 @@ window.UnitConverter.CurrencyConverter = class {
      * Detect currency from symbol
      */
     detectCurrency(currencySymbol) {
+        if (!currencySymbol || typeof currencySymbol !== 'string') {
+            return 'Unknown currency';
+        }
+
+        const normalizedSymbol = currencySymbol.toUpperCase();
+
+        // Explicit 3-letter ISO currency codes are unambiguous when supported.
+        if (/^[A-Z]{3}$/.test(normalizedSymbol) && window.currencyCodeToSymbol?.[normalizedSymbol]) {
+            return normalizedSymbol;
+        }
+
         const currencyCode = window.currencySymbolToCurrencyCode[currencySymbol];
 
         if (currencyCode === undefined) return 'Unknown currency';
