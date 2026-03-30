@@ -281,14 +281,34 @@ if (document.readyState === 'loading') {
 
 function showConversions(conversions, selectionRect, operationId) {
   if (operationId !== currentOperationId) return; // Prevent race conditions
-  
-  const contentNode = popupManager.buildPopupNode(conversions);
-  
-  const margin = 10;
-  let top = selectionRect.bottom + window.scrollY + margin;
-  let left = selectionRect.left + (selectionRect.width / 2) + window.scrollX;
-  
-  left = Math.max(margin, left - 100);
 
+  const contentNode = popupManager.buildPopupNode(conversions);
+
+  const margin = 10;
+  const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
+  const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+
+  // Use the popup's CSS min-width as a conservative width estimate for clamping
+  const estimatedPopupWidth = 250; // px, matches popup CSS min-width
+  // Rough height estimate for deciding above/below placement
+  const estimatedPopupHeight = 200; // px
+
+  // Horizontal positioning: center on the selection, then clamp within viewport
+  const selectionCenterX = selectionRect.left + (selectionRect.width / 2);
+  let left = selectionCenterX + window.scrollX - (estimatedPopupWidth / 2);
+  left = Math.max(margin, Math.min(left, viewportWidth - estimatedPopupWidth - margin));
+
+  // Vertical positioning: prefer below, but place above if there isn't enough space
+  const spaceBelow = viewportHeight - selectionRect.bottom;
+  const spaceAbove = selectionRect.top;
+  let top;
+
+  if (spaceBelow < estimatedPopupHeight && spaceAbove > spaceBelow) {
+    // Place above the selection
+    top = selectionRect.top + window.scrollY - estimatedPopupHeight - margin;
+  } else {
+    // Default: place below the selection
+    top = selectionRect.bottom + window.scrollY + margin;
+  }
   popupManager.showPopup(contentNode, left, top);
 }
