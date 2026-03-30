@@ -519,7 +519,7 @@ class PopupInteractionTester {
         throw new Error('Popup DOM element was not removed');
       }
       if (pm.activePopup !== null) {
-        throw new Error('conversionPopup reference not nulled after removePopup()');
+        throw new Error('activePopup reference not nulled after removePopup()');
       }
 
       this.pass(name);
