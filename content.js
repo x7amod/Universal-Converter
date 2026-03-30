@@ -14,10 +14,13 @@ const ACTIVITY_PING_THROTTLE = 5 * 60 * 1000; // 5 minutes
 // Track currently displayed text to prevent redundant popup updates
 let currentlyDisplayedText = null;
 
+// Track latest async conversion operation to avoid stale popup updates
+let currentOperationId = null;
+
 // Flag set synchronously in handleTextSelection when async conversion work is about
 // to start. Consumed once by handleClick so the paired click from the same
 // mouseup->click gesture does not cancel the in-flight popup operation.
-let _conversionInFlight = false;
+
 
 /**
  * Check if extension context is still valid
@@ -98,25 +101,7 @@ function setupEventListeners() {
  * @param {Event} event - Click event
  */
 function handleClick(event) {
-  // Send activity ping to background (throttled)
   pingActivityToBackground();
-  
-  // Don't hide popup if clicking on the popup itself or its children
-  if (event.target.closest('.unit-converter-popup')) {
-    return;
-  }
-
-  // If a conversion was just triggered by the preceding mouseup, this click is
-  // the tail of that same gesture. Consume the flag and let the async popup
-  // operation finish without cancelling it.
-  if (_conversionInFlight) {
-    _conversionInFlight = false;
-    return;
-  }
-
-  // Hide popup when clicking outside
-  popupManager.hidePopup();
-  currentlyDisplayedText = null;
 }
 
 /**
@@ -125,7 +110,7 @@ function handleClick(event) {
  */
 async function handleTextSelection(event) {
   // Generate unique operation ID for this conversion
-  const operationId = popupManager.generateOperationId();
+  const operationId = String(Date.now()); currentOperationId = operationId;
   
   const selection = window.getSelection();
   const selectedText = selection.toString().trim();
@@ -135,13 +120,13 @@ async function handleTextSelection(event) {
   
   // Guard: Only process single-line selections (no line breaks)
   if (!selectedText || selectedText.length === 0 || selectedText.includes('\n') || selectedText.includes('\r')) {
-    popupManager.hidePopup();
+    popupManager.removePopup();
     currentlyDisplayedText = null;
     return;
   }
   
   // Skip if we're re-selecting the same text that's already displayed
-  if (currentlyDisplayedText === selectedText && popupManager.conversionPopup) {
+  if (currentlyDisplayedText === selectedText && popupManager.activePopup) {
     return;
   }
   
@@ -152,68 +137,30 @@ async function handleTextSelection(event) {
     selectionRect = range.getBoundingClientRect();
   } catch (error) {
     // Selection was cleared or invalid
-    popupManager.hidePopup();
+    popupManager.removePopup();
     return;
   }
   
-  // Try currency conversion first
-  const currencyConverter = window.UnitConverter.currencyConverter;
-  const currencySymbol = currencyConverter.extractCurrencySymbol(selectedText);
-  const detectedCurrency = currencyConverter.detectCurrency(currencySymbol);
-  
-  if (detectedCurrency !== 'Unknown currency') {
-    const extractedNumber = currencyConverter.extractNumber(selectedText);
-    const targetCurrency = userSettings.currencyUnit || 'USD';
-    
-    // Only convert if we have a valid number and currencies are different
-    if (extractedNumber && detectedCurrency.toUpperCase() !== targetCurrency.toUpperCase()) {
-      const conversions = [{
-        match: selectedText,
-        originalValue: extractedNumber,
-        originalUnit: detectedCurrency,
-        targetUnit: targetCurrency.toUpperCase(),
-        type: 'currency',
-        needsAsyncProcessing: true,
-        fromCurrency: detectedCurrency,
-        toCurrency: targetCurrency.toUpperCase(),
-        convertedValue: '...',
-        original: `${extractedNumber} ${detectedCurrency}`,
-        converted: '...'
-      }];
-      
-      // Async work is starting — tell handleClick to stand down for this click
-      _conversionInFlight = true;
-      try {
-        await processCurrencyConversions(conversions, operationId);
-        await popupManager.showConversionPopup(conversions, selectionRect, operationId);
-        currentlyDisplayedText = selectedText;
-      } catch (error) {
-        _conversionInFlight = false;
-        console.error('Error showing currency conversion popup:', error);
-      }
-      return;
-    }
-  }
-  
-  // Fallback: Try regular unit conversions
+  // Use unified detector for currency, dimensions, and regular units
   const conversions = conversionDetector.findConversions(selectedText, userSettings);
   
   if (conversions.length === 0) {
-    popupManager.hidePopup();
+    popupManager.removePopup();
     currentlyDisplayedText = null;
     return;
   }
   
-  // Async work is starting — tell handleClick to stand down for this click
-  _conversionInFlight = true;
+  
+  
   try {
+    popupManager.suppressGestureClickOnce();
     await processCurrencyConversions(conversions, operationId);
-    await popupManager.showConversionPopup(conversions, selectionRect, operationId);
+    showConversions(conversions, selectionRect, operationId);
     currentlyDisplayedText = selectedText;
   } catch (error) {
-    _conversionInFlight = false;
+    
     console.error('Error showing conversion popup:', error);
-    popupManager.hidePopup();
+    popupManager.removePopup();
     currentlyDisplayedText = null;
   }
 }
@@ -257,7 +204,7 @@ async function processCurrencyConversions(conversions, operationId) {
         
         //console.log('Processing currency conversion:', conversion);
         
-        // Request rate from background worker instead of direct API call
+        // Request rate from background worker
         const rateInfo = await new Promise((resolve, reject) => {
           chrome.runtime.sendMessage({
             action: 'getCurrencyRate',
@@ -328,4 +275,40 @@ if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', init);
 } else {
   init();
+}
+
+
+
+function showConversions(conversions, selectionRect, operationId) {
+  if (operationId !== currentOperationId) return; // Prevent race conditions
+
+  const contentNode = popupManager.buildPopupNode(conversions);
+
+  const margin = 10;
+  const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
+  const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+
+  // Use the popup's CSS min-width as a conservative width estimate for clamping
+  const estimatedPopupWidth = 250; // px, matches popup CSS min-width
+  // Rough height estimate for deciding above/below placement
+  const estimatedPopupHeight = 200; // px
+
+  // Horizontal positioning: center on the selection, then clamp within viewport
+  const selectionCenterX = selectionRect.left + (selectionRect.width / 2);
+  let left = selectionCenterX + window.scrollX - (estimatedPopupWidth / 2);
+  left = Math.max(margin, Math.min(left, viewportWidth - estimatedPopupWidth - margin));
+
+  // Vertical positioning: prefer below, but place above if there isn't enough space
+  const spaceBelow = viewportHeight - selectionRect.bottom;
+  const spaceAbove = selectionRect.top;
+  let top;
+
+  if (spaceBelow < estimatedPopupHeight && spaceAbove > spaceBelow) {
+    // Place above the selection
+    top = selectionRect.top + window.scrollY - estimatedPopupHeight - margin;
+  } else {
+    // Default: place below the selection
+    top = selectionRect.bottom + window.scrollY + margin;
+  }
+  popupManager.showPopup(contentNode, left, top);
 }
