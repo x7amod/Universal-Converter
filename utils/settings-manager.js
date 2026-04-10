@@ -6,7 +6,10 @@ window.UnitConverter = window.UnitConverter || {};
 window.UnitConverter.SettingsManager = class {
   constructor() {
     // Use metric preset as default
-    this.defaultSettings = { preset: 'metric' };
+    this.defaultSettings = {
+      preset: 'metric',
+      is12hr: true
+    };
   }
   
   /**
@@ -18,7 +21,7 @@ window.UnitConverter.SettingsManager = class {
       // Check if chrome.storage is available and extension context is valid
       if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.sync && chrome.runtime?.id) {
         const result = await chrome.storage.sync.get(['unitSettings']);
-        return result.unitSettings || this.defaultSettings;
+        return { ...this.defaultSettings, ...(result.unitSettings || {}) };
       }
       return this.defaultSettings;
     } catch (error) {

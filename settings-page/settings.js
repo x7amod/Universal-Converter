@@ -225,7 +225,11 @@ document.addEventListener('DOMContentLoaded', async function() {
   async function loadSettings() {
     try {
       const result = await chrome.storage.sync.get(['unitSettings']);
-      let settings = result.unitSettings || presets.metric;
+      let settings = {
+        preset: 'metric',
+        is12hr: true,
+        ...(result.unitSettings || presets.metric)
+      };
       
       // Migrate old settings to new simplified options
       settings = migrateUnitSettings(settings);
@@ -243,7 +247,7 @@ document.addEventListener('DOMContentLoaded', async function() {
       elements.timezoneUnit.value = settings.timezoneUnit || 'auto';
       
       // Set time format buttons based on settings
-      const is12hr = settings.is12hr !== false; // Default to 12hr (true)
+      const is12hr = typeof settings.is12hr === 'boolean' ? settings.is12hr : true;
       if (is12hr) {
         elements.time12Btn.classList.add('active');
         elements.time24Btn.classList.remove('active');

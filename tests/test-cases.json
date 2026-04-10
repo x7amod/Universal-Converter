@@ -2380,6 +2380,30 @@
       "tolerance": 0
     },
     {
+      "name": "Timezone: 3:30 PM EST → PST (24-hour output)",
+      "type": "timezoneConversion",
+      "input": {
+        "time": "3:30 PM EST",
+        "from": "EST",
+        "to": "PST",
+        "is12hr": false
+      },
+      "expected": "12:30 PST",
+      "tolerance": 0
+    },
+    {
+      "name": "Timezone: 10:30 AM UTC → PST (24-hour leading zero)",
+      "type": "timezoneConversion",
+      "input": {
+        "time": "10:30 AM UTC",
+        "from": "UTC",
+        "to": "PST",
+        "is12hr": false
+      },
+      "expected": "02:30 PST",
+      "tolerance": 0
+    },
+    {
       "name": "Area: 1 mi2 = 2.59 km2",
       "type": "conversion",
       "input": {

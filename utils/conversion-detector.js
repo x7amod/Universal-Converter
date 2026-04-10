@@ -310,9 +310,11 @@ window.UnitConverter.ConversionDetector = class {
     if (!match) return null;
     
     // Extract time and timezone information
+    const settings = userSettings || {};
     const timeString = match[0];
-    let targetTimezone = userSettings.timezoneUnit || 'auto';
+    let targetTimezone = settings.timezoneUnit || 'auto';
     let isAutoDetected = false;
+    const is12hr = settings.is12hr !== false;
     
     // If target is auto, use user's current timezone
     if (targetTimezone === 'auto') {
@@ -347,7 +349,13 @@ window.UnitConverter.ConversionDetector = class {
     if (sourceTimezone === targetTimezone) return null;
     
     // Use GMT offset format for display when auto-detected
-    const converted = this.unitConverter.convertTimezone(timeString, sourceTimezone, targetTimezone, isAutoDetected);
+    const converted = this.unitConverter.convertTimezone(
+      timeString,
+      sourceTimezone,
+      targetTimezone,
+      isAutoDetected,
+      is12hr
+    );
     if (!converted) return null;
     
     return {
