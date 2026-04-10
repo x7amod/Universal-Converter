@@ -310,9 +310,10 @@ window.UnitConverter.UnitConverter = class {
    * @param {string} fromZone - Source timezone
    * @param {string} toZone - Target timezone
    * @param {boolean} useOffsetFormat - Whether to return GMT offset format for display
+    * @param {boolean} is12hr - Whether output should use 12-hour format
    * @returns {Object|null} - Converted time object or null
    */
-  convertTimezone(timeString, fromZone, toZone, useOffsetFormat = false) {
+    convertTimezone(timeString, fromZone, toZone, useOffsetFormat = false, is12hr = true) {
     try {
       // Parse time string - minutes are optional
       const timeMatch = timeString.match(/(\d{1,2})(?::(\d{2}))?\s*(AM|PM|am|pm)?/i);
@@ -351,7 +352,7 @@ window.UnitConverter.UnitConverter = class {
       return {
         hours: convertedDate.getHours(),
         minutes: convertedDate.getMinutes(),
-        formatted: this.formatTime(convertedDate.getHours(), convertedDate.getMinutes()),
+        formatted: this.formatTime(convertedDate.getHours(), convertedDate.getMinutes(), is12hr),
         timezone: displayTimezone
       };
     } catch (error) {
@@ -398,12 +399,19 @@ window.UnitConverter.UnitConverter = class {
    * Format time for display
    * @param {number} hours - Hours (24-hour format)
    * @param {number} minutes - Minutes
+   * @param {boolean} is12hr - Whether output should use 12-hour format
    * @returns {string} - Formatted time string
    */
-  formatTime(hours, minutes) {
+  formatTime(hours, minutes, is12hr = true) {
+    const displayMinutes = minutes.toString().padStart(2, '0');
+
+    if (!is12hr) {
+      const displayHours24 = hours.toString().padStart(2, '0');
+      return `${displayHours24}:${displayMinutes}`;
+    }
+
     const period = hours >= 12 ? 'PM' : 'AM';
     const displayHours = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
-    const displayMinutes = minutes.toString().padStart(2, '0');
     return `${displayHours}:${displayMinutes} ${period}`;
   }
   

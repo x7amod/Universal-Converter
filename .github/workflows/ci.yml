@@ -58,7 +58,7 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: 24.x
-        cache: 'npm'
+        cache: ${{ !env.ACT && 'npm' || '' }}
         
     - name: Install dependencies
       run: npm ci
@@ -73,7 +73,7 @@ jobs:
         
     - name: Upload test results
       uses: actions/upload-artifact@v4
-      if: always()
+      if: always() && !env.ACT
       with:
         name: test-results-node-24
         path: |
