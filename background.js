@@ -1,4 +1,9 @@
 // Background service worker for Chrome Extension v3
+if (typeof importScripts === 'function') {
+  importScripts('utils/site-blocklist.js');
+} else if (typeof require === 'function') {
+  globalThis.SiteBlocklist = require('./utils/site-blocklist');
+}
 
 // Track if context menu is being created to prevent duplicates
 let isCreatingContextMenu = false;
@@ -485,14 +490,87 @@ class CurrencyRateService {
 // Initialize currency service
 const currencyService = new CurrencyRateService();
 
+const normalActionIcons = {
+  16: 'icons/icon16.png',
+  32: 'icons/icon32.png',
+  48: 'icons/icon48.png',
+  128: 'icons/icon128.png'
+};
+const disabledActionIcons = {
+  16: 'icons/icon16-disabled.png',
+  32: 'icons/icon32-disabled.png',
+  48: 'icons/icon48-disabled.png',
+  128: 'icons/icon128-disabled.png'
+};
+const iconRefreshes = new Map();
+
+async function refreshActionIcon(tabId) {
+  const refreshId = (iconRefreshes.get(tabId) || 0) + 1;
+  iconRefreshes.set(tabId, refreshId);
+
+  try {
+    const [settings, page] = await Promise.all([
+      chrome.storage.sync.get(['blockedSites']),
+      chrome.tabs.sendMessage(tabId, { action: 'getPageHostname' })
+    ]);
+    if (iconRefreshes.get(tabId) !== refreshId) return;
+
+    const blocked = SiteBlocklist.isBlocked(page && page.hostname, settings.blockedSites);
+    await chrome.action.setIcon({
+      tabId,
+      path: blocked ? disabledActionIcons : normalActionIcons
+    });
+  } catch (error) {
+    if (iconRefreshes.get(tabId) !== refreshId) return;
+    try {
+      await chrome.action.setIcon({ tabId, path: normalActionIcons });
+    } catch (iconError) {
+      // The tab may have closed while its icon was being updated.
+    }
+  }
+}
+
+async function refreshAllActionIcons() {
+  try {
+    const tabs = await chrome.tabs.query({});
+    await Promise.all(tabs.filter(tab => tab.id !== undefined).map(tab => refreshActionIcon(tab.id)));
+  } catch (error) {
+    console.warn('Failed to refresh action icons:', error);
+  }
+}
+
+chrome.tabs.onActivated.addListener(({ tabId }) => {
+  refreshActionIcon(tabId);
+});
+
+chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
+  if (changeInfo.status === 'complete' || changeInfo.url) refreshActionIcon(tabId);
+});
+
+refreshAllActionIcons();
+
 // Service worker initialization happens in onInstalled and onStartup event handlers below
 
 // Handle extension icon click to open settings page
-chrome.action.onClicked.addListener((tab) => {
+chrome.action.onClicked.addListener(async (tab) => {
   chrome.tabs.create({
-    url: chrome.runtime.getURL('settings-page/settings.html')
+    url: await getSettingsPageUrl(tab && tab.id)
   });
 });
+
+async function getSettingsPageUrl(tabId) {
+  let url = chrome.runtime.getURL('settings-page/settings.html');
+  if (tabId === undefined) return url;
+
+  try {
+    const page = await chrome.tabs.sendMessage(tabId, { action: 'getPageHostname' });
+    const hostname = SiteBlocklist.normalizeHostname(page && page.hostname);
+    if (hostname) url += `?hostname=${encodeURIComponent(hostname)}`;
+  } catch (error) {
+    // Settings still opens without a site hint on browser-restricted pages.
+  }
+  return url;
+}
 
 chrome.runtime.onInstalled.addListener(async (details) => {
   // Initialize service worker
@@ -597,19 +675,23 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 // Listen for storage changes and notify content scripts
 chrome.storage.onChanged.addListener((changes, namespace) => {
-  if (namespace === 'sync' && changes.unitSettings) {
+  if (namespace !== 'sync') return;
+
+  if (changes.unitSettings || changes.blockedSites) {
     // Notify all tabs about settings change
     chrome.tabs.query({}, (tabs) => {
       tabs.forEach(tab => {
         chrome.tabs.sendMessage(tab.id, { 
           action: 'settingsUpdated',
-          newSettings: changes.unitSettings.newValue
+          newSettings: changes.unitSettings && changes.unitSettings.newValue
         }).catch(() => {
           // Ignore errors for tabs without content script
         });
       });
     });
   }
+
+  if (changes.blockedSites) refreshAllActionIcons();
 });
 
 // Handle cache refresh alarm
@@ -707,10 +789,10 @@ function createContextMenu() {
 /**
  * Handle context menu clicks
  */
-chrome.contextMenus.onClicked.addListener((info, tab) => {
+chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   if (info.menuItemId === 'open-settings') {
     chrome.tabs.create({
-      url: chrome.runtime.getURL('settings-page/settings.html')
+      url: await getSettingsPageUrl(tab && tab.id)
     });
   } else if (info.menuItemId === 'clear-currency-cache') {
     // Clear currency cache using background service

@@ -18,6 +18,8 @@ class PopupInteractionTester {
     this.dom         = null;
     this.win         = null;
     this.doc         = null;
+    this.blockedSites = [];
+    this.currencyRateRequests = 0;
   }
 
   // ---------------------------------------------------------------------------
@@ -62,6 +64,7 @@ class PopupInteractionTester {
         id: 'test-extension-id',
         lastError: null,
         sendMessage: (msg, callback) => {
+          if (msg && msg.action === 'getCurrencyRate') this.currencyRateRequests++;
           if (typeof callback === 'function') {
             setTimeout(() => {
               if (msg && msg.action === 'getCurrencyRate') {
@@ -74,7 +77,7 @@ class PopupInteractionTester {
           // Return a thenable for fire-and-forget callers that use .catch()
           return Promise.resolve();
         },
-        onMessage: { addListener: () => {} }
+        onMessage: { addListener: listener => { this.runtimeMessageListener = listener; } }
       },
       storage: {
         sync: {
@@ -83,7 +86,10 @@ class PopupInteractionTester {
           get: (_keys) =>
             new Promise(resolve =>
               setTimeout(
-                () => resolve({ unitSettings: { preset: 'us', currencyUnit: 'EUR', is12hr: true } }),
+                () => resolve({
+                  unitSettings: { preset: 'us', currencyUnit: 'EUR', is12hr: true },
+                  blockedSites: this.blockedSites
+                }),
                 10
               )
             ),
@@ -109,6 +115,7 @@ class PopupInteractionTester {
     for (const rel of [
       '../data/conversion-data.js',
       '../data/currency-mappings.js',
+      '../utils/site-blocklist.js',
       '../utils/unit-converter.js',
       '../utils/currency-converter.js',
       '../utils/conversion-detector.js',
@@ -213,6 +220,7 @@ class PopupInteractionTester {
     await this.testCurrencyConversionAppearsAfterMouseup();
     await this.testNoPopupForUnrecognizedText();
     await this.testNoPopupForSameUnitCurrency();
+    await this.testBlockedSiteSkipsPopupAndRateRequest();
     await this.testClickOnPopupDoesNotDismiss();
     await this.testRapidReselectionShowsOnePopup();
 
@@ -383,6 +391,41 @@ class PopupInteractionTester {
     }
   }
 
+  async testBlockedSiteSkipsPopupAndRateRequest() {
+    const name = 'Blocked website skips popup and currency rate request';
+    const nodes = [];
+    try {
+      nodes.push(this.setSelection('100 lbs'));
+      this.fireMouseup(this.doc);
+      await this.wait(300);
+      if (!this.doc.querySelector('.unit-converter-popup')) throw new Error('Allowed website did not show its popup');
+
+      this.blockedSites = ['localhost'];
+      await new Promise(resolve => this.runtimeMessageListener(
+        { action: 'settingsUpdated' }, null, resolve
+      ));
+      if (this.doc.querySelector('.unit-converter-popup')) throw new Error('Popup remained after blocking the website');
+
+      this.clearSelection();
+      const requestsBefore = this.currencyRateRequests;
+      nodes.push(this.setSelection('$50'));
+      this.fireMouseup(this.doc);
+      await this.wait(50);
+
+      if (this.doc.querySelector('.unit-converter-popup')) throw new Error('Popup appeared on a blocked website');
+      if (this.currencyRateRequests !== requestsBefore) throw new Error('Currency rate was requested on a blocked website');
+      this.pass(name);
+    } catch (e) {
+      this.fail(name, e.message);
+    } finally {
+      await this.cleanup(nodes);
+      this.blockedSites = [];
+      await new Promise(resolve => this.runtimeMessageListener(
+        { action: 'settingsUpdated' }, null, resolve
+      ));
+    }
+  }
+
   async testClickOnPopupDoesNotDismiss() {
     const name  = 'Click on the popup itself does not dismiss it';
     const nodes = [];
@@ -519,7 +562,7 @@ class PopupInteractionTester {
         throw new Error('Popup DOM element was not removed');
       }
       if (pm.activePopup !== null) {
-        throw new Error('conversionPopup reference not nulled after removePopup()');
+        throw new Error('activePopup reference not nulled after removePopup()');
       }
 
       this.pass(name);

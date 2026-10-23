@@ -12,7 +12,7 @@ Instantly convert any unit, currency or timezone by simply selecting them on any
 
 <br>
 
-A powerful Browser Extension that automatically detects and converts units in selected text, supporting length, weight, temperature, volume, area measurements, and real-time currency conversions with smart auto-sizing and dimension support.
+A Browser Extension that automatically detects and converts units in selected text, supporting length, weight, temperature, volume, area measurements, and real-time currency conversions with smart auto-sizing and dimension support.
 
 ## Key Features
 
@@ -119,7 +119,7 @@ Universal Converter/
 │   ├── settings.js            # Settings functionality
 │   └── settings.css           # Settings styles
 │
-├── icons/                     # Extension icons (16, 32, 48, 128px)
+├── icons/                     # Extension icons
 │
 ├── img/                       # Docs images
 │

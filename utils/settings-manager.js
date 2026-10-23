@@ -6,7 +6,13 @@ window.UnitConverter = window.UnitConverter || {};
 window.UnitConverter.SettingsManager = class {
   constructor() {
     // Use metric preset as default
-    this.defaultSettings = { preset: 'metric' };
+    this.defaultSettings = {
+      preset: 'metric',
+      is12hr: true,
+      enabledGlobally: true,
+      siteOverrides: {},
+      blockedSites: []
+    };
   }
   
   /**
@@ -17,13 +23,25 @@ window.UnitConverter.SettingsManager = class {
     try {
       // Check if chrome.storage is available and extension context is valid
       if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.sync && chrome.runtime?.id) {
-        const result = await chrome.storage.sync.get(['unitSettings']);
-        return result.unitSettings || this.defaultSettings;
+        const result = await chrome.storage.sync.get(['unitSettings', 'blockedSites']);
+        const storedSettings = result.unitSettings || {};
+        const siteOverrides = storedSettings.siteOverrides &&
+          typeof storedSettings.siteOverrides === 'object' &&
+          !Array.isArray(storedSettings.siteOverrides)
+          ? storedSettings.siteOverrides
+          : {};
+
+        return {
+          ...this.defaultSettings,
+          ...storedSettings,
+          siteOverrides,
+          blockedSites: window.SiteBlocklist.normalizeList(result.blockedSites)
+        };
       }
-      return this.defaultSettings;
+      return { ...this.defaultSettings };
     } catch (error) {
       console.error('Error loading settings:', error);
-      return this.defaultSettings;
+      return { ...this.defaultSettings };
     }
   }
   

@@ -12,7 +12,8 @@ const { MockFetch, SampleRates } = require('./mock-fetch');
 if (typeof global.chrome === 'undefined') {
   global.chrome = {
     action: {
-      onClicked: { addListener: () => {} }
+      onClicked: { addListener: () => {} },
+      setIcon: async () => {}
     },
     runtime: {
       id: 'test-extension-id',
@@ -35,8 +36,13 @@ if (typeof global.chrome === 'undefined') {
       onChanged: { addListener: () => {} }
     },
     tabs: {
+      onActivated: { addListener: () => {} },
+      onUpdated: { addListener: () => {} },
       create: () => {},
-      query: (opts, cb) => cb && cb([]),
+      query: (opts, cb) => {
+        if (cb) cb([]);
+        return Promise.resolve([]);
+      },
       sendMessage: () => {}
     },
     alarms: {

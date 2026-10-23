@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quick Settings</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../settings-page/settings.css">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <main class="quick-settings-popup" aria-label="Quick settings">
+    <h1 class="quick-settings-title">Quick Settings</h1>
+
+    <section class="quick-settings-card" aria-label="Toggle controls">
+      <div class="setting-row">
+        <span class="setting-label">Enabled on this site</span>
+        <label class="toggle-switch" for="siteToggle">
+          <input id="siteToggle" type="checkbox" aria-label="Enabled on this site">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+
+      <p id="siteStatus" class="setting-hint" aria-live="polite"></p>
+
+      <div class="setting-row">
+        <span class="setting-label">Enable Globally</span>
+        <label class="toggle-switch" for="globalToggle">
+          <input id="globalToggle" type="checkbox" aria-label="Enable globally">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+    </section>
+
+    <button id="goToSettingsBtn" class="go-settings-btn" type="button">Go to Settings</button>
+  </main>
+
+  <script src="popup.js"></script>
+</body>
+</html>

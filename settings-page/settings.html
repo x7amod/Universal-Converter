@@ -36,6 +36,21 @@
       </div>
     </section>
 
+    <section class="card" aria-labelledby="blockedSitesTitle">
+      <h2 class="section-title" id="blockedSitesTitle">Blocked Websites</h2>
+      <p class="blocked-sites-description">Conversions are disabled on these domains and their subdomains.</p>
+      <div class="blocked-site-actions">
+        <button type="button" class="blocked-site-button" id="blockCurrentSiteBtn">Block This Website</button>
+        <form id="blockedSiteForm" class="blocked-site-form">
+          <label class="sr-only" for="blockedSiteInput">Website domain</label>
+          <input id="blockedSiteInput" type="text" placeholder="example.com" autocomplete="url">
+          <button type="submit" class="blocked-site-button">Add Domain</button>
+        </form>
+      </div>
+      <p id="blockedSitesStatus" class="blocked-sites-status" role="status" aria-live="polite"></p>
+      <ul id="blockedSitesList" class="blocked-sites-list" aria-label="Blocked websites"></ul>
+    </section>
+
     <!-- Preferences Section -->
     <section class="card">
       <h2 class="section-title">Preferences</h2>
@@ -258,6 +273,7 @@
   </div>
   
   <script src="../data/currency-mappings.js"></script>
+  <script src="../utils/site-blocklist.js"></script>
   <script src="settings.js"></script>
 </body>
 </html>

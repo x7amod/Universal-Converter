@@ -86,6 +86,42 @@ async function init() {
  */
 async function loadUserSettings() {
   userSettings = await settingsManager.loadSettings();
+
+  if (!isConversionEnabledForCurrentSite() && popupManager) {
+    currentOperationId = null;
+    popupManager.removePopup();
+    currentlyDisplayedText = null;
+  }
+}
+
+/**
+ * Check whether conversion is enabled for current hostname
+ * @returns {boolean}
+ */
+function isConversionEnabledForCurrentSite() {
+  if (userSettings.enabledGlobally === false) {
+    return false;
+  }
+
+  const hostname = window.location && window.location.hostname ? window.location.hostname : '';
+  if (!hostname) {
+    return true;
+  }
+
+  if (window.SiteBlocklist.isBlocked(hostname, userSettings.blockedSites)) {
+    return false;
+  }
+
+  const siteOverrides = userSettings.siteOverrides;
+  if (!siteOverrides || typeof siteOverrides !== 'object' || Array.isArray(siteOverrides)) {
+    return true;
+  }
+
+  if (Object.prototype.hasOwnProperty.call(siteOverrides, hostname)) {
+    return siteOverrides[hostname] !== false;
+  }
+
+  return true;
 }
 
 /**
@@ -111,6 +147,12 @@ function handleClick(event) {
 async function handleTextSelection(event) {
   // Generate unique operation ID for this conversion
   const operationId = String(Date.now()); currentOperationId = operationId;
+
+  if (!isConversionEnabledForCurrentSite()) {
+    popupManager.removePopup();
+    currentlyDisplayedText = null;
+    return;
+  }
   
   const selection = window.getSelection();
   const selectedText = selection.toString().trim();
@@ -124,7 +166,7 @@ async function handleTextSelection(event) {
     currentlyDisplayedText = null;
     return;
   }
-  
+
   // Skip if we're re-selecting the same text that's already displayed
   if (currentlyDisplayedText === selectedText && popupManager.activePopup) {
     return;
@@ -193,6 +235,8 @@ async function processCurrencyConversions(conversions, operationId) {
   }
   
   for (const conversion of conversions) {
+    if (operationId !== currentOperationId || !isConversionEnabledForCurrentSite()) return;
+
     if (conversion.type === 'currency' && conversion.needsAsyncProcessing) {
       try {
         // Check if extension context is still valid before making API call
@@ -255,9 +299,13 @@ async function processCurrencyConversions(conversions, operationId) {
 // Listen for messages from background
 if (isExtensionContextValid()) {
   chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.action === 'getPageHostname') {
+      sendResponse({ hostname: window.location.hostname });
+      return false;
+    }
     if (request.action === 'settingsUpdated') {
-      loadUserSettings();
-      sendResponse({ status: 'Settings updated' });
+      loadUserSettings().then(() => sendResponse({ status: 'Settings updated' }));
+      return true;
     } else if (request.action === 'clearCurrencyCache') {
       // Clear the currency cache
       if (window.UnitConverter && window.UnitConverter.currencyConverter) {
@@ -281,14 +329,34 @@ if (document.readyState === 'loading') {
 
 function showConversions(conversions, selectionRect, operationId) {
   if (operationId !== currentOperationId) return; // Prevent race conditions
-  
-  const contentNode = popupManager.buildPopupNode(conversions);
-  
-  const margin = 10;
-  let top = selectionRect.bottom + window.scrollY + margin;
-  let left = selectionRect.left + (selectionRect.width / 2) + window.scrollX;
-  
-  left = Math.max(margin, left - 100);
 
+  const contentNode = popupManager.buildPopupNode(conversions);
+
+  const margin = 10;
+  const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
+  const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+
+  // Use the popup's CSS min-width as a conservative width estimate for clamping
+  const estimatedPopupWidth = 250; // px, matches popup CSS min-width
+  // Rough height estimate for deciding above/below placement
+  const estimatedPopupHeight = 200; // px
+
+  // Horizontal positioning: center on the selection, then clamp within viewport
+  const selectionCenterX = selectionRect.left + (selectionRect.width / 2);
+  let left = selectionCenterX + window.scrollX - (estimatedPopupWidth / 2);
+  left = Math.max(margin, Math.min(left, viewportWidth - estimatedPopupWidth - margin));
+
+  // Vertical positioning: prefer below, but place above if there isn't enough space
+  const spaceBelow = viewportHeight - selectionRect.bottom;
+  const spaceAbove = selectionRect.top;
+  let top;
+
+  if (spaceBelow < estimatedPopupHeight && spaceAbove > spaceBelow) {
+    // Place above the selection
+    top = selectionRect.top + window.scrollY - estimatedPopupHeight - margin;
+  } else {
+    // Default: place below the selection
+    top = selectionRect.bottom + window.scrollY + margin;
+  }
   popupManager.showPopup(contentNode, left, top);
 }

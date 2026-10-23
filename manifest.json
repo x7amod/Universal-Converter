@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Universal Converter",
-  "version": "1.6.3",
+  "version": "1.6.4",
   "description": "Convert any unit or currency to another with text selection popup and comprehensive unit support",
   "permissions": [
     "activeTab",
@@ -12,8 +12,15 @@
     "https://api.exchangerate.fun/latest*",
     "https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/*"
   ],
-    "action": {
-    "default_title": "Universal Converter: Convert units and currencies"
+  "action": {
+    "default_title": "Universal Converter: Convert units and currencies",
+    "default_popup": "quick-settings/popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
   },
   "content_scripts": [
     {
@@ -21,6 +28,7 @@
       "js": [
         "data/conversion-data.js",
         "data/currency-mappings.js",
+        "utils/site-blocklist.js",
         "utils/unit-converter.js",
         "utils/currency-converter.js",
         "utils/conversion-detector.js",

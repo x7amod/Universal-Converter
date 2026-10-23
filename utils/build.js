@@ -37,6 +37,7 @@ class ExtensionBuilder {
       'data',
       'utils',
       'settings-page',
+      'quick-settings',
       'icons'
     ];
     
@@ -228,10 +229,14 @@ class ExtensionBuilder {
       'utils/currency-converter.js',
       'utils/popup-manager.js',
       'utils/settings-manager.js',
+      'utils/site-blocklist.js',
       'utils/unit-converter.js',
       'settings-page/settings.html',
       'settings-page/settings.js',
-      'settings-page/settings.css'
+      'settings-page/settings.css',
+      'quick-settings/popup.html',
+      'quick-settings/popup.js',
+      'quick-settings/popup.css'
     ];
     
     let isValid = true;
@@ -373,7 +378,7 @@ class ExtensionBuilder {
         
         // Firefox uses 'scripts' array instead of 'service_worker'
         background: {
-          scripts: ["background.js"]
+          scripts: ["utils/site-blocklist.js", "background.js"]
         },
         
         // Content scripts
@@ -486,10 +491,14 @@ if (typeof browser !== 'undefined' && typeof chrome === 'undefined') {
       'utils/currency-converter.js',
       'utils/popup-manager.js',
       'utils/settings-manager.js',
+      'utils/site-blocklist.js',
       'utils/unit-converter.js',
       'settings-page/settings.html',
       'settings-page/settings.js',
-      'settings-page/settings.css'
+      'settings-page/settings.css',
+      'quick-settings/popup.html',
+      'quick-settings/popup.js',
+      'quick-settings/popup.css'
     ];
     
     let isValid = true;

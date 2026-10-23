@@ -20,8 +20,16 @@ document.addEventListener('DOMContentLoaded', async function() {
     timezoneUnit: document.getElementById('timezoneUnit'),
     time12Btn: document.getElementById('time12Btn'),
     time24Btn: document.getElementById('time24Btn'),
-    currencyUnit: document.getElementById('currencyUnit')
+    currencyUnit: document.getElementById('currencyUnit'),
+    blockedSiteForm: document.getElementById('blockedSiteForm'),
+    blockedSiteInput: document.getElementById('blockedSiteInput'),
+    blockCurrentSiteBtn: document.getElementById('blockCurrentSiteBtn'),
+    blockedSitesList: document.getElementById('blockedSitesList'),
+    blockedSitesStatus: document.getElementById('blockedSitesStatus')
   };
+
+  let persistedUnitSettings = {};
+  let blockedSites = [];
   
   // Preset configurations
   const presets = {
@@ -55,7 +63,7 @@ document.addEventListener('DOMContentLoaded', async function() {
   async function initializeCurrencyList() {
     const currencySelect = document.getElementById('currencyUnit');
     
-    // Clear existing options (using textContent is safer than innerHTML)
+    // Clear existing options
     currencySelect.textContent = '';
     
     // Add all currencies from the mapping
@@ -118,18 +126,39 @@ document.addEventListener('DOMContentLoaded', async function() {
   
   // Load saved settings
   await loadSettings();
+  await loadBlockedSites();
+
+  elements.blockedSiteForm.addEventListener('submit', async event => {
+    event.preventDefault();
+    await addBlockedSite(elements.blockedSiteInput.value);
+  });
+
+  elements.blockCurrentSiteBtn.addEventListener('click', async () => {
+    const hostname = await getCurrentHostname();
+    if (!hostname) {
+      setBlockedSitesStatus('The current website is unavailable on this page.', true);
+      return;
+    }
+    await addBlockedSite(hostname);
+  });
+
+  elements.blockedSitesList.addEventListener('click', async event => {
+    const button = event.target.closest('button[data-hostname]');
+    if (button) await removeBlockedSite(button.dataset.hostname);
+  });
+
     // Event listeners for preset buttons with auto-save
   elements.metricBtn.addEventListener('click', () => {
     applyPreset('metric');
-    saveSettings(); // Auto-save when preset is applied
+    saveSettings();
   });
   elements.imperialBtn.addEventListener('click', () => {
     applyPreset('imperial');
-    saveSettings(); // Auto-save when preset is applied
+    saveSettings();
   });
   elements.customBtn.addEventListener('click', () => {
     applyPreset('custom');
-    saveSettings(); // Auto-save when preset is applied
+    saveSettings();
   });
   // Event listeners for unit selectors with auto-save (excluding currency and timezone)
   [elements.lengthUnit, elements.weightUnit, elements.temperatureUnit, 
@@ -137,7 +166,7 @@ document.addEventListener('DOMContentLoaded', async function() {
    elements.flowRateUnit, elements.torqueUnit, elements.pressureUnit].forEach(select => {
     select.addEventListener('change', () => {
       updateActivePreset();
-      saveSettings(); // Auto-save when any setting changes
+      saveSettings();
     });
   });
   
@@ -162,73 +191,86 @@ document.addEventListener('DOMContentLoaded', async function() {
     saveSettings();
   });
   
-  // Migrate old unit values to new simplified options
-  function migrateUnitSettings(settings) {
-    const unitMappings = {
-      // Length mappings
-      lengthUnit: { 
-        'm': 'm', 'cm': 'm', 'mm': 'm', 'km': 'm',  // All metric -> m
-        'in': 'ft', 'ft': 'ft', 'yd': 'ft', 'mi': 'ft'  // All imperial -> ft
-      },
-      // Area mappings
-      areaUnit: {
-        'm2': 'm2', 'cm2': 'm2', 'km2': 'm2',  // All metric -> m2
-        'ft2': 'ft2', 'in2': 'ft2', 'acre': 'ft2'  // All imperial -> ft2
-      },
-      // Speed mappings
-      speedUnit: {
-        'kmh': 'kmh', 'ms': 'kmh',  // Metric -> kmh
-        'mph': 'mph', 'fps': 'mph',  // Imperial -> mph
-        'kn': 'kn',  // Nautical stays
-        'mach': 'mach'  // Mach stays
-      },
-      // Acceleration mappings
-      accelerationUnit: {
-        'ms2': 'ms2', 'cms2': 'ms2', 'kms2': 'ms2',  // Metric -> ms2
-        'fts2': 'fts2', 'ins2': 'fts2',  // Imperial -> fts2
-        'gforce': 'gforce'  // g-force stays
-      },
-      // Flow Rate mappings
-      flowRateUnit: {
-        'lmin': 'lmin', 'lpm': 'lmin', 'mlmin': 'lmin', 'mls': 'lmin', 
-        'ls': 'lmin', 'lh': 'lmin', 'm3s': 'lmin', 'm3h': 'lmin', 'm3min': 'lmin',  // All metric -> lmin
-        'galmin': 'galmin', 'gpm': 'galmin', 'gals': 'galmin', 'galh': 'galmin', 
-        'cfm': 'galmin', 'cfs': 'galmin'  // All imperial -> galmin
-      },
-      // Torque mappings
-      torqueUnit: {
-        'nm': 'nm', 'kgm': 'nm', 'kgfm': 'nm',  // Metric -> nm
-        'lbft': 'lbft', 'lbin': 'lbft', 'ozin': 'lbft'  // Imperial -> lbft
-      },
-      // Volume mappings
-      volumeUnit: {
-        'l': 'l', 'ml': 'l',  // Metric -> l
-        'gal': 'gal', 'qt': 'gal', 'pt': 'gal', 'cup': 'gal', 'fl_oz': 'gal'  // Imperial -> gal
-      },
-      // Weight mappings
-      weightUnit: {
-        'kg': 'kg', 'g': 'kg', 't': 'kg', 'mg': 'kg',  // Metric -> kg
-        'lb': 'lb', 'oz': 'lb'  // Imperial -> lb
-      }
-    };
+  // // Migrate old unit values to new simplified options -- DEPRECATED
+  // function migrateUnitSettings(settings) {
+  //   const unitMappings = {
+  //     // Length mappings
+  //     lengthUnit: { 
+  //       'm': 'm', 'cm': 'm', 'mm': 'm', 'km': 'm',  // All metric -> m
+  //       'in': 'ft', 'ft': 'ft', 'yd': 'ft', 'mi': 'ft'  // All imperial -> ft
+  //     },
+  //     // Area mappings
+  //     areaUnit: {
+  //       'm2': 'm2', 'cm2': 'm2', 'km2': 'm2',  // All metric -> m2
+  //       'ft2': 'ft2', 'in2': 'ft2', 'acre': 'ft2'  // All imperial -> ft2
+  //     },
+  //     // Speed mappings
+  //     speedUnit: {
+  //       'kmh': 'kmh', 'ms': 'kmh',  // Metric -> kmh
+  //       'mph': 'mph', 'fps': 'mph',  // Imperial -> mph
+  //       'kn': 'kn',  // Nautical stays
+  //       'mach': 'mach'  // Mach stays
+  //     },
+  //     // Acceleration mappings
+  //     accelerationUnit: {
+  //       'ms2': 'ms2', 'cms2': 'ms2', 'kms2': 'ms2',  // Metric -> ms2
+  //       'fts2': 'fts2', 'ins2': 'fts2',  // Imperial -> fts2
+  //       'gforce': 'gforce'  // g-force stays
+  //     },
+  //     // Flow Rate mappings
+  //     flowRateUnit: {
+  //       'lmin': 'lmin', 'lpm': 'lmin', 'mlmin': 'lmin', 'mls': 'lmin', 
+  //       'ls': 'lmin', 'lh': 'lmin', 'm3s': 'lmin', 'm3h': 'lmin', 'm3min': 'lmin',  // All metric -> lmin
+  //       'galmin': 'galmin', 'gpm': 'galmin', 'gals': 'galmin', 'galh': 'galmin', 
+  //       'cfm': 'galmin', 'cfs': 'galmin'  // All imperial -> galmin
+  //     },
+  //     // Torque mappings
+  //     torqueUnit: {
+  //       'nm': 'nm', 'kgm': 'nm', 'kgfm': 'nm',  // Metric -> nm
+  //       'lbft': 'lbft', 'lbin': 'lbft', 'ozin': 'lbft'  // Imperial -> lbft
+  //     },
+  //     // Volume mappings
+  //     volumeUnit: {
+  //       'l': 'l', 'ml': 'l',  // Metric -> l
+  //       'gal': 'gal', 'qt': 'gal', 'pt': 'gal', 'cup': 'gal', 'fl_oz': 'gal'  // Imperial -> gal
+  //     },
+  //     // Weight mappings
+  //     weightUnit: {
+  //       'kg': 'kg', 'g': 'kg', 't': 'kg', 'mg': 'kg',  // Metric -> kg
+  //       'lb': 'lb', 'oz': 'lb'  // Imperial -> lb
+  //     }
+  //   };
     
-    // Apply migrations
-    for (const [unitType, mappings] of Object.entries(unitMappings)) {
-      if (settings[unitType] && mappings[settings[unitType]]) {
-        settings[unitType] = mappings[settings[unitType]];
-      }
-    }
+  //   // Apply migrations
+  //   for (const [unitType, mappings] of Object.entries(unitMappings)) {
+  //     if (settings[unitType] && mappings[settings[unitType]]) {
+  //       settings[unitType] = mappings[settings[unitType]];
+  //     }
+  //   }
     
-    return settings;
-  }
+  //   return settings;
+  // }
 
   async function loadSettings() {
     try {
       const result = await chrome.storage.sync.get(['unitSettings']);
-      let settings = result.unitSettings || presets.metric;
+      persistedUnitSettings = result.unitSettings || {};
+      const siteOverrides = persistedUnitSettings.siteOverrides &&
+        typeof persistedUnitSettings.siteOverrides === 'object' &&
+        !Array.isArray(persistedUnitSettings.siteOverrides)
+        ? persistedUnitSettings.siteOverrides
+        : {};
+
+      let settings = {
+        preset: 'metric',
+        is12hr: true,
+        enabledGlobally: true,
+        siteOverrides,
+        ...persistedUnitSettings
+      };
       
       // Migrate old settings to new simplified options
-      settings = migrateUnitSettings(settings);
+      // settings = migrateUnitSettings(settings);
       
       elements.lengthUnit.value = settings.lengthUnit || 'm';
       elements.weightUnit.value = settings.weightUnit || 'kg';
@@ -243,7 +285,7 @@ document.addEventListener('DOMContentLoaded', async function() {
       elements.timezoneUnit.value = settings.timezoneUnit || 'auto';
       
       // Set time format buttons based on settings
-      const is12hr = settings.is12hr !== false; // Default to 12hr (true)
+      const is12hr = typeof settings.is12hr === 'boolean' ? settings.is12hr : true;
       if (is12hr) {
         elements.time12Btn.classList.add('active');
         elements.time24Btn.classList.remove('active');
@@ -259,6 +301,90 @@ document.addEventListener('DOMContentLoaded', async function() {
       console.error('Error loading settings:', error);
       applyPreset('metric');
     }
+  }
+
+  async function loadBlockedSites() {
+    try {
+      const result = await chrome.storage.sync.get(['blockedSites']);
+      blockedSites = window.SiteBlocklist.normalizeList(result.blockedSites);
+      renderBlockedSites();
+    } catch (error) {
+      setBlockedSitesStatus('Could not load blocked websites.', true);
+    }
+  }
+
+  async function getCurrentHostname() {
+    const fromUrl = new URLSearchParams(window.location.search).get('hostname');
+    const requestedHostname = window.SiteBlocklist.normalizeHostname(fromUrl);
+    if (requestedHostname) return requestedHostname;
+
+    try {
+      const [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
+      const response = tab && await chrome.tabs.sendMessage(tab.id, { action: 'getPageHostname' });
+      return window.SiteBlocklist.normalizeHostname(response && response.hostname);
+    } catch (error) {
+      return null;
+    }
+  }
+
+  async function addBlockedSite(value) {
+    const hostname = window.SiteBlocklist.normalizeHostname(value);
+    if (!hostname) {
+      setBlockedSitesStatus('Enter a valid website or domain.', true);
+      return;
+    }
+    if (blockedSites.includes(hostname)) {
+      setBlockedSitesStatus(`${hostname} is already blocked.`, true);
+      return;
+    }
+
+    await saveBlockedSites([...blockedSites, hostname], `Blocked ${hostname}.`);
+    elements.blockedSiteInput.value = '';
+  }
+
+  async function removeBlockedSite(hostname) {
+    await saveBlockedSites(blockedSites.filter(site => site !== hostname), `Unblocked ${hostname}.`);
+  }
+
+  async function saveBlockedSites(sites, message) {
+    const updated = window.SiteBlocklist.normalizeList(sites);
+    try {
+      await chrome.storage.sync.set({ blockedSites: updated });
+      blockedSites = updated;
+      renderBlockedSites();
+      setBlockedSitesStatus(message);
+    } catch (error) {
+      setBlockedSitesStatus('Could not save blocked websites.', true);
+    }
+  }
+
+  function renderBlockedSites() {
+    elements.blockedSitesList.replaceChildren();
+    if (blockedSites.length === 0) {
+      const empty = document.createElement('li');
+      empty.className = 'empty-state';
+      empty.textContent = 'No blocked websites.';
+      elements.blockedSitesList.appendChild(empty);
+      return;
+    }
+
+    blockedSites.forEach(hostname => {
+      const item = document.createElement('li');
+      const label = document.createElement('span');
+      label.textContent = hostname;
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.dataset.hostname = hostname;
+      button.setAttribute('aria-label', `Unblock ${hostname}`);
+      button.textContent = 'Remove';
+      item.append(label, button);
+      elements.blockedSitesList.appendChild(item);
+    });
+  }
+
+  function setBlockedSitesStatus(message, isError = false) {
+    elements.blockedSitesStatus.textContent = message;
+    elements.blockedSitesStatus.classList.toggle('error', isError);
   }
   
   function applyPreset(presetName) {
@@ -347,6 +473,7 @@ document.addEventListener('DOMContentLoaded', async function() {
   
   async function saveSettings() {
     const settings = {
+      ...persistedUnitSettings,
       preset: getActivePreset(),
       lengthUnit: elements.lengthUnit.value,
       weightUnit: elements.weightUnit.value,
@@ -360,11 +487,20 @@ document.addEventListener('DOMContentLoaded', async function() {
       pressureUnit: elements.pressureUnit.value,
       timezoneUnit: elements.timezoneUnit.value,
       is12hr: elements.time12Btn.classList.contains('active'),
-      currencyUnit: elements.currencyUnit.value
+      currencyUnit: elements.currencyUnit.value,
+      enabledGlobally: typeof persistedUnitSettings.enabledGlobally === 'boolean'
+        ? persistedUnitSettings.enabledGlobally
+        : true,
+      siteOverrides: persistedUnitSettings.siteOverrides &&
+        typeof persistedUnitSettings.siteOverrides === 'object' &&
+        !Array.isArray(persistedUnitSettings.siteOverrides)
+        ? persistedUnitSettings.siteOverrides
+        : {}
     };
     
     try {
       await chrome.storage.sync.set({ unitSettings: settings });
+      persistedUnitSettings = settings;
       
       // Notify content scripts about settings update
       const tabs = await chrome.tabs.query({});

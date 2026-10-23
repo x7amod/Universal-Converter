@@ -57,8 +57,10 @@ class ExtensionValidator {
       this.check(manifest.permissions.includes('activeTab'), 'activeTab permission granted');
       this.check(manifest.permissions.includes('storage'), 'storage permission granted');
 
-      // Check action (title configured, popup optional for standalone design)
+      // Check action configuration
       this.check(manifest.action && manifest.action.default_title, 'Action configured with title');
+      this.check(manifest.action && manifest.action.default_popup, 'Action configured with popup');
+      this.check(manifest.action && manifest.action.default_icon, 'Action has a default icon');
 
       // Check content scripts
       this.check(Array.isArray(manifest.content_scripts), 'Content scripts array exists');
@@ -91,12 +93,15 @@ class ExtensionValidator {
       'content.js',
       'settings-page/settings.html',
       'settings-page/settings.js',
+      'quick-settings/popup.html',
+      'quick-settings/popup.js',
+      'quick-settings/popup.css',
       'content.css'
     ];requiredFiles.forEach(file => {
       const exists = fs.existsSync(path.join(__dirname, '..', file));
       this.check(exists, `Required file exists: ${file}`);
     });    // Required directories
-    const requiredDirs = ['data', 'utils', 'icons', 'settings-page', 'tests'];
+    const requiredDirs = ['data', 'utils', 'icons', 'settings-page', 'quick-settings', 'tests'];
     requiredDirs.forEach(dir => {
       const exists = fs.existsSync(path.join(__dirname, '..', dir));
       this.check(exists, `Required directory exists: ${dir}`);
@@ -108,7 +113,8 @@ class ExtensionValidator {
       'utils/unit-converter.js',
       'utils/conversion-detector.js',
       'utils/popup-manager.js',
-      'utils/settings-manager.js'
+      'utils/settings-manager.js',
+      'utils/site-blocklist.js'
     ];    moduleFiles.forEach(file => {
       const exists = fs.existsSync(path.join(__dirname, '..', file));
       this.check(exists, `Module file exists: ${file}`);
@@ -120,6 +126,8 @@ class ExtensionValidator {
       const iconFile = `icons/icon${size}.png`;
       const exists = fs.existsSync(path.join(__dirname, '..', iconFile));
       this.check(exists, `Icon file exists: ${iconFile}`, true); // Warning only
+      const disabledIconFile = `icons/icon${size}-disabled.png`;
+      this.check(fs.existsSync(path.join(__dirname, '..', disabledIconFile)), `Disabled icon file exists: ${disabledIconFile}`);
     });
   }
 
@@ -128,11 +136,13 @@ class ExtensionValidator {
       'background.js',
       'content.js',
       'settings-page/settings.js',
+      'quick-settings/popup.js',
       'data/conversion-data.js',
       'utils/unit-converter.js',
       'utils/conversion-detector.js',
       'utils/popup-manager.js',
-      'utils/settings-manager.js'
+      'utils/settings-manager.js',
+      'utils/site-blocklist.js'
     ];jsFiles.forEach(file => {
       try {
         const filePath = path.join(__dirname, '..', file);
@@ -179,6 +189,7 @@ class ExtensionValidator {
           'utils/conversion-detector.js',
           'utils/popup-manager.js',
           'utils/settings-manager.js',
+          'utils/site-blocklist.js',
           'content.js'
         ];
 
@@ -262,9 +273,11 @@ class ExtensionValidator {
 
       // Check action (V3) - Firefox V3 uses 'action' not 'browser_action'
       this.check(manifest.action && manifest.action.default_title, 'Firefox action configured');
+      this.check(manifest.action && manifest.action.default_popup, 'Firefox action popup configured');
 
       // Check background scripts (V3 Firefox format - uses 'scripts' array instead of 'service_worker')
       this.check(manifest.background && Array.isArray(manifest.background.scripts), 'Firefox background scripts array exists');
+      this.check(manifest.background?.scripts?.[0] === 'utils/site-blocklist.js', 'Firefox loads site blocklist helper before background');
       this.check(!manifest.background?.service_worker, 'Firefox does not use service_worker (uses scripts array)');
 
       // Check content scripts
@@ -295,6 +308,9 @@ class ExtensionValidator {
       'background.js',
       'content.js',
       'content.css',
+      'quick-settings/popup.html',
+      'quick-settings/popup.js',
+      'quick-settings/popup.css',
       'settings-page/settings.html',
       'settings-page/settings.js',
       'data/conversion-data.js',
@@ -303,6 +319,7 @@ class ExtensionValidator {
       'utils/currency-converter.js',
       'utils/popup-manager.js',
       'utils/settings-manager.js',
+      'utils/site-blocklist.js',
       'utils/unit-converter.js'
     ];
 
@@ -364,9 +381,31 @@ class ExtensionValidator {
     // Firefox validation (only if build exists)
     const firefoxBuildPath = path.join(__dirname, '..', 'build-firefox');
     if (fs.existsSync(firefoxBuildPath)) {
-      this.validateFirefoxManifest();
-      this.validateFirefoxFiles();
-      this.validateFirefoxAPIReplacements();
+      const firefoxBuildRequiredFiles = [
+        'manifest.json',
+        'utils/site-blocklist.js',
+        'quick-settings/popup.html',
+        'quick-settings/popup.js',
+        'quick-settings/popup.css'
+      ];
+
+      const hasFirefoxBuildFiles = firefoxBuildRequiredFiles.every(file =>
+        fs.existsSync(path.join(firefoxBuildPath, file))
+      );
+      const firefoxManifest = hasFirefoxBuildFiles
+        ? JSON.parse(fs.readFileSync(path.join(firefoxBuildPath, 'manifest.json'), 'utf8'))
+        : null;
+      const hasAllFirefoxBuildFiles = hasFirefoxBuildFiles &&
+        firefoxManifest.background?.scripts?.[0] === 'utils/site-blocklist.js';
+
+      if (hasAllFirefoxBuildFiles) {
+        this.validateFirefoxManifest();
+        this.validateFirefoxFiles();
+        this.validateFirefoxAPIReplacements();
+      } else {
+        console.log(`\n${colors.yellow}⚠️  Firefox build appears stale - skipping Firefox validation${colors.reset}`);
+        console.log(`${colors.yellow}💡 Run 'npm run build' to refresh build-firefox and validate Firefox artifacts${colors.reset}`);
+      }
     } else {
       console.log(`\n${colors.yellow}⚠️  Firefox build not found - skipping Firefox validation${colors.reset}`);
       console.log(`${colors.yellow}💡 Run 'npm run build' to create Firefox build${colors.reset}`);

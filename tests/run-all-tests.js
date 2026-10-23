@@ -41,6 +41,11 @@ class CrossPlatformTestRunner {
         description: 'Currency rate service cache behavior tests'
       },
       {
+        name: 'Website Blacklist Tests',
+        script: 'tests/site-blocklist.test.js',
+        description: 'Website matching, settings, and toolbar icon behavior'
+      },
+      {
         name: 'Unit Converter Tests',
         script: 'tests/test-runner.js',
         description: 'Core unit conversion logic tests'
