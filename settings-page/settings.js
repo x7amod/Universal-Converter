@@ -23,7 +23,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     currencyUnit: document.getElementById('currencyUnit'),
     blockedSiteForm: document.getElementById('blockedSiteForm'),
     blockedSiteInput: document.getElementById('blockedSiteInput'),
-    blockCurrentSiteBtn: document.getElementById('blockCurrentSiteBtn'),
     blockedSitesList: document.getElementById('blockedSitesList'),
     blockedSitesStatus: document.getElementById('blockedSitesStatus')
   };
@@ -128,18 +127,15 @@ document.addEventListener('DOMContentLoaded', async function() {
   await loadSettings();
   await loadBlockedSites();
 
+  chrome.storage.onChanged.addListener((changes, namespace) => {
+    if (namespace !== 'sync' || !changes.blockedSites) return;
+    blockedSites = window.SiteBlocklist.normalizeList(changes.blockedSites.newValue);
+    renderBlockedSites();
+  });
+
   elements.blockedSiteForm.addEventListener('submit', async event => {
     event.preventDefault();
     await addBlockedSite(elements.blockedSiteInput.value);
-  });
-
-  elements.blockCurrentSiteBtn.addEventListener('click', async () => {
-    const hostname = await getCurrentHostname();
-    if (!hostname) {
-      setBlockedSitesStatus('The current website is unavailable on this page.', true);
-      return;
-    }
-    await addBlockedSite(hostname);
   });
 
   elements.blockedSitesList.addEventListener('click', async event => {
@@ -310,20 +306,6 @@ document.addEventListener('DOMContentLoaded', async function() {
       renderBlockedSites();
     } catch (error) {
       setBlockedSitesStatus('Could not load blocked websites.', true);
-    }
-  }
-
-  async function getCurrentHostname() {
-    const fromUrl = new URLSearchParams(window.location.search).get('hostname');
-    const requestedHostname = window.SiteBlocklist.normalizeHostname(fromUrl);
-    if (requestedHostname) return requestedHostname;
-
-    try {
-      const [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
-      const response = tab && await chrome.tabs.sendMessage(tab.id, { action: 'getPageHostname' });
-      return window.SiteBlocklist.normalizeHostname(response && response.hostname);
-    } catch (error) {
-      return null;
     }
   }
 

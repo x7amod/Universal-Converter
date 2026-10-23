@@ -129,6 +129,10 @@ hr {
   font-size: 1.125rem;
 }
 
+.blocked-sites-group.preference-row {
+  display: block;
+}
+
 .blocked-sites-description,
 .blocked-sites-status {
   color: var(--text-secondary);
@@ -140,7 +144,6 @@ hr {
   color: var(--color-accent);
 }
 
-.blocked-site-actions,
 .blocked-site-form {
   display: flex;
   align-items: center;
@@ -188,6 +191,8 @@ hr {
 
 .blocked-sites-list {
   list-style: none;
+  max-height: 15rem;
+  overflow-y: auto;
 }
 
 .blocked-sites-list li {
@@ -195,9 +200,21 @@ hr {
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
-  padding: 0.6rem 0;
+  height: 3rem;
+  padding: 0.15rem 0;
   border-top: 1px solid var(--border-default);
   color: var(--text-tertiary);
+}
+
+.blocked-sites-list li > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.blocked-sites-list button {
+  padding: 0.4rem 0.8rem;
 }
 
 .blocked-sites-list .empty-state {
@@ -481,7 +498,6 @@ select:focus-visible,
     flex: 1;
   }
 
-  .blocked-site-actions,
   .blocked-site-form {
     align-items: stretch;
     flex-direction: column;

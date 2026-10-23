@@ -28,9 +28,10 @@ async function testSettingsAddAndRemove() {
     .replace(/<script[^>]*><\/script>/g, '');
   const settingsScript = fs.readFileSync(path.join(root, 'settings-page/settings.js'), 'utf8');
   const storage = { unitSettings: {}, blockedSites: [] };
+  const storageChanged = makeEvent();
   const dom = new JSDOM(html, {
     runScripts: 'outside-only',
-    url: 'chrome-extension://test/settings-page/settings.html?hostname=shop.example.com'
+    url: 'chrome-extension://test/settings-page/settings.html'
   });
   const { window } = dom;
   window.SiteBlocklist = SiteBlocklist;
@@ -44,21 +45,23 @@ async function testSettingsAddAndRemove() {
         async set(values) {
           Object.assign(storage, values);
         }
-      }
-    },
-    tabs: {
-      async query() { return []; },
-      async sendMessage() { return {}; }
+      },
+      onChanged: storageChanged
     }
   };
   const ready = new Promise(resolve => window.document.addEventListener('DOMContentLoaded', resolve, { once: true }));
   window.eval(settingsScript);
   await ready;
 
-  const addCurrent = window.document.getElementById('blockCurrentSiteBtn');
+  const blockedSitesGroup = window.document.querySelector('.blocked-sites-group');
+  assert.equal(blockedSitesGroup.tagName, 'DIV');
+  assert.ok(blockedSitesGroup.classList.contains('preference-row'));
+  assert.equal(window.document.getElementById('blockCurrentSiteBtn'), null);
   await waitFor(() => window.document.querySelector('.empty-state'));
-  addCurrent.click();
-  await waitFor(() => storage.blockedSites.includes('shop.example.com'));
+
+  storage.blockedSites = ['quick-settings.example.com'];
+  storageChanged.listener({ blockedSites: { newValue: storage.blockedSites } }, 'sync');
+  await waitFor(() => window.document.querySelector('button[data-hostname="quick-settings.example.com"]'));
 
   const input = window.document.getElementById('blockedSiteInput');
   input.value = 'https://blog.example.net/path';
@@ -70,7 +73,55 @@ async function testSettingsAddAndRemove() {
   await waitFor(() => window.document.querySelector('button[data-hostname="blog.example.net"]'));
   window.document.querySelector('button[data-hostname="blog.example.net"]').click();
   await waitFor(() => !storage.blockedSites.includes('blog.example.net'));
-  assert.deepEqual(storage.blockedSites, ['shop.example.com']);
+  assert.deepEqual(storage.blockedSites, ['quick-settings.example.com']);
+  dom.window.close();
+}
+
+async function testQuickSettingsBlockedSites() {
+  const root = path.join(__dirname, '..');
+  const html = fs.readFileSync(path.join(root, 'quick-settings/popup.html'), 'utf8')
+    .replace(/<script[^>]*><\/script>/g, '');
+  const popupScript = fs.readFileSync(path.join(root, 'quick-settings/popup.js'), 'utf8');
+  const storage = { unitSettings: {}, blockedSites: ['shop.example.com'] };
+  const dom = new JSDOM(html, { runScripts: 'outside-only', url: 'chrome-extension://test/quick-settings/popup.html' });
+  const { window } = dom;
+  window.SiteBlocklist = SiteBlocklist;
+  window.chrome = {
+    tabs: { async query() { return [{ id: 1, url: 'https://shop.example.com/page' }]; } },
+    runtime: { getURL: url => `chrome-extension://test/${url}` },
+    storage: {
+      sync: {
+        async get(keys) { return Object.fromEntries(keys.map(key => [key, storage[key]])); },
+        async set(values) { Object.assign(storage, values); }
+      }
+    }
+  };
+
+  const ready = new Promise(resolve => window.document.addEventListener('DOMContentLoaded', resolve, { once: true }));
+  window.eval(popupScript);
+  await ready;
+
+  const toggle = window.document.getElementById('siteToggle');
+  await waitFor(() => window.document.getElementById('siteStatus').textContent === 'Blocked shop.example.com');
+  assert.equal(toggle.checked, false);
+  assert.equal(window.document.getElementById('siteStatus').textContent, 'Blocked shop.example.com');
+
+  toggle.checked = true;
+  toggle.dispatchEvent(new window.Event('change'));
+  await waitFor(() => storage.blockedSites.length === 0);
+  assert.equal(toggle.checked, true);
+
+  toggle.checked = false;
+  toggle.dispatchEvent(new window.Event('change'));
+  await waitFor(() => storage.blockedSites.includes('shop.example.com'));
+  assert.equal(toggle.checked, false);
+
+  storage.blockedSites = ['example.com'];
+  toggle.checked = true;
+  toggle.dispatchEvent(new window.Event('change'));
+  await waitFor(() => window.document.getElementById('siteStatus').textContent === 'Blocked example.com; remove it in Settings.');
+  assert.equal(toggle.checked, false);
+  assert.deepEqual(storage.blockedSites, ['example.com']);
   dom.window.close();
 }
 
@@ -156,8 +207,9 @@ async function testTabAndIconUpdates() {
 (async () => {
   await testDomainMatching();
   await testSettingsAddAndRemove();
+  await testQuickSettingsBlockedSites();
   await testTabAndIconUpdates();
-  console.log('Website blacklist tests passed (matching, settings, live tab/icon updates).');
+  console.log('Website blacklist tests passed (matching, settings, quick settings, live tab/icon updates).');
 })().catch(error => {
   console.error(error);
   process.exitCode = 1;

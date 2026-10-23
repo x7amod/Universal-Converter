@@ -73,15 +73,17 @@ window.UnitConverter.ConversionDetector = class {
    */
   detectDimension(text, userSettings) {
     let match = null;
-    let length, width, height, unit;
+    let values = [];
+    let units = [];
     
-    // Try pattern with units on each number first (e.g., "6m × 4m × 2.5m")
+    // Try patterns with units on each value first (e.g., "24in × 2ft").
     const dimensionsWithUnitsPattern = this.getCompiledPattern('dimensionsWithUnits');
     if (dimensionsWithUnitsPattern) {
       match = text.match(dimensionsWithUnitsPattern);
       if (match && match.length >= 5) {
-        // [fullMatch, length, unit, width, height] - pattern: (\d+(?:\.\d+)?)\s*(unit)\s*(?:x|×|by|\*)\s*(\d+(?:\.\d+)?)\s*\2\s*(?:x|×|by|\*)\s*(\d+(?:\.\d+)?)\s*\2
-        [, length, unit, width, height] = match;
+        const [, first, firstUnit, second, secondUnit, third, thirdUnit] = match;
+        values = [first, second, ...(third ? [third] : [])];
+        units = [firstUnit, secondUnit, ...(third ? [thirdUnit] : [])];
       }
     }
     
@@ -89,72 +91,69 @@ window.UnitConverter.ConversionDetector = class {
     if (!match && dimensionsPattern) {
       match = text.match(dimensionsPattern);
       if (match && match.length >= 5) {
-        // [fullMatch, length, width, height, unit]
-        [, length, width, height, unit] = match;
+        const [, first, second, third, unit] = match;
+        values = [first, second, ...(third ? [third] : [])];
+        units = values.map(() => unit);
       }
     }
     
-    if (!match || !length || !width || !height || !unit) return null;
+    if (!match || values.length < 2 || values.some(value => !value) || units.some(unit => !unit)) return null;
     
     const fullMatch = match[0];
     
     // Make sure the match covers most of the selected text (avoid partial matches)
     if (fullMatch.length < text.length * 0.8) return null;
     
-    const normalizedUnit = this.unitConverter.normalizeUnit(unit);
-    if (!normalizedUnit) return null;
+    const normalizedUnits = units.map(unit => this.unitConverter.normalizeUnit(unit));
+    if (normalizedUnits.some(unit => this.unitConverter.getUnitType(unit) !== 'length')) return null;
     
-    const targetUnit = this.unitConverter.getDefaultTargetUnit(normalizedUnit, userSettings);
+    const targetUnit = this.unitConverter.getDefaultTargetUnit(normalizedUnits[0], userSettings);
     
     if (!targetUnit) return null;
     
     // Convert all dimensions to the target unit
-    const convertedLength = this.unitConverter.convert(parseFloat(length), normalizedUnit, targetUnit);
-    const convertedWidth = this.unitConverter.convert(parseFloat(width), normalizedUnit, targetUnit);
-    const convertedHeight = this.unitConverter.convert(parseFloat(height), normalizedUnit, targetUnit);
+    const numericValues = values.map(Number.parseFloat);
+    const convertedDimensions = numericValues.map((value, index) =>
+      this.unitConverter.convert(value, normalizedUnits[index], targetUnit)
+    );
     
-    if (convertedLength === null || convertedWidth === null || convertedHeight === null) {
+    if (convertedDimensions.some(value => value === null)) {
       return null;
     }
     
     // Use getBestUnit for smart unit sizing
-    const bestLength = this.unitConverter.getBestUnit(convertedLength, 'length', targetUnit);
-    const bestWidth = this.unitConverter.getBestUnit(convertedWidth, 'length', targetUnit);
-    const bestHeight = this.unitConverter.getBestUnit(convertedHeight, 'length', targetUnit);
+    const bestDimensions = convertedDimensions.map(value => this.unitConverter.getBestUnit(value, 'length', targetUnit));
     
     // Choose the unit that works best for the largest dimension
     // But prioritize the target unit if it's reasonable for most dimensions
-    const maxValue = Math.max(bestLength.value, bestWidth.value, bestHeight.value);
     let chosenUnit = targetUnit;
     
     // Only override the target unit if ALL dimensions would be much better in a different unit
     // This prevents the algorithm from reverting to the original unit when user wants a specific target
-    const allDimensionsPreferSameUnit = (bestLength.unit === bestWidth.unit && 
-                                        bestWidth.unit === bestHeight.unit &&
-                                        bestLength.unit !== targetUnit);
+    const allDimensionsPreferSameUnit = bestDimensions.every(dimension => dimension.unit === bestDimensions[0].unit) &&
+      bestDimensions[0].unit !== targetUnit;
     
     if (allDimensionsPreferSameUnit) {
       // Only use the alternate unit if it's significantly better for ALL dimensions
-      chosenUnit = bestLength.unit;
+      chosenUnit = bestDimensions[0].unit;
     }
     // Otherwise, stick with the user's preferred target unit
     
     // Convert all dimensions to the chosen unit
-    const finalLength = this.unitConverter.convert(parseFloat(length), normalizedUnit, chosenUnit);
-    const finalWidth = this.unitConverter.convert(parseFloat(width), normalizedUnit, chosenUnit);
-    const finalHeight = this.unitConverter.convert(parseFloat(height), normalizedUnit, chosenUnit);
+    const finalDimensions = numericValues.map((value, index) =>
+      this.unitConverter.convert(value, normalizedUnits[index], chosenUnit)
+    );
     
     // Skip if the chosen unit is the same as the original unit AND the values are essentially the same
-    if (chosenUnit === normalizedUnit && 
-        Math.abs(finalLength - parseFloat(length)) < 0.01 &&
-        Math.abs(finalWidth - parseFloat(width)) < 0.01 &&
-        Math.abs(finalHeight - parseFloat(height)) < 0.01) {
+    if (normalizedUnits.every((unit, index) =>
+      chosenUnit === unit && Math.abs(finalDimensions[index] - numericValues[index]) < 0.01
+    )) {
       return null;
     }
     
     return {
       original: fullMatch,
-      converted: `${Math.round(finalLength * 100) / 100} × ${Math.round(finalWidth * 100) / 100} × ${Math.round(finalHeight * 100) / 100} ${chosenUnit}`,
+      converted: `${finalDimensions.map(value => Math.round(value * 100) / 100).join(' × ')} ${chosenUnit}`,
       type: 'dimensions'
     };
   }

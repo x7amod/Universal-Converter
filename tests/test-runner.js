@@ -180,8 +180,9 @@ class JSONUnitConverterTester {
         const dimConvResult = this.detector.findConversions(input.text, input.userSettings);
         const dimensionConv = dimConvResult.find(conv => conv.type === 'dimensions');
         if (dimensionConv) {
-          const containsUnit = dimensionConv.converted.includes(expected.containsUnit);
-          this.assert(containsUnit, name, `contains ${expected.containsUnit}`, dimensionConv.converted);
+          const containsExpected = dimensionConv.converted.includes(expected.containsUnit) &&
+            (expected.containsValues || []).every(value => dimensionConv.converted.includes(value));
+          this.assert(containsExpected, name, `contains ${expected.containsUnit} and expected dimensions`, dimensionConv.converted);
         } else {
           this.assert(false, name, 'dimension conversion', 'not found');
         }

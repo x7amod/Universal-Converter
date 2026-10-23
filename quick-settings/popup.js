@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let activeHostname = '';
   let isSiteToggleAvailable = false;
+  let blockedSites = [];
 
   init().catch(error => {
     console.error('Quick settings initialization failed:', error);
@@ -39,13 +40,15 @@ document.addEventListener('DOMContentLoaded', () => {
       elements.siteToggle.disabled = true;
     }
 
-    const unitSettings = await loadUnitSettings();
-    renderState(unitSettings);
+    const latest = await loadSettings();
+    blockedSites = latest.blockedSites;
+    renderState(latest.unitSettings);
 
     elements.globalToggle.addEventListener('change', async () => {
-      const latest = await loadUnitSettings();
+      const latest = await loadSettings();
+      blockedSites = latest.blockedSites;
       const updated = {
-        ...latest,
+        ...latest.unitSettings,
         enabledGlobally: elements.globalToggle.checked
       };
 
@@ -58,36 +61,52 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
-      const latest = await loadUnitSettings();
-      const siteOverrides = sanitizeSiteOverrides(latest.siteOverrides);
+      const latest = await loadSettings();
+      const siteOverrides = sanitizeSiteOverrides(latest.unitSettings.siteOverrides);
+      let updatedBlockedSites = latest.blockedSites;
 
       if (elements.siteToggle.checked) {
+        const parentBlock = updatedBlockedSites.find(site =>
+          activeHostname !== site && activeHostname.endsWith(`.${site}`)
+        );
+        if (parentBlock) {
+          elements.siteToggle.checked = false;
+          elements.siteStatus.textContent = `Blocked ${parentBlock}; remove it in Settings.`;
+          elements.siteStatus.classList.add('error');
+          return;
+        }
+        updatedBlockedSites = updatedBlockedSites.filter(site => site !== activeHostname);
         delete siteOverrides[activeHostname];
       } else {
-        siteOverrides[activeHostname] = false;
+        if (!window.SiteBlocklist.isBlocked(activeHostname, updatedBlockedSites)) {
+          updatedBlockedSites = [...updatedBlockedSites, activeHostname];
+        }
+        delete siteOverrides[activeHostname];
       }
 
       const updated = {
-        ...latest,
+        ...latest.unitSettings,
         siteOverrides
       };
 
-      await saveUnitSettings(updated);
-      renderState(updated);
+      try {
+        await chrome.storage.sync.set({
+          unitSettings: normalizeUnitSettings(updated),
+          blockedSites: window.SiteBlocklist.normalizeList(updatedBlockedSites)
+        });
+        blockedSites = window.SiteBlocklist.normalizeList(updatedBlockedSites);
+        renderState(updated);
+      } catch (error) {
+        blockedSites = latest.blockedSites;
+        renderState(latest.unitSettings);
+        elements.siteStatus.textContent = 'Could not update this website.';
+        elements.siteStatus.classList.add('error');
+      }
     });
 
     elements.goToSettingsBtn.addEventListener('click', async () => {
-      const [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
-      let settingsUrl = chrome.runtime.getURL('settings-page/settings.html');
-      try {
-        const response = tab && await chrome.tabs.sendMessage(tab.id, { action: 'getPageHostname' });
-        const hostname = response && response.hostname;
-        if (hostname) settingsUrl += `?hostname=${encodeURIComponent(hostname)}`;
-      } catch (error) {
-        // Open settings without a site hint on browser-restricted pages.
-      }
       await chrome.tabs.create({
-        url: settingsUrl
+        url: chrome.runtime.getURL('settings-page/settings.html')
       });
       window.close();
     });
@@ -99,9 +118,14 @@ document.addEventListener('DOMContentLoaded', () => {
     elements.globalToggle.checked = normalized.enabledGlobally;
 
     if (isSiteToggleAvailable && activeHostname) {
-      const siteEnabled = normalized.siteOverrides[activeHostname] !== false;
+      const blockingSite = blockedSites.find(site =>
+        activeHostname === site || activeHostname.endsWith(`.${site}`)
+      );
+      const siteEnabled = !blockingSite && normalized.siteOverrides[activeHostname] !== false;
       elements.siteToggle.checked = siteEnabled;
       elements.siteToggle.disabled = false;
+      elements.siteStatus.textContent = blockingSite ? `Blocked ${blockingSite}` : `Site: ${activeHostname}`;
+      elements.siteStatus.classList.toggle('error', Boolean(blockingSite));
     } else {
       elements.siteToggle.checked = false;
       elements.siteToggle.disabled = true;
@@ -109,9 +133,12 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-async function loadUnitSettings() {
-  const result = await chrome.storage.sync.get(['unitSettings']);
-  return normalizeUnitSettings(result.unitSettings || {});
+async function loadSettings() {
+  const result = await chrome.storage.sync.get(['unitSettings', 'blockedSites']);
+  return {
+    unitSettings: normalizeUnitSettings(result.unitSettings || {}),
+    blockedSites: window.SiteBlocklist.normalizeList(result.blockedSites)
+  };
 }
 
 async function saveUnitSettings(unitSettings) {

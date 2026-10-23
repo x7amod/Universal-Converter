@@ -2117,6 +2117,63 @@
       }
     },
     {
+      "name": "Dimension: mixed units convert each value to cm",
+      "type": "dimensionConversion",
+      "input": {
+        "text": "8ft × 4ft × 30in",
+        "userSettings": {
+          "lengthUnit": "cm",
+          "areaUnit": "m2",
+          "weightUnit": "kg",
+          "temperatureUnit": "c",
+          "volumeUnit": "l",
+          "currencyUnit": "USD"
+        }
+      },
+      "expected": {
+        "containsUnit": "cm",
+        "containsValues": ["243.84", "121.92", "76.2"]
+      }
+    },
+    {
+      "name": "Dimension: 2D mixed units convert to cm",
+      "type": "dimensionConversion",
+      "input": {
+        "text": "24in x 2ft",
+        "userSettings": {
+          "lengthUnit": "cm",
+          "areaUnit": "m2",
+          "weightUnit": "kg",
+          "temperatureUnit": "c",
+          "volumeUnit": "l",
+          "currencyUnit": "USD"
+        }
+      },
+      "expected": {
+        "containsUnit": "cm",
+        "containsValues": ["60.96", "60.96"]
+      }
+    },
+    {
+      "name": "Dimension: 2D dimensions with a trailing unit convert to cm",
+      "type": "dimensionConversion",
+      "input": {
+        "text": "24 x 2 ft",
+        "userSettings": {
+          "lengthUnit": "cm",
+          "areaUnit": "m2",
+          "weightUnit": "kg",
+          "temperatureUnit": "c",
+          "volumeUnit": "l",
+          "currencyUnit": "USD"
+        }
+      },
+      "expected": {
+        "containsUnit": "cm",
+        "containsValues": ["731.52", "60.96"]
+      }
+    },
+    {
       "name": "Dimension: \"8 x 4 x 2 feet\" with x separator detected",
       "type": "dimensionDetection",
       "input": {
