@@ -2923,6 +2923,22 @@
       "expected": 1000000.99
     },
     {
+      "name": "Currency: extractNumber handles whitespace thousands separators",
+      "type": "currencyExtractNumber",
+      "input": {
+        "text": "3 900 NOK"
+      },
+      "expected": 3900
+    },
+    {
+      "name": "Currency: extractNumber handles whitespace-grouped prices",
+      "type": "currencyExtractNumber",
+      "input": {
+        "text": "3 399 ,-"
+      },
+      "expected": 3399
+    },
+    {
       "name": "Length: 0.029 m should be detected and parsed correctly",
       "type": "decimalValueDetection",
       "input": {

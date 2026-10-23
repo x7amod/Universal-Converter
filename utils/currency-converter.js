@@ -75,8 +75,8 @@ window.UnitConverter.CurrencyConverter = class {
 
         cleanedString = cleanedString[0];
 
-        // Remove spaces and apostrophes (they're thousands separators)
-        cleanedString = cleanedString.replace(/[ \']/g, '');
+        // Remove whitespace and apostrophes (they're thousands separators)
+        cleanedString = cleanedString.replace(/[\s']/g, '');
 
         // Determine format based on the presence of both ',' and '.'
         if (cleanedString.includes('.') && cleanedString.includes(',')) {
