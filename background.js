@@ -46,6 +46,7 @@ class CurrencyRateService {
     // Key: 'from-to' currency pair, Value: Promise
     // Note: This is best-effort only - lost when worker restarts
     this.inFlightRequests = new Map();
+    this.cacheWriteQueue = Promise.resolve();
   }
 
   /**
@@ -361,32 +362,42 @@ class CurrencyRateService {
    * Set cached rate in storage
    */
   async setCachedRate(baseCurrency, data) {
-    try {
-      const storage = this._getStorage();
-      if (storage) {
-        const result = await storage.get(this.cacheStorageKey);
-        const cache = result[this.cacheStorageKey] || {};
-        cache[baseCurrency] = data;
-        await storage.set({ [this.cacheStorageKey]: cache });
+    const write = async () => {
+      try {
+        const storage = this._getStorage();
+        if (storage) {
+          const result = await storage.get(this.cacheStorageKey);
+          const cache = result[this.cacheStorageKey] || {};
+          cache[baseCurrency] = data;
+          await storage.set({ [this.cacheStorageKey]: cache });
+        }
+      } catch (error) {
+        console.warn('Failed to set cache:', error);
       }
-    } catch (error) {
-      console.warn('Failed to set cache:', error);
-    }
+    };
+
+    this.cacheWriteQueue = this.cacheWriteQueue.then(write, write);
+    await this.cacheWriteQueue;
   }
 
   /**
    * Clear the currency cache
    */
   async clearCache() {
-    try {
-      const storage = this._getStorage();
-      if (storage) {
-        await storage.remove(this.cacheStorageKey);
-        console.info('Currency cache cleared');
+    const clear = async () => {
+      try {
+        const storage = this._getStorage();
+        if (storage) {
+          await storage.remove(this.cacheStorageKey);
+          console.info('Currency cache cleared');
+        }
+      } catch (error) {
+        console.warn('Failed to clear cache:', error);
       }
-    } catch (error) {
-      console.warn('Failed to clear cache:', error);
-    }
+    };
+
+    this.cacheWriteQueue = this.cacheWriteQueue.then(clear, clear);
+    await this.cacheWriteQueue;
   }
 
   /**
@@ -550,13 +561,6 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
 refreshAllActionIcons();
 
 // Service worker initialization happens in onInstalled and onStartup event handlers below
-
-// Handle extension icon click to open settings page
-chrome.action.onClicked.addListener(async (tab) => {
-  chrome.tabs.create({
-    url: await getSettingsPageUrl(tab && tab.id)
-  });
-});
 
 async function getSettingsPageUrl(tabId) {
   let url = chrome.runtime.getURL('settings-page/settings.html');

@@ -55,21 +55,6 @@ window.UnitConverter.SettingsManager = class {
       // Check if chrome.storage is available and extension context is valid
       if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.sync && chrome.runtime?.id) {
         await chrome.storage.sync.set({ unitSettings: settings });
-        
-        // Notify all tabs about settings update
-        if (chrome.tabs && chrome.tabs.query) {
-          const tabs = await chrome.tabs.query({});
-          for (const tab of tabs) {
-            try {
-              await chrome.tabs.sendMessage(tab.id, { 
-                action: 'settingsUpdated',
-                newSettings: settings
-              });
-            } catch (error) {
-              // Ignore errors for tabs without content script
-            }
-          }
-        }
       }
       
       return true;

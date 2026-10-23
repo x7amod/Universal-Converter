@@ -455,6 +455,23 @@ class CurrencyCacheLifecycleTests {
       Assertions.assertEqual(fixture.mockFetch.getCallCount(), 1);
     });
 
+    await this.test('Concurrent cache writes preserve different base currencies', async () => {
+      const fixture = TestFixtureFactory.create();
+      const service = fixture.createService();
+      const storage = fixture.storage;
+      const originalGet = storage.get.bind(storage);
+      storage.get = async keys => JSON.parse(JSON.stringify(await originalGet(keys)));
+
+      await Promise.all([
+        service.setCachedRate('usd', { rates: { eur: 0.9 }, timestamp: 1 }),
+        service.setCachedRate('gbp', { rates: { usd: 1.2 }, timestamp: 1 })
+      ]);
+
+      const cache = storage.getRawData().currencyRatesCache;
+      Assertions.assertDefined(cache.usd);
+      Assertions.assertDefined(cache.gbp);
+    });
+
     // Test 7: Different pairs are not deduplicated
     await this.test('Requests for different pairs are not deduplicated', async () => {
       const fixture = TestFixtureFactory.create();

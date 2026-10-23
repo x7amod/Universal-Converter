@@ -36,7 +36,12 @@ async function testSettingsAddAndRemove() {
   const { window } = dom;
   window.SiteBlocklist = SiteBlocklist;
   window.countryNameToCurrencyCode = { 'United States Dollar': 'USD' };
+  let settingsTabQueries = 0;
   window.chrome = {
+    tabs: {
+      async query() { settingsTabQueries++; return []; },
+      async sendMessage() {}
+    },
     storage: {
       sync: {
         async get(keys) {
@@ -74,6 +79,10 @@ async function testSettingsAddAndRemove() {
   window.document.querySelector('button[data-hostname="blog.example.net"]').click();
   await waitFor(() => !storage.blockedSites.includes('blog.example.net'));
   assert.deepEqual(storage.blockedSites, ['quick-settings.example.com']);
+
+  window.document.getElementById('imperialBtn').click();
+  await waitFor(() => storage.unitSettings.lengthUnit === 'ft');
+  assert.equal(settingsTabQueries, 0, 'settings page should leave tab notifications to the background worker');
   dom.window.close();
 }
 
@@ -189,6 +198,8 @@ async function testTabAndIconUpdates() {
     Date,
     Promise
   });
+
+  assert.equal(chrome.action.onClicked.listener, null, 'popup-configured action must not register an onClicked handler');
 
   activated.listener({ tabId: 1 });
   updated.listener(2, { status: 'complete' });

@@ -110,8 +110,10 @@ class ExtensionValidator {
     // Check module files
     const moduleFiles = [
       'data/conversion-data.js',
+      'data/currency-mappings.js',
       'utils/unit-converter.js',
       'utils/conversion-detector.js',
+      'utils/currency-converter.js',
       'utils/popup-manager.js',
       'utils/settings-manager.js',
       'utils/site-blocklist.js'
@@ -185,8 +187,10 @@ class ExtensionValidator {
         // Check all required files are included
         const requiredInManifest = [
           'data/conversion-data.js',
+          'data/currency-mappings.js',
           'utils/unit-converter.js',
           'utils/conversion-detector.js',
+          'utils/currency-converter.js',
           'utils/popup-manager.js',
           'utils/settings-manager.js',
           'utils/site-blocklist.js',

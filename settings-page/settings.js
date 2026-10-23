@@ -483,16 +483,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     try {
       await chrome.storage.sync.set({ unitSettings: settings });
       persistedUnitSettings = settings;
-      
-      // Notify content scripts about settings update
-      const tabs = await chrome.tabs.query({});
-      for (const tab of tabs) {
-        try {
-          await chrome.tabs.sendMessage(tab.id, { action: 'settingsUpdated' });
-        } catch (error) {
-          // Ignore errors for tabs that don't have the content script
-        }
-      }
     } catch (error) {
       console.error('Error saving settings:', error);
     }
