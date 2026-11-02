@@ -376,6 +376,9 @@ class ExtensionBuilder {
           "contextMenus"
         ]).filter(perm => perm !== "management"),
         
+        // Host permissions for the currency APIs
+        host_permissions: chromeManifest.host_permissions,
+        
         // Firefox uses 'scripts' array instead of 'service_worker'
         background: {
           scripts: ["utils/site-blocklist.js", "background.js"]
