@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', async function() {
       speedUnit: 'kmh',
       accelerationUnit: 'ms2',
       flowRateUnit: 'lmin',
-      torqueUnit: 'nm',
+      torqueUnit: 'Nm',
       pressureUnit: 'bar'
     },
     imperial: {
@@ -276,7 +276,7 @@ document.addEventListener('DOMContentLoaded', async function() {
       elements.speedUnit.value = settings.speedUnit || 'kmh';
       elements.accelerationUnit.value = settings.accelerationUnit || 'ms2';
       elements.flowRateUnit.value = settings.flowRateUnit || 'lmin';
-      elements.torqueUnit.value = settings.torqueUnit || 'nm';
+      elements.torqueUnit.value = settings.torqueUnit === 'nm' ? 'Nm' : (settings.torqueUnit || 'Nm');
       elements.pressureUnit.value = settings.pressureUnit || 'bar';
       elements.timezoneUnit.value = settings.timezoneUnit || 'auto';
       

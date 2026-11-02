@@ -31,6 +31,11 @@ window.UnitConverter.SettingsManager = class {
           ? storedSettings.siteOverrides
           : {};
 
+        // Migrate the old lowercase torque value, which is now the nanometer length unit
+        if (storedSettings.torqueUnit === 'nm') {
+          storedSettings.torqueUnit = 'Nm';
+        }
+
         return {
           ...this.defaultSettings,
           ...storedSettings,

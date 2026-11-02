@@ -530,7 +530,9 @@ window.UnitConverter.UnitConverter = class {
       'cfs': 'CFS',
       
       // Torque units
-      'nm': 'N⋅m',
+      'Nm': 'N⋅m',
+      'nm': 'nm',
+      'um': 'μm',
       'lbft': 'lb⋅ft',
       'lbin': 'lb⋅in',
       'kgm': 'kg⋅m',
