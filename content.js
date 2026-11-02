@@ -338,13 +338,16 @@ function showConversions(conversions, selectionRect, operationId) {
 
   // Use the popup's CSS min-width as a conservative width estimate for clamping
   const estimatedPopupWidth = 250; // px, matches popup CSS min-width
-  // Rough height estimate for deciding above/below placement
-  const estimatedPopupHeight = 200; // px
+  // Height of a single-line popup (popup content is one conversion per selection)
+  const estimatedPopupHeight = 50; // px
 
   // Horizontal positioning: center on the selection, then clamp within viewport
   const selectionCenterX = selectionRect.left + (selectionRect.width / 2);
   let left = selectionCenterX + window.scrollX - (estimatedPopupWidth / 2);
-  left = Math.max(margin, Math.min(left, viewportWidth - estimatedPopupWidth - margin));
+  left = Math.max(
+    window.scrollX + margin,
+    Math.min(left, window.scrollX + viewportWidth - estimatedPopupWidth - margin)
+  );
 
   // Vertical positioning: prefer below, but place above if there isn't enough space
   const spaceBelow = viewportHeight - selectionRect.bottom;
