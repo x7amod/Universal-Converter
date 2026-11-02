@@ -28,4 +28,4 @@
   const api = { normalizeHostname, normalizeList, isBlocked };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.SiteBlocklist = api;
-})(globalThis);
+})(typeof window !== 'undefined' ? window : globalThis);

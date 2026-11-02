@@ -22,6 +22,21 @@ async function testDomainMatching() {
   assert.deepEqual(SiteBlocklist.normalizeList(['Example.com', 'https://example.com/path', 'bad value']), ['example.com']);
 }
 
+function testFirefoxContentScriptGlobal() {
+  const sandbox = { console, URL, window: {} };
+  vm.createContext(sandbox);
+  vm.runInContext(
+    fs.readFileSync(path.join(__dirname, '..', 'utils/site-blocklist.js'), 'utf8'),
+    sandbox,
+    { filename: 'utils/site-blocklist.js' }
+  );
+
+  // Firefox content scripts read window.SiteBlocklist; globalThis is a different object there.
+  assert.ok(sandbox.window.SiteBlocklist, 'must attach to window for Firefox content scripts');
+  assert.equal(sandbox.SiteBlocklist, undefined, 'must not rely on globalThis alone');
+  assert.equal(sandbox.window.SiteBlocklist.isBlocked('shop.example.com', ['example.com']), true);
+}
+
 async function testSettingsAddAndRemove() {
   const root = path.join(__dirname, '..');
   const html = fs.readFileSync(path.join(root, 'settings-page/settings.html'), 'utf8')
@@ -379,6 +394,7 @@ async function testTabAndIconUpdates() {
 
 (async () => {
   await testDomainMatching();
+  testFirefoxContentScriptGlobal();
   await testSettingsAddAndRemove();
   await testSettingsPresetDefaults();
   await testSettingsSaveKeepsExternalChanges();
