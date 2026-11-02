@@ -38,7 +38,8 @@ class ExtensionBuilder {
       'utils',
       'settings-page',
       'quick-settings',
-      'icons'
+      'icons',
+      'fonts'
     ];
     
     // Files and directories to exclude
@@ -684,6 +685,35 @@ if (typeof browser !== 'undefined' && typeof chrome === 'undefined') {
     }
   }
 
+  adaptContentStylesForFirefox() {
+    console.log(`${colors.blue}🎨 Adapting content styles for Firefox...${colors.reset}`);
+    
+    try {
+      const cssPath = path.join(this.firefoxBuildDir, 'content.css');
+      
+      if (!fs.existsSync(cssPath)) {
+        console.log(`${colors.yellow}  ⚠️  Content styles not found, skipping adaptation${colors.reset}`);
+        return true;
+      }
+      
+      let cssContent = fs.readFileSync(cssPath, 'utf8');
+      
+      // Firefox does not expand the Chrome extension-id placeholder in CSS; it resolves font URLs relative to the stylesheet
+      cssContent = cssContent.replace(
+        /chrome-extension:\/\/__MSG_@@extension_id__\/fonts\//g,
+        'fonts/'
+      );
+      
+      fs.writeFileSync(cssPath, cssContent);
+      console.log(`${colors.green}  ✅ Content styles adapted for Firefox${colors.reset}`);
+      return true;
+      
+    } catch (error) {
+      console.log(`${colors.red}  ❌ Failed to adapt content styles: ${error.message}${colors.reset}`);
+      return false;
+    }
+  }
+
   adaptSettingsPageForFirefox() {
     console.log(`${colors.blue}⚙️  Adapting settings page for Firefox...${colors.reset}`);
     
@@ -801,7 +831,10 @@ if (typeof browser !== 'undefined' && typeof chrome === 'undefined') {
       // Adapt settings page for Firefox
       const isSettingsPageAdapted = this.adaptSettingsPageForFirefox();
       
-      if (!isFirefoxManifestCreated || !isBackgroundScriptAdapted || !isCurrencyConverterAdapted || !isSettingsPageAdapted) {
+      // Adapt bundled font URLs for Firefox
+      const isContentStylesAdapted = this.adaptContentStylesForFirefox();
+      
+      if (!isFirefoxManifestCreated || !isBackgroundScriptAdapted || !isCurrencyConverterAdapted || !isSettingsPageAdapted || !isContentStylesAdapted) {
         throw new Error('Firefox build preparation failed');
       }
       
