@@ -649,42 +649,6 @@ if (typeof browser !== 'undefined' && typeof chrome === 'undefined') {
     });
   }
 
-  adaptCurrencyConverterForFirefox() {
-    console.log(`${colors.blue}💱 Adapting currency converter for Firefox...${colors.reset}`);
-    
-    try {
-      const currencyConverterPath = path.join(this.firefoxBuildDir, 'utils', 'currency-converter.js');
-      
-      if (!fs.existsSync(currencyConverterPath)) {
-        console.log(`${colors.yellow}  ⚠️  Currency converter not found, skipping adaptation${colors.reset}`);
-        return true;
-      }
-      
-      let currencyContent = fs.readFileSync(currencyConverterPath, 'utf8');
-      
-      // Add Firefox compatibility shim at the beginning
-      const firefoxCompatibilityCode = `// Firefox Manifest V3 compatibility
-if (typeof browser !== 'undefined' && typeof chrome === 'undefined') {
-  globalThis.chrome = browser;
-}
-
-`;
-      
-      // Add the compatibility code at the beginning if not already present
-      if (!currencyContent.includes('Firefox Manifest V3 compatibility')) {
-        currencyContent = firefoxCompatibilityCode + currencyContent;
-      }
-      
-      fs.writeFileSync(currencyConverterPath, currencyContent);
-      console.log(`${colors.green}  ✅ Currency converter adapted for Firefox${colors.reset}`);
-      return true;
-      
-    } catch (error) {
-      console.log(`${colors.red}  ❌ Failed to adapt currency converter: ${error.message}${colors.reset}`);
-      return false;
-    }
-  }
-
   adaptContentStylesForFirefox() {
     console.log(`${colors.blue}🎨 Adapting content styles for Firefox...${colors.reset}`);
     
@@ -825,16 +789,13 @@ if (typeof browser !== 'undefined' && typeof chrome === 'undefined') {
       // Adapt background script for Firefox
       const isBackgroundScriptAdapted = this.adaptBackgroundScriptForFirefox();
       
-      // Adapt currency converter for Firefox
-      const isCurrencyConverterAdapted = this.adaptCurrencyConverterForFirefox();
-      
       // Adapt settings page for Firefox
       const isSettingsPageAdapted = this.adaptSettingsPageForFirefox();
       
       // Adapt bundled font URLs for Firefox
       const isContentStylesAdapted = this.adaptContentStylesForFirefox();
       
-      if (!isFirefoxManifestCreated || !isBackgroundScriptAdapted || !isCurrencyConverterAdapted || !isSettingsPageAdapted || !isContentStylesAdapted) {
+      if (!isFirefoxManifestCreated || !isBackgroundScriptAdapted || !isSettingsPageAdapted || !isContentStylesAdapted) {
         throw new Error('Firefox build preparation failed');
       }
       

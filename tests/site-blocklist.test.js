@@ -27,6 +27,7 @@ async function testSettingsAddAndRemove() {
   const html = fs.readFileSync(path.join(root, 'settings-page/settings.html'), 'utf8')
     .replace(/<script[^>]*><\/script>/g, '');
   const settingsScript = fs.readFileSync(path.join(root, 'settings-page/settings.js'), 'utf8');
+  const settingsManagerScript = fs.readFileSync(path.join(root, 'utils/settings-manager.js'), 'utf8');
   const storage = { unitSettings: {}, blockedSites: [] };
   const storageChanged = makeEvent();
   const dom = new JSDOM(html, {
@@ -55,6 +56,7 @@ async function testSettingsAddAndRemove() {
     }
   };
   const ready = new Promise(resolve => window.document.addEventListener('DOMContentLoaded', resolve, { once: true }));
+  window.eval(settingsManagerScript);
   window.eval(settingsScript);
   await ready;
 
@@ -82,15 +84,144 @@ async function testSettingsAddAndRemove() {
 
   window.document.getElementById('imperialBtn').click();
   await waitFor(() => storage.unitSettings.lengthUnit === 'ft');
+  assert.equal(storage.unitSettings.torqueUnit, 'lbft');
+  assert.equal(storage.unitSettings.speedUnit, 'mph');
+  assert.equal(storage.unitSettings.pressureUnit, 'psi');
+
+  window.document.getElementById('metricBtn').click();
+  await waitFor(() => storage.unitSettings.torqueUnit === 'Nm');
+  assert.equal(storage.unitSettings.speedUnit, 'kmh');
+  assert.equal(storage.unitSettings.pressureUnit, 'bar');
   assert.equal(settingsTabQueries, 0, 'settings page should leave tab notifications to the background worker');
   dom.window.close();
 }
+
+async function testSettingsPresetDefaults() {
+  const metric = loadSettingsManager({ preset: 'metric' });
+  const metricSettings = await metric.loadSettings();
+  assert.equal(metricSettings.lengthUnit, 'm');
+  assert.equal(metricSettings.speedUnit, 'kmh');
+  assert.equal(metricSettings.torqueUnit, 'Nm');
+  assert.equal(metricSettings.pressureUnit, 'bar');
+
+  const imperial = loadSettingsManager({ preset: 'imperial' });
+  const imperialSettings = await imperial.loadSettings();
+  assert.equal(imperialSettings.lengthUnit, 'ft');
+  assert.equal(imperialSettings.speedUnit, 'mph');
+  assert.equal(imperialSettings.torqueUnit, 'lbft');
+  assert.equal(imperialSettings.pressureUnit, 'psi');
+}
+
+async function testSettingsSaveKeepsExternalChanges() {
+  const initial = {
+    preset: 'metric',
+    lengthUnit: 'm',
+    weightUnit: 'kg',
+    temperatureUnit: 'c',
+    volumeUnit: 'l',
+    areaUnit: 'm2',
+    speedUnit: 'kmh',
+    accelerationUnit: 'ms2',
+    flowRateUnit: 'lmin',
+    torqueUnit: 'Nm',
+    pressureUnit: 'bar',
+    timezoneUnit: 'auto',
+    is12hr: true,
+    currencyUnit: 'USD',
+    enabledGlobally: true,
+    siteOverrides: {}
+  };
+  const { dom, window, storage, storageChanged } = await createSettingsPage(initial);
+
+  storage.unitSettings = { ...storage.unitSettings, enabledGlobally: false };
+  storageChanged.listener(
+    { unitSettings: { oldValue: initial, newValue: storage.unitSettings } },
+    'sync'
+  );
+
+  const speed = window.document.getElementById('speedUnit');
+  speed.value = 'mph';
+  speed.dispatchEvent(new window.Event('change'));
+
+  await waitFor(() => storage.unitSettings.speedUnit === 'mph');
+  assert.equal(storage.unitSettings.enabledGlobally, false, 'Settings overwrote enabledGlobally');
+  dom.window.close();
+}
+
+function loadSettingsManager(unitSettings) {
+  const sandbox = {
+    console,
+    chrome: {
+      runtime: { id: 'test-extension-id' },
+      storage: {
+        sync: {
+          async get() {
+            return { unitSettings, blockedSites: [] };
+          }
+        }
+      }
+    },
+    SiteBlocklist
+  };
+  sandbox.window = sandbox;
+  vm.createContext(sandbox);
+  vm.runInContext(
+    fs.readFileSync(path.join(__dirname, '..', 'utils/settings-manager.js'), 'utf8'),
+    sandbox,
+    { filename: 'utils/settings-manager.js' }
+  );
+  return new sandbox.UnitConverter.SettingsManager();
+}
+
+async function createSettingsPage(initialUnitSettings) {
+  const root = path.join(__dirname, '..');
+  const html = fs.readFileSync(path.join(root, 'settings-page/settings.html'), 'utf8')
+    .replace(/<script[^>]*><\/script>/g, '');
+  const settingsScript = fs.readFileSync(path.join(root, 'settings-page/settings.js'), 'utf8');
+  const settingsManagerScript = fs.readFileSync(path.join(root, 'utils/settings-manager.js'), 'utf8');
+  const storage = { unitSettings: initialUnitSettings, blockedSites: [] };
+  const storageChanged = makeEvent();
+  const dom = new JSDOM(html, {
+    runScripts: 'outside-only',
+    url: 'chrome-extension://test/settings-page/settings.html'
+  });
+  const { window } = dom;
+  window.SiteBlocklist = SiteBlocklist;
+  window.countryNameToCurrencyCode = { 'United States Dollar': 'USD' };
+  window.chrome = {
+    tabs: {
+      async query() { return []; },
+      async sendMessage() {}
+    },
+    storage: {
+      sync: {
+        async get(keys) {
+          return Object.fromEntries(keys.map(key => [key, storage[key]]));
+        },
+        async set(values) {
+          Object.assign(storage, values);
+        }
+      },
+      onChanged: storageChanged
+    }
+  };
+
+  const ready = new Promise(resolve => window.document.addEventListener('DOMContentLoaded', resolve, { once: true }));
+  window.eval(settingsManagerScript);
+  window.eval(settingsScript);
+  await ready;
+  await waitFor(() => window.document.querySelector('.empty-state'));
+
+  return { dom, window, storage, storageChanged };
+}
+
 
 async function testQuickSettingsBlockedSites() {
   const root = path.join(__dirname, '..');
   const html = fs.readFileSync(path.join(root, 'quick-settings/popup.html'), 'utf8')
     .replace(/<script[^>]*><\/script>/g, '');
   const popupScript = fs.readFileSync(path.join(root, 'quick-settings/popup.js'), 'utf8');
+  const settingsManagerScript = fs.readFileSync(path.join(root, 'utils/settings-manager.js'), 'utf8');
   const storage = { unitSettings: {}, blockedSites: ['shop.example.com'] };
   const dom = new JSDOM(html, { runScripts: 'outside-only', url: 'chrome-extension://test/quick-settings/popup.html' });
   const { window } = dom;
@@ -107,6 +238,7 @@ async function testQuickSettingsBlockedSites() {
   };
 
   const ready = new Promise(resolve => window.document.addEventListener('DOMContentLoaded', resolve, { once: true }));
+  window.eval(settingsManagerScript);
   window.eval(popupScript);
   await ready;
 
@@ -144,12 +276,16 @@ function makeEvent() {
 async function testTabAndIconUpdates() {
   const iconCalls = [];
   const sentMessages = [];
-  const hosts = { 1: 'shop.example.com', 2: 'notexample.com' };
-  const tabs = [{ id: 1 }, { id: 2 }];
+  const tabs = [
+    { id: 1, url: 'https://shop.example.com/page' },
+    { id: 2, url: 'https://notexample.com/' }
+  ];
   let blockedSites = ['example.com'];
+  let unitSettings = { enabledGlobally: true, siteOverrides: {} };
   const settingsChanged = makeEvent();
   const activated = makeEvent();
   const updated = makeEvent();
+  const removed = makeEvent();
   const runtime = {
     id: 'test',
     lastError: null,
@@ -169,19 +305,26 @@ async function testTabAndIconUpdates() {
     },
     runtime,
     storage: {
-      sync: { async get() { return { blockedSites }; }, async set() {}, async remove() {} },
+      sync: {
+        async get() { return { blockedSites, unitSettings }; },
+        async set() {},
+        async remove() {}
+      },
       onChanged: settingsChanged
     },
     tabs: {
       onActivated: activated,
       onUpdated: updated,
+      onRemoved: removed,
+      async get(tabId) {
+        return tabs.find(tab => tab.id === tabId) || {};
+      },
       async query(_query, callback) {
         if (callback) callback(tabs);
         return tabs;
       },
       async sendMessage(tabId, message) {
         sentMessages.push({ tabId, message });
-        if (message.action === 'getPageHostname') return { hostname: hosts[tabId] };
         return {};
       },
       async create() {}
@@ -213,11 +356,32 @@ async function testTabAndIconUpdates() {
     const latest = iconCalls.filter(call => call.tabId === 1).at(-1);
     return latest && latest.path[16] === 'icons/icon16.png';
   });
+
+  unitSettings = { enabledGlobally: false, siteOverrides: {} };
+  settingsChanged.listener({
+    unitSettings: { oldValue: { enabledGlobally: true }, newValue: unitSettings }
+  }, 'sync');
+  await waitFor(() =>
+    iconCalls.filter(call => call.tabId === 1).at(-1)?.path[16] === 'icons/icon16-disabled.png'
+  );
+
+  unitSettings = { enabledGlobally: true, siteOverrides: { 'shop.example.com': false } };
+  settingsChanged.listener({
+    unitSettings: { oldValue: { enabledGlobally: false }, newValue: unitSettings }
+  }, 'sync');
+  await waitFor(() => {
+    const shopIcon = iconCalls.filter(call => call.tabId === 1).at(-1);
+    const otherIcon = iconCalls.filter(call => call.tabId === 2).at(-1);
+    return shopIcon?.path[16] === 'icons/icon16-disabled.png' &&
+      otherIcon?.path[16] === 'icons/icon16.png';
+  });
 }
 
 (async () => {
   await testDomainMatching();
   await testSettingsAddAndRemove();
+  await testSettingsPresetDefaults();
+  await testSettingsSaveKeepsExternalChanges();
   await testQuickSettingsBlockedSites();
   await testTabAndIconUpdates();
   console.log('Website blacklist tests passed (matching, settings, quick settings, live tab/icon updates).');

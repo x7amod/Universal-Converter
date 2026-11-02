@@ -140,11 +140,13 @@ class JSONUnitConverterTester {
       case 'bestUnit':
         const bestUnit = this.unitConverter.getBestUnit(input.value, input.unitType, input.sourceUnit);
         this.assert(bestUnit.unit === expected, name, expected, bestUnit.unit);
+        this.assert(Number.isFinite(bestUnit.value), `${name} (value is finite)`, 'finite number', bestUnit.value);
         break;
 
       case 'bestUnitWithValue':
         const bestUnitWithValue = this.unitConverter.getBestUnit(input.value, input.unitType, input.sourceUnit);
-        const condition = bestUnitWithValue.unit === expected.unit && bestUnitWithValue.value === expected.value;
+        const condition = bestUnitWithValue.unit === expected.unit &&
+          Math.abs(bestUnitWithValue.value - expected.value) < 1e-3;
         this.assert(condition, name, `${expected.value} ${expected.unit}`, `${bestUnitWithValue.value} ${bestUnitWithValue.unit}`);
         break;
 
@@ -168,6 +170,45 @@ class JSONUnitConverterTester {
         } else {
           this.assert(false, `${name.replace(' detected as ' + expected, '')} not detected`, expected, 'no conversions found');
         }
+        break;
+
+      case 'displayUnit':
+        const displayUnit = this.unitConverter.getDisplayUnit(input.unit);
+        this.assert(displayUnit === expected, name, expected, displayUnit);
+        break;
+
+      case 'detectionResult':
+        const detectionResult = this.detector.findConversions(input.text, input.userSettings);
+        if (detectionResult.length === 0) {
+          this.assert(false, name, expected, 'no conversions found');
+        } else {
+          this.assert(detectionResult[0].converted === expected, name, expected, detectionResult[0].converted);
+          if (testCase.expectedType) {
+            this.assert(detectionResult[0].type === testCase.expectedType, `${name} (type)`, testCase.expectedType, detectionResult[0].type);
+          }
+        }
+        break;
+
+      case 'noConversion':
+        const noConversions = this.detector.findConversions(input.text, input.userSettings);
+        this.assert(noConversions.length === 0, name, 'no conversions', `${noConversions.length} conversion(s)`);
+        break;
+
+      case 'timezoneOffset':
+        const timezoneOffset = this.unitConverter.getTimezoneOffset(input.timezone);
+        this.assert(timezoneOffset === expected, name, expected, timezoneOffset);
+        break;
+
+      case 'mappingLookup':
+        const mapping = global.window[input.map] || global.window.UnitConverterData[input.map];
+        if (!mapping) {
+          this.assert(false, name, 'mapping exists', `${input.map} not found`);
+          break;
+        }
+        const mismatches = Object.entries(input.entries)
+          .filter(([key, value]) => mapping[key] !== value)
+          .map(([key, value]) => `${key}: expected ${value}, got ${mapping[key]}`);
+        this.assert(mismatches.length === 0, name, 'all mappings match', mismatches.join('; ') || 'all match');
         break;
 
       case 'dimensionDetection':
@@ -336,10 +377,8 @@ class JSONUnitConverterTester {
       case 'decimalValueDetection':
         // Test that units correctly detect and parse decimal values
         const detectedConversions = this.detector.findConversions(input.text, input.userSettings);
-        // Extract the numeric value from the input text
-        const match = input.text.match(/(\d+(?:\.\d+)?)/);
-        if (match) {
-          const parsedValue = parseFloat(match[1]);
+        if (detectedConversions.length > 0) {
+          const parsedValue = parseFloat(detectedConversions[0].original);
           this.assert(
             Math.abs(parsedValue - expected) < 0.0001,
             name,
@@ -347,7 +386,7 @@ class JSONUnitConverterTester {
             parsedValue
           );
         } else {
-          this.assert(false, name, expected, 'Failed to extract value from text');
+          this.assert(false, name, expected, 'No conversion detected');
         }
         break;
 

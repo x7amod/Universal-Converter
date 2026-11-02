@@ -190,6 +190,21 @@ class CurrencyRateService {
   }
 
   /**
+   * Derive a cross rate from a USD-based cache entry
+   * @private
+   */
+  _deriveRateFromUsdCache(cached, fromLower, toLower) {
+    const rates = cached && cached.rates;
+    if (!rates) return undefined;
+
+    const fromRate = rates[fromLower];
+    const toRate = rates[toLower];
+    if (!fromRate || toRate === undefined) return undefined;
+
+    return toRate / fromRate;
+  }
+
+  /**
    * Internal method to fetch currency rate
    * @private
    */
@@ -214,19 +229,41 @@ class CurrencyRateService {
       }
     }
 
+    // Warm and prefetched caches are USD-based; derive other pairs from them
+    let usdCached = null;
+    if (fromLower !== 'usd') {
+      try {
+        usdCached = await this.getCachedRate('usd');
+      } catch (error) {
+        console.warn('Cache retrieval error:', error);
+      }
+
+      if (usdCached && this.isCacheValid(usdCached)) {
+        const rate = this._deriveRateFromUsdCache(usdCached, fromLower, toLower);
+        if (rate !== undefined) {
+          return {
+            rate,
+            usedFallback: usdCached.usedFallback || false,
+            fromCache: true
+          };
+        }
+      }
+    }
+
     // Cache is expired or missing - try to fetch new data if user is active
     // If fetch fails and we have stale cache, use it as fallback
-    let staleRate = null;
-    if (cached && cached.rates) {
-      staleRate = cached.rates[toLower];
+    const cacheForRefresh = cached || usdCached;
+    let staleRate = cached && cached.rates ? cached.rates[toLower] : undefined;
+    if (staleRate === undefined && usdCached) {
+      staleRate = this._deriveRateFromUsdCache(usdCached, fromLower, toLower);
     }
     
     // Don't fetch if user inactive and we have stale cache
-    if (!this.shouldRefreshCache(cached) && staleRate !== null && staleRate !== undefined) {
+    if (!this.shouldRefreshCache(cacheForRefresh) && staleRate !== undefined) {
       console.log('User inactive, serving stale cache');
       return {
         rate: staleRate,
-        usedFallback: cached.usedFallback || false,
+        usedFallback: cacheForRefresh.usedFallback || false,
         fromCache: true,
         stale: true
       };
@@ -260,7 +297,7 @@ class CurrencyRateService {
           console.warn('Using stale cache due to API failure');
           return { 
             rate: staleRate, 
-            usedFallback: cached.usedFallback || false,
+            usedFallback: cacheForRefresh.usedFallback || false,
             fromCache: true,
             stale: true
           };
@@ -520,16 +557,40 @@ async function refreshActionIcon(tabId) {
   iconRefreshes.set(tabId, refreshId);
 
   try {
-    const [settings, page] = await Promise.all([
-      chrome.storage.sync.get(['blockedSites']),
-      chrome.tabs.sendMessage(tabId, { action: 'getPageHostname' })
-    ]);
+    const settings = await chrome.storage.sync.get(['blockedSites', 'unitSettings']);
+    let hostname = null;
+
+    try {
+      const page = await chrome.tabs.sendMessage(tabId, { action: 'getPageHostname' });
+      hostname = SiteBlocklist.normalizeHostname(page && page.hostname);
+    } catch (error) {
+      // Tabs opened before an extension reload have no content script
+    }
+
+    if (!hostname) {
+      try {
+        const tab = await chrome.tabs.get(tabId);
+        hostname = SiteBlocklist.normalizeHostname(tab && tab.url);
+      } catch (error) {
+        // The tab may have closed while its icon was being updated
+      }
+    }
+
     if (iconRefreshes.get(tabId) !== refreshId) return;
 
-    const blocked = SiteBlocklist.isBlocked(page && page.hostname, settings.blockedSites);
+    const unitSettings = settings.unitSettings || {};
+    const siteOverrides = unitSettings.siteOverrides;
+    const disabledForSite = hostname && siteOverrides &&
+      typeof siteOverrides === 'object' &&
+      Object.prototype.hasOwnProperty.call(siteOverrides, hostname) &&
+      siteOverrides[hostname] === false;
+    const disabled = unitSettings.enabledGlobally === false ||
+      SiteBlocklist.isBlocked(hostname, settings.blockedSites) ||
+      disabledForSite;
+
     await chrome.action.setIcon({
       tabId,
-      path: blocked ? disabledActionIcons : normalActionIcons
+      path: disabled ? disabledActionIcons : normalActionIcons
     });
   } catch (error) {
     if (iconRefreshes.get(tabId) !== refreshId) return;
@@ -558,22 +619,16 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
   if (changeInfo.status === 'complete' || changeInfo.url) refreshActionIcon(tabId);
 });
 
+chrome.tabs.onRemoved.addListener((tabId) => {
+  iconRefreshes.delete(tabId);
+});
+
 refreshAllActionIcons();
 
 // Service worker initialization happens in onInstalled and onStartup event handlers below
 
-async function getSettingsPageUrl(tabId) {
-  let url = chrome.runtime.getURL('settings-page/settings.html');
-  if (tabId === undefined) return url;
-
-  try {
-    const page = await chrome.tabs.sendMessage(tabId, { action: 'getPageHostname' });
-    const hostname = SiteBlocklist.normalizeHostname(page && page.hostname);
-    if (hostname) url += `?hostname=${encodeURIComponent(hostname)}`;
-  } catch (error) {
-    // Settings still opens without a site hint on browser-restricted pages.
-  }
-  return url;
+function getSettingsPageUrl() {
+  return chrome.runtime.getURL('settings-page/settings.html');
 }
 
 chrome.runtime.onInstalled.addListener(async (details) => {
@@ -695,7 +750,7 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
     });
   }
 
-  if (changes.blockedSites) refreshAllActionIcons();
+  if (changes.blockedSites || changes.unitSettings) refreshAllActionIcons();
 });
 
 // Handle cache refresh alarm
@@ -796,7 +851,7 @@ function createContextMenu() {
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   if (info.menuItemId === 'open-settings') {
     chrome.tabs.create({
-      url: await getSettingsPageUrl(tab && tab.id)
+      url: getSettingsPageUrl()
     });
   } else if (info.menuItemId === 'clear-currency-cache') {
     // Clear currency cache using background service

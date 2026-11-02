@@ -8,7 +8,6 @@ window.UnitConverter.UnitConverter = class {
     this.conversions = window.UnitConverterData.CONVERSION_RATIOS;
     this.unitAliases = window.UnitConverterData.UNIT_ALIASES;
     this.defaultUnits = window.UnitConverterData.DEFAULT_UNITS;
-    this.areaToLinearMap = window.UnitConverterData.AREA_TO_LINEAR_MAP;
     
     // Build unit-to-type lookup map for O(1) performance instead of O(n) linear search
     this.unitToTypeMap = {};
@@ -323,16 +322,23 @@ window.UnitConverter.UnitConverter = class {
       const minutes = timeMatch[2] ? parseInt(timeMatch[2]) : 0; // Default to 0 if no minutes
       const period = timeMatch[3]?.toUpperCase();
       
+      // Reject impossible times instead of letting Date.setHours roll them over
+      if (minutes > 59) return null;
+      if (period ? (hours < 1 || hours > 12) : (hours > 23)) return null;
+
       // Convert to 24-hour format
       if (period === 'PM' && hours !== 12) hours += 12;
       if (period === 'AM' && hours === 12) hours = 0;
-      
+
       // Get timezone offsets
       const fromOffset = this.getTimezoneOffset(fromZone);
       const toOffset = this.getTimezoneOffset(toZone);
-      
+
       if (fromOffset === null || toOffset === null) return null;
-      
+
+      // Same offset means the clock time does not change
+      if (fromOffset === toOffset) return null;
+
       // Create date object for calculation
       const date = new Date();
       date.setHours(hours, minutes, 0, 0);
@@ -373,18 +379,22 @@ window.UnitConverter.UnitConverter = class {
       return window.UnitConverterData.TIMEZONE_MAPPINGS[tz];
     }
     
-    // Parse GMT/UTC format (including GMT+0, GMT-0)
-    const gmtMatch = timezone.match(/(?:GMT|UTC)([+-]?\d{1,2})/i);
+    // Parse GMT/UTC format (including GMT+0, GMT-0, GMT+05:30)
+    const gmtMatch = timezone.match(/(?:GMT|UTC)([+-]?\d{1,2})(?::?(\d{2}))?/i);
     if (gmtMatch) {
-      return parseInt(gmtMatch[1]);
+      const sign = gmtMatch[1].startsWith('-') ? -1 : 1;
+      const hours = Math.abs(parseInt(gmtMatch[1]));
+      const minutes = gmtMatch[2] ? parseInt(gmtMatch[2]) : 0;
+      return sign * (hours + minutes / 60);
     }
     
     // Parse offset format
     const offsetMatch = timezone.match(/([+-]\d{1,2}):?(\d{2})?/);
     if (offsetMatch) {
-      const hours = parseInt(offsetMatch[1]);
+      const sign = offsetMatch[1].startsWith('-') ? -1 : 1;
+      const hours = Math.abs(parseInt(offsetMatch[1]));
       const minutes = offsetMatch[2] ? parseInt(offsetMatch[2]) : 0;
-      return hours + (hours >= 0 ? minutes/60 : -minutes/60);
+      return sign * (hours + minutes / 60);
     }
     
     // Auto-detect user timezone
@@ -424,21 +434,6 @@ window.UnitConverter.UnitConverter = class {
     const formatted = Math.round(value * 100) / 100;
     const displayUnit = this.getDisplayUnit(unit);
     return `${formatted} ${displayUnit}`;
-  }
-    /**
-   * Calculate area equivalent for linear measurements
-   * @param {number} areaValue - The area value (in target units)
-   * @param {string} targetUnit - Target area unit
-   * @returns {string|null} - Linear equivalent or null
-   */
-  getLinearEquivalent(areaValue, targetUnit) {
-    const targetLinearUnit = this.areaToLinearMap[targetUnit];
-    
-    if (targetLinearUnit) {
-      const linearSideLength = Math.sqrt(areaValue);
-      return this.formatResult(linearSideLength, targetLinearUnit);
-    }
-    return null;
   }
     /**
    * Get the best unit for displaying a value (auto-size detection)

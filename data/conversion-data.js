@@ -424,21 +424,6 @@ window.UnitConverterData.DEFAULT_UNITS = {
 };
 
 // ============================================================================
-// AREA TO LINEAR MAPPING
-// ============================================================================
-
-window.UnitConverterData.AREA_TO_LINEAR_MAP = {
-  'm2': 'm', 
-  'cm2': 'cm', 
-  'mm2': 'mm', 
-  'km2': 'km',
-  'ft2': 'ft', 
-  'in2': 'in',
-  'yd2': 'yd',
-  'mi2': 'mi'
-};
-
-// ============================================================================
 // TIMEZONE MAPPINGS
 // ============================================================================
 
@@ -485,6 +470,7 @@ window.UnitConverterData.TIMEZONE_MAPPINGS = {
   // Middle East
   'AST_AR': 3, // Arabia Standard Time
   'IRST': 3.5, // Iran Standard Time
+  'IDT': 3, // Israel Daylight Time
   
   // African
   'CAT': 2, // Central Africa Time

@@ -10,8 +10,35 @@ window.UnitConverter.SettingsManager = class {
       preset: 'metric',
       is12hr: true,
       enabledGlobally: true,
-      siteOverrides: {},
-      blockedSites: []
+      siteOverrides: {}
+    };
+  }
+
+  /**
+   * Merge stored settings with the defaults for their preset
+   * @param {Object} storedSettings - Settings loaded from storage
+   * @returns {Object} - Fully expanded settings
+   */
+  resolveSettings(storedSettings = {}) {
+    const stored = storedSettings && typeof storedSettings === 'object' ? { ...storedSettings } : {};
+    const presetName = stored.preset === 'imperial' ? 'imperial' : 'metric';
+    const preset = this.getPresets()[presetName] || {};
+    const siteOverrides = stored.siteOverrides &&
+      typeof stored.siteOverrides === 'object' &&
+      !Array.isArray(stored.siteOverrides)
+      ? stored.siteOverrides
+      : {};
+
+    // Migrate the old lowercase torque value, which is now the nanometer length unit
+    if (stored.torqueUnit === 'nm') {
+      stored.torqueUnit = 'Nm';
+    }
+
+    return {
+      ...this.defaultSettings,
+      ...preset,
+      ...stored,
+      siteOverrides
     };
   }
   
@@ -25,47 +52,16 @@ window.UnitConverter.SettingsManager = class {
       if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.sync && chrome.runtime?.id) {
         const result = await chrome.storage.sync.get(['unitSettings', 'blockedSites']);
         const storedSettings = result.unitSettings || {};
-        const siteOverrides = storedSettings.siteOverrides &&
-          typeof storedSettings.siteOverrides === 'object' &&
-          !Array.isArray(storedSettings.siteOverrides)
-          ? storedSettings.siteOverrides
-          : {};
-
-        // Migrate the old lowercase torque value, which is now the nanometer length unit
-        if (storedSettings.torqueUnit === 'nm') {
-          storedSettings.torqueUnit = 'Nm';
-        }
 
         return {
-          ...this.defaultSettings,
-          ...storedSettings,
-          siteOverrides,
+          ...this.resolveSettings(storedSettings),
           blockedSites: window.SiteBlocklist.normalizeList(result.blockedSites)
         };
       }
-      return { ...this.defaultSettings };
+      return { ...this.resolveSettings(), blockedSites: [] };
     } catch (error) {
       console.error('Error loading settings:', error);
-      return { ...this.defaultSettings };
-    }
-  }
-  
-  /**
-   * Save user settings to Chrome storage
-   * @param {Object} settings - Settings object to save
-   * @returns {Promise<boolean>} - Success status
-   */
-  async saveSettings(settings) {
-    try {
-      // Check if chrome.storage is available and extension context is valid
-      if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.sync && chrome.runtime?.id) {
-        await chrome.storage.sync.set({ unitSettings: settings });
-      }
-      
-      return true;
-    } catch (error) {
-      console.error('Error saving settings:', error);
-      return false;
+      return { ...this.resolveSettings(), blockedSites: [] };
     }
   }
   
@@ -81,8 +77,11 @@ window.UnitConverter.SettingsManager = class {
         temperatureUnit: 'c',
         volumeUnit: 'l',
         areaUnit: 'm2',
+        speedUnit: 'kmh',
         accelerationUnit: 'ms2',
-        flowRateUnit: 'lmin'
+        flowRateUnit: 'lmin',
+        torqueUnit: 'Nm',
+        pressureUnit: 'bar'
       },
       imperial: {
         lengthUnit: 'ft',
@@ -90,8 +89,11 @@ window.UnitConverter.SettingsManager = class {
         temperatureUnit: 'f',
         volumeUnit: 'gal',
         areaUnit: 'ft2',
+        speedUnit: 'mph',
         accelerationUnit: 'fts2',
-        flowRateUnit: 'galmin'
+        flowRateUnit: 'galmin',
+        torqueUnit: 'lbft',
+        pressureUnit: 'psi'
       }
     };
   }

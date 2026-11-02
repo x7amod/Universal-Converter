@@ -1,9 +1,4 @@
-const DEFAULT_UNIT_SETTINGS = {
-  preset: 'metric',
-  is12hr: true,
-  enabledGlobally: true,
-  siteOverrides: {}
-};
+const settingsManager = new window.UnitConverter.SettingsManager();
 
 document.addEventListener('DOMContentLoaded', () => {
   const elements = {
@@ -146,11 +141,7 @@ async function saveUnitSettings(unitSettings) {
 }
 
 function normalizeUnitSettings(unitSettings) {
-  return {
-    ...DEFAULT_UNIT_SETTINGS,
-    ...unitSettings,
-    siteOverrides: sanitizeSiteOverrides(unitSettings.siteOverrides)
-  };
+  return settingsManager.resolveSettings(unitSettings || {});
 }
 
 function sanitizeSiteOverrides(siteOverrides) {

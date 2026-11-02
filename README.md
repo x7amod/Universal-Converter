@@ -125,15 +125,16 @@ Universal Converter/
 │
 ├── tests/                     # Automated test suite
 │   ├── test-runner.js         # Core unit tests
-│   ├── test-suite.js          # Additional test scenarios
-│   ├── popup-interaction-tests.js # Popup UI interaction tests
-│   ├── currency-cache-lifecycle.test.js # Currency cache lifecycle tests
 │   ├── test-cases.json        # Test case definitions
 │   ├── test-cases.schema.json # JSON schema for test cases
+│   ├── site-blocklist.test.js # Site blocking, settings & toolbar icon tests
+│   ├── build-manifest.test.js # Manifest, permissions & bundled asset tests
+│   ├── popup-interaction-tests.js # Popup UI interaction tests
+│   ├── currency-cache-lifecycle.test.js # Currency cache lifecycle tests
 │   ├── validate-extension.js  # Extension structure validation
 │   ├── run-all-tests.js       # Cross-platform test runner
 │   ├── test.html              # Browser test page
-│   ├── tests.md               # Test documentation
+│   ├── README.md              # Test documentation
 │   └── test-helpers/          # Test mocking utilities
 │       ├── mock-time-controller.js # Time simulation for cache tests
 │       ├── mock-storage.js    # In-memory storage mock

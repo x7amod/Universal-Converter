@@ -38,7 +38,9 @@ if (typeof global.chrome === 'undefined') {
     tabs: {
       onActivated: { addListener: () => {} },
       onUpdated: { addListener: () => {} },
+      onRemoved: { addListener: () => {} },
       create: () => {},
+      get: async () => ({}),
       query: (opts, cb) => {
         if (cb) cb([]);
         return Promise.resolve([]);

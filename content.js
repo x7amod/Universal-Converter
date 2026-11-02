@@ -208,15 +208,6 @@ async function handleTextSelection(event) {
 }
 
 /**
- * Check if text contains multiple lines
- * @param {string} text - Text to check
- * @returns {boolean} - True if multi-line
- */
-function isMultiLine(text) {
-  return text.includes('\n') || text.includes('\r');
-}
-
-/**
  * Process currency conversions that need async API calls
  * Now requests rates from background worker instead of direct API calls
  * @param {Array} conversions - Array of conversion objects
@@ -306,14 +297,6 @@ if (isExtensionContextValid()) {
     if (request.action === 'settingsUpdated') {
       loadUserSettings().then(() => sendResponse({ status: 'Settings updated' }));
       return true;
-    } else if (request.action === 'clearCurrencyCache') {
-      // Clear the currency cache
-      if (window.UnitConverter && window.UnitConverter.currencyConverter) {
-        window.UnitConverter.currencyConverter.clearCache();
-        sendResponse({ status: 'Currency cache cleared' });
-      } else {
-        sendResponse({ status: 'Currency converter not available' });
-      }
     }
   });
 }

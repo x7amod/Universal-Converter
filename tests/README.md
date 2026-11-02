@@ -11,8 +11,11 @@ Core unit conversion logic tests covering:
 - Time conversions
 - Speed conversions
 
-### 2. Test Suite (`test-suite.js`)
-Additional test scenarios and edge cases
+### 2. Website Blacklist Tests (`site-blocklist.test.js`)
+- Hostname matching and blocked-site normalization
+- Settings preset defaults and save behavior
+- Quick-settings site toggles
+- Toolbar icon state for blocked sites, `enabledGlobally`, and site overrides
 
 ### 3. **Popup Interaction Tests** (`popup-interaction-tests.js`)
 Tests for popup behavior and user interaction:
@@ -37,7 +40,7 @@ Tests for popup behavior and user interaction:
 - Validates no memory leaks from lingering event listeners
 
 ### 4. **Currency Cache Lifecycle Tests** (`currency-cache-lifecycle.test.js`)
-Comprehensive tests for CurrencyRateService cache behavior (67 tests):
+Comprehensive tests for CurrencyRateService cache behavior (69 tests):
 
 #### Cache Validity (15 tests)
 - `isCacheValid()` with null, undefined, fresh, valid, stale, and expired cache
@@ -52,8 +55,9 @@ Comprehensive tests for CurrencyRateService cache behavior (67 tests):
 - `loadActivity()` restores from storage on restart
 - Activity transitions over time
 
-#### Fetch & Fallback (12 tests)
+#### Fetch & Fallback (13 tests)
 - Cache hit returns cached rate without API call
+- Foreign-to-USD rates are derived from the warmed USD cache
 - Cache miss triggers primary API fetch
 - Primary API failure falls back to secondary API
 - Both APIs fail uses stale cache
@@ -90,7 +94,12 @@ Comprehensive tests for CurrencyRateService cache behavior (67 tests):
 - Activity updates with storage errors
 - Concurrent `warmCache()` calls
 
-### 5. Extension Validation (`validate-extension.js`)
+### 5. Build Manifest Tests (`build-manifest.test.js`)
+- Generated Firefox manifest keeps `host_permissions`
+- `alarms` permission is declared for scheduled cache refresh
+- Bundled Poppins font files are present and web-accessible
+
+### 6. Extension Validation (`validate-extension.js`)
 Chrome extension structure and manifest validation
 
 ## Test Helpers

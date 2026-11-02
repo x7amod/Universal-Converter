@@ -46,14 +46,14 @@ class CrossPlatformTestRunner {
         description: 'Website matching, settings, and toolbar icon behavior'
       },
       {
+        name: 'Build Manifest Tests',
+        script: 'tests/build-manifest.test.js',
+        description: 'Generated Firefox permissions, alarms, and bundled font assets'
+      },
+      {
         name: 'Unit Converter Tests',
         script: 'tests/test-runner.js',
         description: 'Core unit conversion logic tests'
-      },
-      {
-        name: 'Test Suite',
-        script: 'tests/test-suite.js',
-        description: 'Additional test scenarios'
       },
       {
         name: 'Popup Interaction Tests (DOM Tests)',

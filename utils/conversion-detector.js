@@ -344,9 +344,6 @@ window.UnitConverter.ConversionDetector = class {
     // If source is auto, can't convert
     if (sourceTimezone === 'auto') return null;
     
-    // Don't convert if source and target are the same
-    if (sourceTimezone === targetTimezone) return null;
-    
     // Use GMT offset format for display when auto-detected
     const converted = this.unitConverter.convertTimezone(
       timeString,

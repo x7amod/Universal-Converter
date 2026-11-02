@@ -9,7 +9,6 @@
     "test:verbose": "node tests/run-all-tests.js --verbose",
     "test:stop-on-failure": "node tests/run-all-tests.js --stop-on-failure",
     "test:browser": "echo \"Open tests/test.html in a browser after installing the extension\"",
-    "test:headless": "node tests/test-headless.js",
     "build": "node utils/build.js",
     "build:clean": "node utils/build.js && echo \"Build completed - check the build/ folder\"",
     "zip": "node -e \"console.log('Use npm run build to create a proper ZIP package')\"",
@@ -36,12 +35,8 @@
     "url": "https://github.com/TheBeastBHR/Unit-Converter/issues"
   },
   "homepage": "https://github.com/TheBeastBHR/Unit-Converter#readme",
-  "dependencies": {
-    "js-yaml": "^4.1.0"
-  },
   "devDependencies": {
     "archiver": "^7.0.1",
-    "cross-env": "^7.0.3",
     "jsdom": "^24.0.0"
   }
 }

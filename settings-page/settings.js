@@ -30,33 +30,8 @@ document.addEventListener('DOMContentLoaded', async function() {
   let persistedUnitSettings = {};
   let blockedSites = [];
   
-  // Preset configurations
-  const presets = {
-    metric: {
-      lengthUnit: 'm',
-      weightUnit: 'kg',
-      temperatureUnit: 'c',
-      volumeUnit: 'l',
-      areaUnit: 'm2',
-      speedUnit: 'kmh',
-      accelerationUnit: 'ms2',
-      flowRateUnit: 'lmin',
-      torqueUnit: 'Nm',
-      pressureUnit: 'bar'
-    },
-    imperial: {
-      lengthUnit: 'ft',
-      weightUnit: 'lb',
-      temperatureUnit: 'f',
-      volumeUnit: 'gal',
-      areaUnit: 'ft2',
-      speedUnit: 'mph',
-      accelerationUnit: 'fts2',
-      flowRateUnit: 'galmin',
-      torqueUnit: 'lbft',
-      pressureUnit: 'psi'
-    }
-  };
+  const settingsManager = new window.UnitConverter.SettingsManager();
+  const presets = settingsManager.getPresets();
   
   // Dynamic currency list initialization
   async function initializeCurrencyList() {
@@ -128,9 +103,16 @@ document.addEventListener('DOMContentLoaded', async function() {
   await loadBlockedSites();
 
   chrome.storage.onChanged.addListener((changes, namespace) => {
-    if (namespace !== 'sync' || !changes.blockedSites) return;
-    blockedSites = window.SiteBlocklist.normalizeList(changes.blockedSites.newValue);
-    renderBlockedSites();
+    if (namespace !== 'sync') return;
+
+    if (changes.unitSettings) {
+      persistedUnitSettings = changes.unitSettings.newValue || {};
+    }
+
+    if (changes.blockedSites) {
+      blockedSites = window.SiteBlocklist.normalizeList(changes.blockedSites.newValue);
+      renderBlockedSites();
+    }
   });
 
   elements.blockedSiteForm.addEventListener('submit', async event => {
@@ -251,22 +233,8 @@ document.addEventListener('DOMContentLoaded', async function() {
     try {
       const result = await chrome.storage.sync.get(['unitSettings']);
       persistedUnitSettings = result.unitSettings || {};
-      const siteOverrides = persistedUnitSettings.siteOverrides &&
-        typeof persistedUnitSettings.siteOverrides === 'object' &&
-        !Array.isArray(persistedUnitSettings.siteOverrides)
-        ? persistedUnitSettings.siteOverrides
-        : {};
 
-      let settings = {
-        preset: 'metric',
-        is12hr: true,
-        enabledGlobally: true,
-        siteOverrides,
-        ...persistedUnitSettings
-      };
-      
-      // Migrate old settings to new simplified options
-      // settings = migrateUnitSettings(settings);
+      const settings = settingsManager.resolveSettings(persistedUnitSettings);
       
       elements.lengthUnit.value = settings.lengthUnit || 'm';
       elements.weightUnit.value = settings.weightUnit || 'kg';

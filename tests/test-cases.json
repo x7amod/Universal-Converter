@@ -1468,6 +1468,108 @@
       "expected": {
         "minConversions": 1
       }
+    },
+    {
+      "name": "Units win over currency symbols: 10 m",
+      "type": "patternDetectionType",
+      "input": {
+        "text": "10 m",
+        "userSettings": {
+          "lengthUnit": "ft"
+        }
+      },
+      "expected": "length"
+    },
+    {
+      "name": "Units win over currency symbols: 5 L",
+      "type": "patternDetectionType",
+      "input": {
+        "text": "5 L",
+        "userSettings": {
+          "volumeUnit": "gal"
+        }
+      },
+      "expected": "volume"
+    },
+    {
+      "name": "Units win over currency symbols: 100 F",
+      "type": "patternDetectionType",
+      "input": {
+        "text": "100 F",
+        "userSettings": {
+          "temperatureUnit": "c"
+        }
+      },
+      "expected": "temperature"
+    },
+    {
+      "name": "Units win over currency symbols: 273 K",
+      "type": "patternDetectionType",
+      "input": {
+        "text": "273 K",
+        "userSettings": {
+          "temperatureUnit": "c"
+        }
+      },
+      "expected": "temperature"
+    },
+    {
+      "name": "Temperature: -10°C converts to 14 °F",
+      "type": "detectionResult",
+      "input": {
+        "text": "-10°C",
+        "userSettings": {
+          "temperatureUnit": "f"
+        }
+      },
+      "expected": "14 °F",
+      "expectedType": "temperature"
+    },
+    {
+      "name": "Temperature: -40 °F converts to -40 °C",
+      "type": "detectionResult",
+      "input": {
+        "text": "-40 °F",
+        "userSettings": {
+          "temperatureUnit": "c"
+        }
+      },
+      "expected": "-40 °C",
+      "expectedType": "temperature"
+    },
+    {
+      "name": "Volume: 100 ml auto-sizes to 3.38 fl oz",
+      "type": "detectionResult",
+      "input": {
+        "text": "100 ml",
+        "userSettings": {
+          "volumeUnit": "gal"
+        }
+      },
+      "expected": "3.38 fl oz",
+      "expectedType": "volume"
+    },
+    {
+      "name": "Timezone: EST does not convert to an equal-offset timezone",
+      "type": "noConversion",
+      "input": {
+        "text": "3:00 PM EST",
+        "userSettings": {
+          "timezoneUnit": "CDT"
+        }
+      },
+      "expected": true
+    },
+    {
+      "name": "Timezone: invalid times do not roll over",
+      "type": "noConversion",
+      "input": {
+        "text": "25:99 EST",
+        "userSettings": {
+          "timezoneUnit": "UTC"
+        }
+      },
+      "expected": true
     }
   ],
   "Autosizing": [
@@ -1605,14 +1707,17 @@
       "expected": "ml"
     },
     {
-      "name": "Auto-size: 0.25 gal → qt",
-      "type": "bestUnit",
+      "name": "Auto-size: 0.25 gal → 1 qt",
+      "type": "bestUnitWithValue",
       "input": {
         "value": 0.25,
         "unitType": "volume",
         "sourceUnit": "gal"
       },
-      "expected": "qt"
+      "expected": {
+        "unit": "qt",
+        "value": 1
+      }
     },
     {
       "name": "Auto-size: 0.1 m/s → 10 cm/s",
@@ -1799,6 +1904,45 @@
         "sourceUnit": "tbsp"
       },
       "expected": "tsp"
+    },
+    {
+      "name": "Auto-size: 0.5 lb → 8 oz",
+      "type": "bestUnitWithValue",
+      "input": {
+        "value": 0.5,
+        "unitType": "weight",
+        "sourceUnit": "lb"
+      },
+      "expected": {
+        "unit": "oz",
+        "value": 8
+      }
+    },
+    {
+      "name": "Auto-size: 0.5 ft² → 72 in²",
+      "type": "bestUnitWithValue",
+      "input": {
+        "value": 0.5,
+        "unitType": "area",
+        "sourceUnit": "ft2"
+      },
+      "expected": {
+        "unit": "in2",
+        "value": 72
+      }
+    },
+    {
+      "name": "Auto-size: 0.5 gal → 2 qt",
+      "type": "bestUnitWithValue",
+      "input": {
+        "value": 0.5,
+        "unitType": "volume",
+        "sourceUnit": "gal"
+      },
+      "expected": {
+        "unit": "qt",
+        "value": 2
+      }
     }
   ],
   "Conversions": [
@@ -2657,6 +2801,61 @@
       },
       "expected": 83.6,
       "tolerance": 0.1
+    },
+    {
+      "name": "Speed: 1 km/s = 1000 m/s",
+      "type": "conversion",
+      "input": {
+        "value": 1,
+        "from": "km/s",
+        "to": "m/s"
+      },
+      "expected": 1000,
+      "tolerance": 0.000001
+    },
+    {
+      "name": "Speed: 50 cm/s = 0.5 m/s",
+      "type": "conversion",
+      "input": {
+        "value": 50,
+        "from": "cm/s",
+        "to": "m/s"
+      },
+      "expected": 0.5,
+      "tolerance": 0.000001
+    },
+    {
+      "name": "Speed: 1 mi/s = 1609.344 m/s",
+      "type": "conversion",
+      "input": {
+        "value": 1,
+        "from": "mi/s",
+        "to": "m/s"
+      },
+      "expected": 1609.344,
+      "tolerance": 0.000001
+    },
+    {
+      "name": "Speed: 100 km/h = 27.7778 m/s",
+      "type": "conversion",
+      "input": {
+        "value": 100,
+        "from": "km/h",
+        "to": "m/s"
+      },
+      "expected": 27.7778,
+      "tolerance": 0.0001
+    },
+    {
+      "name": "Torque: 100 lb·ft = 135.582 Nm",
+      "type": "conversion",
+      "input": {
+        "value": 100,
+        "from": "lbft",
+        "to": "Nm"
+      },
+      "expected": 135.582,
+      "tolerance": 0.001
     }
   ],
   "OtherTests": [
@@ -2847,6 +3046,93 @@
       },
       "expected": 28.3168,
       "tolerance": 0.01
+    },
+    {
+      "name": "Unit type: nm is length",
+      "type": "unitType",
+      "input": "nm",
+      "expected": "length"
+    },
+    {
+      "name": "Unit type: Nm is torque",
+      "type": "unitType",
+      "input": "Nm",
+      "expected": "torque"
+    },
+    {
+      "name": "Display unit: nm stays nm",
+      "type": "displayUnit",
+      "input": {
+        "unit": "nm"
+      },
+      "expected": "nm"
+    },
+    {
+      "name": "Display unit: Nm is N⋅m",
+      "type": "displayUnit",
+      "input": {
+        "unit": "Nm"
+      },
+      "expected": "N⋅m"
+    },
+    {
+      "name": "Display unit: um is μm",
+      "type": "displayUnit",
+      "input": {
+        "unit": "um"
+      },
+      "expected": "μm"
+    },
+    {
+      "name": "Timezone offset: -00:30 is negative",
+      "type": "timezoneOffset",
+      "input": {
+        "timezone": "-00:30"
+      },
+      "expected": -0.5
+    },
+    {
+      "name": "Timezone mapping: IDT is known",
+      "type": "mappingLookup",
+      "input": {
+        "map": "TIMEZONE_MAPPINGS",
+        "entries": {
+          "IDT": 3
+        }
+      },
+      "expected": true
+    },
+    {
+      "name": "Currency mappings: current ISO codes and Eurozone",
+      "type": "mappingLookup",
+      "input": {
+        "map": "countryCodeToCurrencyCode",
+        "entries": {
+          "LT": "EUR",
+          "LU": "EUR",
+          "LV": "EUR",
+          "MR": "MRU",
+          "SL": "SLE",
+          "DE": "EUR",
+          "FR": "EUR",
+          "IT": "EUR",
+          "ES": "EUR",
+          "NL": "EUR"
+        }
+      },
+      "expected": true
+    },
+    {
+      "name": "Currency mappings: Venezuelan Bolívar is VES",
+      "type": "mappingLookup",
+      "input": {
+        "map": "countryNameToCurrencyCode",
+        "entries": {
+          "Venezuelan Bolívar": "VES",
+          "Sierra Leonean Leone": "SLE"
+        }
+      },
+      "expected": true
     }
   ],
   "Decimal Detection": [

@@ -369,7 +369,26 @@ class CurrencyCacheLifecycleTests {
       Assertions.assertEqual(fixture.mockFetch.getCallCount(), 0, 'Should not call API');
     });
 
-    // Test 2: Cache miss - fetch from primary API
+    // Test 2: Cache hit - foreign -> USD derived from the warmed USD cache
+    await this.test('getCurrencyRate derives foreign -> USD from the warmed USD cache', async () => {
+      const fixture = TestFixtureFactory.create();
+      const service = fixture.createService();
+      fixture.setUserActive(service);
+
+      const cacheData = fixture.createCacheBuilder()
+        .withBaseCurrency('usd')
+        .asFresh()
+        .buildStorageData();
+      fixture.storage.setRawData(cacheData);
+
+      const result = await service.getCurrencyRate('eur', 'usd');
+
+      Assertions.assertTrue(result.fromCache, 'Should be from cache');
+      Assertions.assertEqual(result.rate, 1 / SampleRates.fallback.eur);
+      Assertions.assertEqual(fixture.mockFetch.getCallCount(), 0, 'Should not call API');
+    });
+
+    // Test 3: Cache miss - fetch from primary API
     await this.test('getCurrencyRate fetches from primary API on cache miss', async () => {
       const fixture = TestFixtureFactory.create();
       const service = fixture.createService();
@@ -472,21 +491,18 @@ class CurrencyCacheLifecycleTests {
       Assertions.assertDefined(cache.gbp);
     });
 
-    // Test 7: Different pairs are not deduplicated
-    await this.test('Requests for different pairs are not deduplicated', async () => {
+    // Test 8: Different pairs reuse the warmed USD cache without another fetch
+    await this.test('Different pairs reuse the warmed USD cache', async () => {
       const fixture = TestFixtureFactory.create();
       const service = fixture.createService();
       fixture.setUserActive(service);
       
-      // Configure different base currency responses
-      fixture.mockFetch.setFallbackAPIResponse('gbp', { usd: 1.37, eur: 1.17 });
-      
-      // Make requests for different pairs
       await service.getCurrencyRate('USD', 'EUR');
-      await service.getCurrencyRate('GBP', 'USD');
+      const gbpResult = await service.getCurrencyRate('GBP', 'USD');
       
-      // Should make 2 API calls (different base currencies)
-      Assertions.assertTrue(fixture.mockFetch.getCallCount() >= 2);
+      Assertions.assertTrue(gbpResult.fromCache, 'GBP->USD should come from the USD cache');
+      Assertions.assertEqual(gbpResult.rate, 1 / SampleRates.fallback.gbp);
+      Assertions.assertEqual(fixture.mockFetch.getCallCount(), 1, 'Only the initial USD fetch is needed');
     });
 
     // Test 8: Inactive user with stale cache - serves stale without fetching

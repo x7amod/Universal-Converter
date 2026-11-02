@@ -501,7 +501,7 @@ class PopupInteractionTester {
       const rect = { top: 100, left: 200, bottom: 120, right: 300, width: 100, height: 20 };
       const convs = [{ original: '100 cm', converted: '39.37 in', type: 'length' }];
 
-      await pm.showPopup(convs, rect);
+      await pm.showPopup(pm.buildPopupNode(convs), rect.left + rect.width / 2, rect.bottom + 10);
       if (!this.doc.querySelector('.unit-converter-popup')) throw new Error('Popup not created');
 
       this.doc.dispatchEvent(new this.win.Event('scroll', { bubbles: true }));
@@ -527,7 +527,7 @@ class PopupInteractionTester {
       const rect = { top: 100, left: 200, bottom: 120, right: 300, width: 100, height: 20 };
       const convs = [{ original: '72 F', converted: '22.22 C', type: 'temperature' }];
 
-      await pm.showPopup(convs, rect);
+      await pm.showPopup(pm.buildPopupNode(convs), rect.left + rect.width / 2, rect.bottom + 10);
       if (!this.doc.querySelector('.unit-converter-popup')) throw new Error('Popup not created');
 
       this.win.dispatchEvent(new this.win.Event('resize', { bubbles: true }));
@@ -553,7 +553,7 @@ class PopupInteractionTester {
       const rect = { top: 100, left: 200, bottom: 120, right: 300, width: 100, height: 20 };
       const convs = [{ original: '1 mile', converted: '1.61 km', type: 'distance' }];
 
-      await pm.showPopup(convs, rect);
+      await pm.showPopup(pm.buildPopupNode(convs), rect.left + rect.width / 2, rect.bottom + 10);
       if (!this.doc.querySelector('.unit-converter-popup')) throw new Error('Popup not created');
 
       pm.removePopup();
