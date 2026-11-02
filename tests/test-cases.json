@@ -1605,14 +1605,14 @@
       "expected": "ml"
     },
     {
-      "name": "Auto-size: 0.25 gal → cup",
+      "name": "Auto-size: 0.25 gal → qt",
       "type": "bestUnit",
       "input": {
         "value": 0.25,
         "unitType": "volume",
         "sourceUnit": "gal"
       },
-      "expected": "cup"
+      "expected": "qt"
     },
     {
       "name": "Auto-size: 0.1 m/s → 10 cm/s",

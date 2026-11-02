@@ -455,7 +455,6 @@ window.UnitConverter.UnitConverter = class {
       return { value, unit: defaultUnit };
     }
     
-    const units = this.conversions[unitType];
     const rules = typeRules[defaultUnit];
     
     for (const rule of rules) {
@@ -473,15 +472,8 @@ window.UnitConverter.UnitConverter = class {
         continue;
       }
       
-      // Calculate converted value
-      let convertedValue;
-      if (rule.convertFn) {
-        // Custom conversion function
-        convertedValue = rule.convertFn(value, units);
-      } else {
-        // Standard conversion using ratio
-        convertedValue = value * units[rule.targetUnit];
-      }
+      // Convert from the default unit; base-unit ratios cannot scale between two non-base units
+      const convertedValue = this.convert(value, defaultUnit, rule.targetUnit);
       
       // Check if converted value meets minimum threshold (for cascading down-scaling)
       if (rule.minValue !== undefined && convertedValue < rule.minValue) {

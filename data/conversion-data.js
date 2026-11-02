@@ -58,11 +58,11 @@ window.UnitConverterData.CONVERSION_RATIOS = {
   },
   speed: {
     'ms': 1, // m/s (base unit)
-    'cms': 100, // cm/s (for auto-sizing)
+    'cms': 0.01, // cm/s (for auto-sizing)
     'kmh': 0.277778, // km/h
-    'kms': 0.001, // km/s (for auto-sizing)
+    'kms': 1000, // km/s (for auto-sizing)
     'mph': 0.44704, // mph
-    'mis': 0.000621371, // mi/s (for auto-sizing)
+    'mis': 1609.344, // mi/s (for auto-sizing)
     'fps': 0.3048, // ft/s
     'kn': 0.514444, // knots
     'mach': 343 // mach
@@ -150,7 +150,7 @@ window.UnitConverterData.UNIT_SCALING_RULES = {
     ],
     um: [
       { threshold: 1000, direction: 'up', targetUnit: 'mm' },
-      { threshold: 1, direction: 'down', targetUnit: 'nm' }
+      { threshold: 1, direction: 'down', targetUnit: 'nm', excludeSource: 'nm' }
     ]
   },
   weight: {
@@ -170,7 +170,7 @@ window.UnitConverterData.UNIT_SCALING_RULES = {
       { threshold: 1, direction: 'down', targetUnit: 'qt', minValue: 1 },
       { threshold: 1, direction: 'down', targetUnit: 'pt', minValue: 1 },
       { threshold: 1, direction: 'down', targetUnit: 'cup', minValue: 1 },
-      { threshold: 1, direction: 'down', targetUnit: 'floz' }
+      { threshold: 1, direction: 'down', targetUnit: 'fl_oz' }
     ],
     tbsp: [
       { threshold: 1, direction: 'down', targetUnit: 'tsp' }
@@ -192,20 +192,20 @@ window.UnitConverterData.UNIT_SCALING_RULES = {
   },
   speed: {
     ms: [
-      { threshold: 1000, direction: 'up', targetUnit: 'kms' },
-      { threshold: 50, direction: 'up', targetUnit: 'kmh', convertFn: (v, u) => v / u.kmh },
-      { threshold: 1, direction: 'down', targetUnit: 'cms' }
+      { threshold: 1000, direction: 'up', targetUnit: 'kms', excludeSource: 'kms' },
+      { threshold: 50, direction: 'up', targetUnit: 'kmh' },
+      { threshold: 1, direction: 'down', targetUnit: 'cms', excludeSource: 'cms' }
     ],
     kmh: [
-      { threshold: 3600, direction: 'up', targetUnit: 'kms', convertFn: (v, u) => v * u.kmh * u.kms },
-      { threshold: 1, direction: 'down', targetUnit: 'ms', convertFn: (v, u) => v * u.kmh }
+      { threshold: 3600, direction: 'up', targetUnit: 'kms' },
+      { threshold: 1, direction: 'down', targetUnit: 'ms' }
     ],
     mph: [
-      { threshold: 3600, direction: 'up', targetUnit: 'mis', convertFn: (v, u) => v * u.mph * u.mis },
-      { threshold: 1, direction: 'down', targetUnit: 'fps', convertFn: (v, u) => v * u.mph / u.fps }
+      { threshold: 3600, direction: 'up', targetUnit: 'mis' },
+      { threshold: 1, direction: 'down', targetUnit: 'fps' }
     ],
     fps: [
-      { threshold: 5280, direction: 'up', targetUnit: 'mph', convertFn: (v, u) => v * u.fps / u.mph }
+      { threshold: 5280, direction: 'up', targetUnit: 'mph' }
     ]
   },
   acceleration: {
@@ -217,10 +217,10 @@ window.UnitConverterData.UNIT_SCALING_RULES = {
       { threshold: 1, direction: 'down', targetUnit: 'ins2' }
     ],
     cms2: [
-      { threshold: 100, direction: 'up', targetUnit: 'ms2', convertFn: (v, u) => v / u.cms2 }
+      { threshold: 100, direction: 'up', targetUnit: 'ms2' }
     ],
     kms2: [
-      { threshold: 1, direction: 'down', targetUnit: 'ms2', convertFn: (v, u) => v / u.kms2 }
+      { threshold: 1, direction: 'down', targetUnit: 'ms2' }
     ]
   },
   flowRate: {
@@ -234,27 +234,27 @@ window.UnitConverterData.UNIT_SCALING_RULES = {
       { threshold: 1, direction: 'down', targetUnit: 'galh' }
     ],
     mlmin: [
-      { threshold: 1000, direction: 'up', targetUnit: 'lmin', convertFn: (v, u) => v / u.mlmin },
-      { threshold: 60, direction: 'up', targetUnit: 'mls', convertFn: (v, u) => v * u.mlmin / u.mls }
+      { threshold: 1000, direction: 'up', targetUnit: 'lmin' },
+      { threshold: 60, direction: 'up', targetUnit: 'mls' }
     ],
     ls: [
-      { threshold: 1, direction: 'down', targetUnit: 'lmin', convertFn: (v, u) => v / u.ls }
+      { threshold: 1, direction: 'down', targetUnit: 'lmin' }
     ],
     m3s: [
-      { threshold: 0.001, direction: 'down', targetUnit: 'lmin', convertFn: (v, u) => v / u.m3s }
+      { threshold: 0.001, direction: 'down', targetUnit: 'lmin' }
     ]
   },
   pressure: {
     pa: [
-      { threshold: 100000, direction: 'up', targetUnit: 'bar', convertFn: (v, u) => v / u.bar },
-      { threshold: 1000, direction: 'up', targetUnit: 'kpa', convertFn: (v, u) => v / u.kpa }
+      { threshold: 100000, direction: 'up', targetUnit: 'bar' },
+      { threshold: 1000, direction: 'up', targetUnit: 'kpa' }
     ],
     kpa: [
-      { threshold: 100, direction: 'up', targetUnit: 'bar', convertFn: (v, u) => v / (u.bar / u.kpa) },
-      { threshold: 1, direction: 'down', targetUnit: 'pa', convertFn: (v, u) => v * u.kpa / u.pa }
+      { threshold: 100, direction: 'up', targetUnit: 'bar' },
+      { threshold: 1, direction: 'down', targetUnit: 'pa' }
     ],
     bar: [
-      { threshold: 0.01, direction: 'down', targetUnit: 'kpa', convertFn: (v, u) => v * u.bar / u.kpa }
+      { threshold: 0.01, direction: 'down', targetUnit: 'kpa' }
     ],
     mbar: [
       { threshold: 1000, direction: 'up', targetUnit: 'bar' }
