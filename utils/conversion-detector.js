@@ -53,13 +53,13 @@ window.UnitConverter.ConversionDetector = class {
     const dimensionResult = this.detectDimension(text, userSettings);
     if (dimensionResult) return [dimensionResult];
     
-    // 2. Check for currency
-    const currencyResult = this.detectCurrency(text, userSettings);
-    if (currencyResult) return [currencyResult];
-    
-    // 3. Check for regular units
+    // 2. Check for regular units (before currency so "10 m", "5 L", "100 F" stay units)
     const unitResult = this.detectUnit(text, userSettings);
     if (unitResult) return [unitResult];
+    
+    // 3. Check for currency
+    const currencyResult = this.detectCurrency(text, userSettings);
+    if (currencyResult) return [currencyResult];
     
     // No conversion found
     return [];
