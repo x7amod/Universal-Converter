@@ -46,10 +46,19 @@
             <span class="material-symbols-outlined">payments</span>
           </span>
           <span>Currency</span>
+          <span class="help-icon" title="Choose the currency you want to convert to">
+            <span class="material-symbols-outlined">help</span>
+          </span>
         </div>
-        <select id="currencyUnit">
-          <option value="USD">USD ($)</option>
-        </select>
+        <div class="currency-field">
+          <select id="currencyUnit">
+            <option value="USD">USD ($)</option>
+          </select>
+          <div class="first-run-hint" id="currencyHint" hidden>
+            <span>Choose the currency you want to convert to.</span>
+            <button type="button" id="currencyHintDismiss" aria-label="Dismiss hint">&times;</button>
+          </div>
+        </div>
       </div>
 
       <div class="preference-row">
@@ -58,6 +67,9 @@
             <span class="material-symbols-outlined">public</span>
           </span>
           <span>Timezone</span>
+          <span class="help-icon" title="Choose the timezone to convert clock times into, or keep it as Auto-Detect to use this device's timezone">
+            <span class="material-symbols-outlined">help</span>
+          </span>
         </div>
         <select id="timezoneUnit">
           <option value="auto">Auto-Detect</option>
@@ -95,6 +107,9 @@
             <span class="material-symbols-outlined">schedule</span>
           </span>
           <span>Time Format</span>
+          <span class="help-icon" title="Choose whether converted times are shown in a 12 Hour (8:00 PM) or a 24 Hour (20:00) format">
+            <span class="material-symbols-outlined">help</span>
+          </span>
         </div>
         <div class="toggle-group">
           <button type="button" class="toggle-btn active" id="time12Btn" data-format="12">12 Hours</button>

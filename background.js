@@ -630,10 +630,10 @@ chrome.runtime.onInstalled.addListener(async (details) => {
   // Create context menu
   createContextMenu();
   
-  // Open settings page on first install
+  // Open settings page on first install, flagged so it can show the first-run guidance
   if (details.reason === 'install') {
     chrome.tabs.create({
-      url: chrome.runtime.getURL('settings-page/settings.html')
+      url: `${getSettingsPageUrl()}?firstRun=1`
     });
   }
   

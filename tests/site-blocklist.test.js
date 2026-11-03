@@ -165,6 +165,29 @@ async function testSettingsSaveKeepsExternalChanges() {
   dom.window.close();
 }
 
+async function testFirstRunCurrencyHint() {
+  const firstRun = await createSettingsPage(
+    {},
+    'chrome-extension://test/settings-page/settings.html?firstRun=1'
+  );
+  const firstRunHint = firstRun.window.document.getElementById('currencyHint');
+  assert.equal(firstRunHint.hidden, false, 'first-run hint must show on the install tab');
+
+  firstRun.window.document.getElementById('currencyHintDismiss').click();
+  assert.equal(firstRunHint.hidden, true, 'dismiss must hide the hint');
+
+  const currency = firstRun.window.document.getElementById('currencyUnit');
+  firstRunHint.hidden = false;
+  currency.dispatchEvent(new firstRun.window.Event('change'));
+  assert.equal(firstRunHint.hidden, true, 'picking a currency must hide the hint');
+
+  const normal = await createSettingsPage({});
+  assert.equal(normal.window.document.getElementById('currencyHint').hidden, true, 'hint must stay hidden without the flag');
+
+  firstRun.dom.window.close();
+  normal.dom.window.close();
+}
+
 function loadSettingsManager(unitSettings) {
   const sandbox = {
     console,
@@ -190,7 +213,7 @@ function loadSettingsManager(unitSettings) {
   return new sandbox.UnitConverter.SettingsManager();
 }
 
-async function createSettingsPage(initialUnitSettings) {
+async function createSettingsPage(initialUnitSettings, url = 'chrome-extension://test/settings-page/settings.html') {
   const root = path.join(__dirname, '..');
   const html = fs.readFileSync(path.join(root, 'settings-page/settings.html'), 'utf8')
     .replace(/<script[^>]*><\/script>/g, '');
@@ -200,7 +223,7 @@ async function createSettingsPage(initialUnitSettings) {
   const storageChanged = makeEvent();
   const dom = new JSDOM(html, {
     runScripts: 'outside-only',
-    url: 'chrome-extension://test/settings-page/settings.html'
+    url
   });
   const { window } = dom;
   window.SiteBlocklist = SiteBlocklist;
@@ -398,6 +421,7 @@ async function testTabAndIconUpdates() {
   await testSettingsAddAndRemove();
   await testSettingsPresetDefaults();
   await testSettingsSaveKeepsExternalChanges();
+  await testFirstRunCurrencyHint();
   await testQuickSettingsBlockedSites();
   await testTabAndIconUpdates();
   console.log('Website blacklist tests passed (matching, settings, quick settings, live tab/icon updates).');

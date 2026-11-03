@@ -360,6 +360,62 @@ select option {
   padding: 0.5rem;
 }
 
+/* First-run currency hint */
+.currency-field {
+  position: relative;
+  display: flex;
+}
+
+.first-run-hint {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  z-index: 10;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  width: 280px;
+  padding: 0.6rem 0.75rem;
+  background-color: var(--bg-input);
+  border: 1px solid var(--color-accent);
+  border-radius: 8px;
+  color: var(--text-tertiary);
+  font-size: 0.85rem;
+  line-height: 1.4;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.first-run-hint::before {
+  content: '';
+  position: absolute;
+  top: -6px;
+  right: 18px;
+  width: 10px;
+  height: 10px;
+  background-color: var(--bg-input);
+  border-left: 1px solid var(--color-accent);
+  border-top: 1px solid var(--color-accent);
+  transform: rotate(45deg);
+}
+
+.first-run-hint[hidden] {
+  display: none;
+}
+
+.first-run-hint button {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--text-secondary);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.first-run-hint button:hover {
+  color: var(--text-primary);
+}
+
 /* Toggle Group (Time Format) */
 .toggle-group {
   display: flex;
@@ -492,6 +548,14 @@ select:focus-visible,
   .toggle-group {
     width: 100%;
     align-self: center;
+  }
+
+  .currency-field {
+    width: 100%;
+  }
+
+  .first-run-hint {
+    width: 100%;
   }
 
   .toggle-btn {

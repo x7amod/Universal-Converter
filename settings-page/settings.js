@@ -21,6 +21,8 @@ document.addEventListener('DOMContentLoaded', async function() {
     time12Btn: document.getElementById('time12Btn'),
     time24Btn: document.getElementById('time24Btn'),
     currencyUnit: document.getElementById('currencyUnit'),
+    currencyHint: document.getElementById('currencyHint'),
+    currencyHintDismiss: document.getElementById('currencyHintDismiss'),
     blockedSiteForm: document.getElementById('blockedSiteForm'),
     blockedSiteInput: document.getElementById('blockedSiteInput'),
     blockedSitesList: document.getElementById('blockedSitesList'),
@@ -149,8 +151,18 @@ document.addEventListener('DOMContentLoaded', async function() {
     });
   });
   
+  // The install tab is opened with ?firstRun=1 to remind the user to pick a target currency
+  if (new URLSearchParams(window.location.search).has('firstRun')) {
+    elements.currencyHint.hidden = false;
+  }
+
+  elements.currencyHintDismiss.addEventListener('click', () => {
+    elements.currencyHint.hidden = true;
+  });
+
   // Currency, timezone and time format changes don't affect preset status
   elements.currencyUnit.addEventListener('change', () => {
+    elements.currencyHint.hidden = true;
     saveSettings();
   });
   
