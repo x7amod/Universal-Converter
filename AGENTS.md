@@ -2,6 +2,20 @@
 
 Universal Converter is a Manifest V3 browser extension (Chrome and Firefox) that converts text selected on a page. It is plain JavaScript with globals, no bundler, transpiler, linter, or typechecker.
 
+## Commits
+
+Every commit subject starts with a type: `<type>: <summary>` (lowercase type, imperative summary, no trailing period). Use the types this history already uses:
+
+- `feat:` new units, conversions, or user-facing behavior.
+- `fix:` a bug fix, regression, or detection mistake — never `bugfix:`.
+- `chore:` refactors, renames, dependency and config upkeep.
+- `docs:` `AGENTS.md`, README, or comments only.
+- `build:` `utils/build.js`, packaging, generated artifacts.
+- `ci:` workflow and test-pipeline changes.
+- `test:` test-only changes.
+
+Add a scope only when it disambiguates (`fix(popup): keep the popup inside a scrolled viewport`). No `WIP:` or untyped subjects; a version bump goes as `chore: bump version to 1.7.1`.
+
 ## Commands
 
 - `npm run test:all` — run every suite; use this as the pre-finish check.
