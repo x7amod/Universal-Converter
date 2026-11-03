@@ -1514,6 +1514,39 @@
       "expected": "temperature"
     },
     {
+      "name": "Uppercase units already in the preferred unit: 5 KM",
+      "type": "noConversion",
+      "input": {
+        "text": "5 KM",
+        "userSettings": {
+          "lengthUnit": "m"
+        }
+      },
+      "expected": true
+    },
+    {
+      "name": "Uppercase units already in the preferred unit: 100 M",
+      "type": "noConversion",
+      "input": {
+        "text": "100 M",
+        "userSettings": {
+          "lengthUnit": "m"
+        }
+      },
+      "expected": true
+    },
+    {
+      "name": "Uppercase units already in the preferred unit: 10 Ft",
+      "type": "noConversion",
+      "input": {
+        "text": "10 Ft",
+        "userSettings": {
+          "lengthUnit": "ft"
+        }
+      },
+      "expected": true
+    },
+    {
       "name": "Temperature: -10°C converts to 14 °F",
       "type": "detectionResult",
       "input": {

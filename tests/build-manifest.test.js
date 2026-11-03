@@ -40,7 +40,25 @@ function testBundledFontsAreAccessible() {
   }
 }
 
+function testFirefoxContentStyles() {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'uc-firefox-css-'));
+  try {
+    const builder = new ExtensionBuilder();
+    builder.firefoxBuildDir = tempDir;
+    const cssPath = path.join(tempDir, 'content.css');
+    fs.copyFileSync(path.join(ROOT, 'content.css'), cssPath);
+
+    assert.equal(builder.adaptContentStylesForFirefox(), true);
+    const css = fs.readFileSync(cssPath, 'utf8');
+    assert.ok(!css.includes('__MSG_'), 'Firefox CSS must not keep the extension-id placeholder');
+    assert.ok(css.includes("url('fonts/"), 'Firefox CSS must use relative font URLs');
+  } finally {
+    fs.rmSync(tempDir, { recursive: true, force: true });
+  }
+}
+
 testFirefoxManifestHostPermissions();
 testScheduledRefreshPermission();
 testBundledFontsAreAccessible();
-console.log('Build manifest tests passed (Firefox permissions, alarms, bundled fonts).');
+testFirefoxContentStyles();
+console.log('Build manifest tests passed (Firefox permissions, alarms, bundled fonts, Firefox CSS).');

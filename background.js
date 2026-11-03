@@ -567,15 +567,6 @@ async function refreshActionIcon(tabId) {
       // Tabs opened before an extension reload have no content script
     }
 
-    if (!hostname) {
-      try {
-        const tab = await chrome.tabs.get(tabId);
-        hostname = SiteBlocklist.normalizeHostname(tab && tab.url);
-      } catch (error) {
-        // The tab may have closed while its icon was being updated
-      }
-    }
-
     if (iconRefreshes.get(tabId) !== refreshId) return;
 
     const unitSettings = settings.unitSettings || {};

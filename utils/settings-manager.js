@@ -97,45 +97,4 @@ window.UnitConverter.SettingsManager = class {
       }
     };
   }
-  
-  /**
-   * Apply a preset to settings
-   * @param {string} presetName - Name of the preset
-   * @param {Object} currentSettings - Current settings to merge with
-   * @returns {Object} - Updated settings
-   */
-  applyPreset(presetName, currentSettings = {}) {
-    const presets = this.getPresets();
-    const preset = presets[presetName];
-    
-    if (!preset) {
-      return { ...this.defaultSettings, ...currentSettings };
-    }
-    
-    return {
-      ...currentSettings,
-      preset: presetName,
-      ...preset
-    };
-  }
-  
-  /**
-   * Detect if current settings match a preset
-   * @param {Object} settings - Settings to check
-   * @returns {string} - Preset name or 'custom'
-   */
-  detectPreset(settings) {
-    const presets = this.getPresets();
-    
-    for (const [presetName, presetConfig] of Object.entries(presets)) {
-      const matches = Object.keys(presetConfig).every(key => 
-        settings[key] === presetConfig[key]
-      );
-      
-      if (matches) {
-        return presetName;
-      }
-    }
-      return 'custom';
-  }
 };

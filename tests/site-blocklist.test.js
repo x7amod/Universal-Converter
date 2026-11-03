@@ -148,17 +148,19 @@ async function testSettingsSaveKeepsExternalChanges() {
   };
   const { dom, window, storage, storageChanged } = await createSettingsPage(initial);
 
-  storage.unitSettings = { ...storage.unitSettings, enabledGlobally: false };
+  storage.unitSettings = { ...storage.unitSettings, enabledGlobally: false, speedUnit: 'mph' };
   storageChanged.listener(
     { unitSettings: { oldValue: initial, newValue: storage.unitSettings } },
     'sync'
   );
+  await waitFor(() => window.document.getElementById('speedUnit').value === 'mph');
 
-  const speed = window.document.getElementById('speedUnit');
-  speed.value = 'mph';
-  speed.dispatchEvent(new window.Event('change'));
+  const length = window.document.getElementById('lengthUnit');
+  length.value = 'ft';
+  length.dispatchEvent(new window.Event('change'));
 
-  await waitFor(() => storage.unitSettings.speedUnit === 'mph');
+  await waitFor(() => storage.unitSettings.lengthUnit === 'ft');
+  assert.equal(storage.unitSettings.speedUnit, 'mph', 'Settings overwrote a unit saved by another tab');
   assert.equal(storage.unitSettings.enabledGlobally, false, 'Settings overwrote enabledGlobally');
   dom.window.close();
 }
@@ -292,8 +294,8 @@ async function testTabAndIconUpdates() {
   const iconCalls = [];
   const sentMessages = [];
   const tabs = [
-    { id: 1, url: 'https://shop.example.com/page' },
-    { id: 2, url: 'https://notexample.com/' }
+    { id: 1, hostname: 'shop.example.com' },
+    { id: 2, hostname: 'notexample.com' }
   ];
   let blockedSites = ['example.com'];
   let unitSettings = { enabledGlobally: true, siteOverrides: {} };
@@ -331,16 +333,14 @@ async function testTabAndIconUpdates() {
       onActivated: activated,
       onUpdated: updated,
       onRemoved: removed,
-      async get(tabId) {
-        return tabs.find(tab => tab.id === tabId) || {};
-      },
       async query(_query, callback) {
         if (callback) callback(tabs);
         return tabs;
       },
       async sendMessage(tabId, message) {
         sentMessages.push({ tabId, message });
-        return {};
+        const tab = tabs.find(item => item.id === tabId);
+        return tab ? { hostname: tab.hostname } : {};
       },
       async create() {}
     }

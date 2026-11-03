@@ -107,6 +107,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     if (changes.unitSettings) {
       persistedUnitSettings = changes.unitSettings.newValue || {};
+      loadSettings();
     }
 
     if (changes.blockedSites) {

@@ -55,6 +55,8 @@ window.UnitConverter.ConversionDetector = class {
     
     // 2. Check for regular units (before currency so "10 m", "5 L", "100 F" stay units)
     const unitResult = this.detectUnit(text, userSettings);
+    // false means a unit matched but needs no conversion; do not fall through to currency
+    if (unitResult === false) return [];
     if (unitResult) return [unitResult];
     
     // 3. Check for currency
@@ -236,7 +238,7 @@ window.UnitConverter.ConversionDetector = class {
    * Detect and convert regular units in selected text
    * @param {string} text - Selected text
    * @param {Object} userSettings - User settings
-   * @returns {Object|null} - Conversion result or null
+   * @returns {Object|null|false} - Conversion result, null if no unit matched, or false if a unit matched without conversion
    */
   detectUnit(text, userSettings) {
     // Try unit types in priority order
@@ -269,17 +271,17 @@ window.UnitConverter.ConversionDetector = class {
       
       const targetUnit = this.unitConverter.getDefaultTargetUnit(normalizedUnit, userSettings);
       
-      if (!targetUnit || normalizedUnit === targetUnit) continue;
+      if (!targetUnit || normalizedUnit === targetUnit) return false;
       
       const convertedValue = this.unitConverter.convert(parseFloat(value), normalizedUnit, targetUnit);
-      if (convertedValue === null) continue;
+      if (convertedValue === null) return false;
       
       // Auto-detect best unit size (pass source unit to avoid returning to it)
       const bestResult = this.unitConverter.getBestUnit(convertedValue, unitType, targetUnit, normalizedUnit);
       
       // Skip if the best unit is the same as the original unit AND the values are essentially the same
       if (bestResult.unit === normalizedUnit && Math.abs(bestResult.value - parseFloat(value)) < 0.01) {
-        continue;
+        return false;
       }
       
       const convertedText = this.unitConverter.formatResult(bestResult.value, bestResult.unit);
