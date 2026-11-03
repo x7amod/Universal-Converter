@@ -154,13 +154,15 @@ Universal Converter/
 
 ## Privacy & Security
 
-- **Permissions**: 
-  - `activeTab` - Access to current tab for text conversion
-  - `storage` - Save user preferences
-  - `contextMenus` - Add settings option to extension icon menu
-  - `host permissions` - Fetch real-time currency rates from APIs
+- **Permissions**:
+  - `activeTab` - Access the active tab for text-selection conversion
+  - `storage` - Save preferences and cache currency rates locally
+  - `contextMenus` - Add the Settings option to the extension menu
+  - `alarms` - Refresh cached currency rates every 50 minutes
+  - Host permissions for `api.exchangerate.fun` and `cdn.jsdelivr.net` - Fetch live currency rates
+  - Content script access to all sites (`<all_urls>`) - Detect selected text on any page; conversions run locally
 - **No Data Collection** - Zero tracking or analytics
-- **Local Processing** - All conversions happen on your device (only uses API's to fetch Currency Rates)
+- **Local Processing** - All conversions happen on your device (APIs are used only to fetch currency rates)
 
 ## APIs Used
 
