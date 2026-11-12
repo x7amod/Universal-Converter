@@ -4,47 +4,21 @@ name: Unit Tests
 on:
   push:
     branches: [ main, develop ]
-    paths-ignore:
-      - '**.md'
-      - '**.txt'
-      - '**.log'
-      - '**.zip'
-      - '**.crx'
-      - '**.png'
-      - '**.jpg'
-      - '**.jpeg'
-      - '**.gif'
-      - '**.ico'
-      - 'LICENSE'
-      - '.gitignore'
-      - 'build/**'
-      - 'dist/**'
-      - 'node_modules/**'
-      - 'img/**'
-      - 'docs/**'
-      - 'settings-page/settings.css'
+    paths:
+      - '**.js'
+      - '**.json'
+      - '**.html'
+      - '**.css'
+      - '.github/workflows/**'
       
   pull_request:
     branches: [ main ]
-    paths-ignore:
-      - '**.md'
-      - '**.txt'
-      - '**.log'
-      - '**.zip'
-      - '**.crx'
-      - '**.png'
-      - '**.jpg'
-      - '**.jpeg'
-      - '**.gif'
-      - '**.ico'
-      - 'LICENSE'
-      - '.gitignore'
-      - 'build/**'
-      - 'dist/**'
-      - 'node_modules/**'
-      - 'img/**'
-      - 'docs/**'
-      - 'settings-page/settings.css'
+    paths:
+      - '**.js'
+      - '**.json'
+      - '**.html'
+      - '**.css'
+      - '.github/workflows/**'
 
 jobs:
   test:
