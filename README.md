@@ -1,16 +1,18 @@
-<div align="center">
+<p align="center">
+  <img src="icons/icon128.png" alt="Universal Converter Icon" width="128" />
+  <h3 align="center">Universal Converter</h3>
+</p>
 
-<h1>Universal Converter - Browser Extension</h1>
-
-<img src="icons/icon128.png" alt="Universal Converter Icon" width="128" /><hr>
-
-Instantly convert any unit, currency or timezone by simply selecting them on any page! 
-
-<img src="img/popup.png" alt="Extension Usage Demo" />
-
-</div>
-
+<p align="center">
+  <a href="https://chromewebstore.google.com/detail/ediegfdjholeejhjdenagnjjjlhafgbl"><img alt="Chrome Web Store" src="https://img.shields.io/badge/Chrome-141e24.svg?&style=for-the-badge&logo=google-chrome&logoColor=white"></a>
+  <a href="https://addons.mozilla.org/addon/universalconverter/"><img alt="Firefox Add-ons" src="https://img.shields.io/badge/Firefox-141e24.svg?&style=for-the-badge&logo=firefox-browser&logoColor=white"></a>
+</p>
+<hr>
 <br>
+<p align="center">
+   <img src="img/popup.png" style="max-width: 60%; height: auto;" alt="Universal Converter Usage Demo" />
+   <h3 align="center">Instantly convert any unit, currency or timezone by simply selecting them on any page!</h3>
+</p>
 
 A Browser Extension that automatically detects and converts units in selected text, supporting length, weight, temperature, volume, area measurements, and real-time currency conversions with smart auto-sizing and dimension support.
 
@@ -23,11 +25,12 @@ A Browser Extension that automatically detects and converts units in selected te
 - **Auto-Save Settings** - With Metric/Imperial presets and manual overrides
 
 ## Installation
-**One Click Installation**
+
+### One Click Installation
 - [Chrome Webstore](https://chromewebstore.google.com/detail/ediegfdjholeejhjdenagnjjjlhafgbl)
 - [Firefox Add-Ons](https://addons.mozilla.org/addon/universalconverter/)
 
-**Manual Installation**
+### Manual Installation
 1. Click on Code, Download ZIP, Extract files. (or get it from releases for more stable-er build)
 2. **Open** `chrome://extensions/`
 3. **Enable** "Developer mode" (top right toggle)
@@ -35,7 +38,7 @@ A Browser Extension that automatically detects and converts units in selected te
 
 ## Supported Units
 
-### **Acceleration**
+### 🚀 **Acceleration**
 - **Units**: meters per second squared (m/s²), feet per second squared (ft/s²), g-force (g)
 
 ### 📐 **Area**
