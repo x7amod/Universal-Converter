@@ -22,7 +22,7 @@ Add a scope only when it disambiguates (`fix(popup): keep the popup inside a scr
 - `npm test` — only the core unit tests in `tests/test-runner.js` (cases live in `tests/test-cases.json`).
 - `node tests/<suite-file>` — run one suite directly, e.g. `node tests/site-blocklist.test.js`.
 - `npm run validate` — manifest/structure validation only.
-- `npm run build` — runs `npm run test:all` first, then writes `build/`, `build-firefox/`, and root `.zip`/`.xpi` artifacts. It aborts on test failure. Generated output is gitignored; never edit it.
+- `npm run build` — runs `npm run test:all` first, then writes `build/`, `build-firefox/`, and root `.zip`/`.xpi`/`.crx` artifacts. The CRX is signed with the root `*.pem` (or `CRX_KEY` if set) and is skipped when no key exists. It aborts on test failure. Generated output is gitignored; never edit it.
 - `npm run lint` is a placeholder, not a real linter.
 
 ## Architecture

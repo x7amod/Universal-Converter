@@ -4,8 +4,54 @@
 
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 const { execSync } = require('child_process');
 const archiver = require('archiver');
+
+// CRX3 = "Cr24" + version + header length + protobuf header + the ZIP bytes verbatim.
+// Chrome only accepts a CRX signed with the key whose hash is the extension ID.
+function varint(value) {
+  const bytes = [];
+  while (value > 0x7f) {
+    bytes.push((value & 0x7f) | 0x80);
+    value = Math.floor(value / 128);
+  }
+  bytes.push(value);
+  return Buffer.from(bytes);
+}
+
+function lengthDelimited(field, data) {
+  return Buffer.concat([varint(field * 8 + 2), varint(data.length), data]);
+}
+
+function uint32LE(value) {
+  const buffer = Buffer.alloc(4);
+  buffer.writeUInt32LE(value);
+  return buffer;
+}
+
+function packCrx3(privateKeyPem, zipBuffer) {
+  const privateKey = crypto.createPrivateKey(privateKeyPem);
+  const publicKey = crypto.createPublicKey(privateKey).export({ type: 'spki', format: 'der' });
+  const crxId = crypto.createHash('sha256').update(publicKey).digest().subarray(0, 16);
+
+  // SignedData { bytes crx_id = 1; } — the signature covers the context string, this blob, and the ZIP
+  const signedHeaderData = lengthDelimited(1, crxId);
+  const signature = crypto.sign('sha256', Buffer.concat([
+    Buffer.from('CRX3 SignedData\x00'),
+    uint32LE(signedHeaderData.length),
+    signedHeaderData,
+    zipBuffer
+  ]), privateKey);
+
+  const proof = Buffer.concat([lengthDelimited(1, publicKey), lengthDelimited(2, signature)]);
+  const header = Buffer.concat([
+    lengthDelimited(2, proof), // field 2: sha256_with_rsa, field 10000: signed_header_data
+    lengthDelimited(10000, signedHeaderData)
+  ]);
+
+  return Buffer.concat([Buffer.from('Cr24'), uint32LE(3), uint32LE(header.length), header, zipBuffer]);
+}
 
 // Colors for console output
 const colors = {
@@ -345,6 +391,42 @@ class ExtensionBuilder {
     });
   }
   
+  findCrxKey() {
+    if (process.env.CRX_KEY) return path.resolve(process.env.CRX_KEY);
+
+    try {
+      const pem = fs.readdirSync(this.rootDir).find(file => file.toLowerCase().endsWith('.pem'));
+      return pem ? path.join(this.rootDir, pem) : null;
+    } catch {
+      return null;
+    }
+  }
+
+  createCrxArchive(zipPath) {
+    console.log(`${colors.blue}📦 Creating CRX package...${colors.reset}`);
+
+    const keyPath = this.findCrxKey();
+    if (!keyPath || !fs.existsSync(keyPath)) {
+      console.log(`${colors.yellow}  ⚠️  No signing key (.pem) found, skipping CRX${colors.reset}`);
+      return null;
+    }
+
+    const crxName = `universal-converter-v${this.version}.crx`;
+    const crxPath = path.join(this.rootDir, crxName);
+
+    try {
+      const crx = packCrx3(fs.readFileSync(keyPath), fs.readFileSync(zipPath));
+      fs.writeFileSync(crxPath, crx);
+      const sizeMB = (crx.length / (1024 * 1024)).toFixed(2);
+      console.log(`${colors.green}  ✅ Created: ${crxName} (${sizeMB} MB) using ${path.basename(keyPath)}${colors.reset}`);
+      return crxPath;
+    } catch (error) {
+      // A bad key must not abort the whole build — the ZIP is still usable
+      console.log(`${colors.yellow}  ⚠️  Could not create CRX: ${error.message}${colors.reset}`);
+      return null;
+    }
+  }
+
   createFirefoxManifest() {
     console.log(`${colors.blue}🦊 Creating Firefox manifest...${colors.reset}`);
     
@@ -775,6 +857,13 @@ if (typeof browser !== 'undefined' && typeof chrome === 'undefined') {
       if (zipPath) {
         console.log(`${colors.green}   📦 Chrome ZIP: ${path.basename(zipPath)}${colors.reset}`);
       }
+
+      // Step 6: Sign the same ZIP as a CRX
+      const crxPath = zipPath ? this.createCrxArchive(zipPath) : null;
+
+      if (crxPath) {
+        console.log(`${colors.green}   📦 Chrome CRX: ${path.basename(crxPath)}${colors.reset}`);
+      }
       
       // Firefox build steps
       console.log(`${colors.cyan}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${colors.reset}`);
@@ -823,7 +912,7 @@ if (typeof browser !== 'undefined' && typeof chrome === 'undefined') {
       // Final summary
       console.log(`${colors.cyan}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${colors.reset}`);
       console.log(`${colors.bright}${colors.green}🎉 Both extensions ready for distribution!${colors.reset}`);
-      console.log(`${colors.green}   � Chrome build: build/${colors.reset}`);
+      console.log(`${colors.green}   📁 Chrome build: build/${colors.reset}`);
       console.log(`${colors.green}   📁 Firefox build: build-firefox/${colors.reset}`);
       console.log(`${colors.cyan}   💡 Chrome: Load 'build' folder as unpacked extension${colors.reset}`);
       console.log(`${colors.cyan}   💡 Firefox: Load 'build-firefox' folder in about:debugging${colors.reset}`);
