@@ -237,8 +237,8 @@ hr {
 .preset-buttons {
   display: flex;
   gap: 0.75rem;
-  margin-top: 0.5rem;
-  margin-bottom: 0.25rem;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
 }
 
 .preset-btn {
@@ -377,7 +377,7 @@ select option {
   width: 280px;
   padding: 0.6rem 0.75rem;
   background-color: var(--bg-input);
-  border: 1px solid var(--color-accent);
+  border: 2px solid var(--color-accent);
   border-radius: 8px;
   color: var(--text-tertiary);
   font-size: 0.85rem;
@@ -385,17 +385,40 @@ select option {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 
+/* Rotating wave of light travelling around the border */
+@property --hint-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
 .first-run-hint::before {
   content: '';
   position: absolute;
-  top: -6px;
-  right: 18px;
-  width: 10px;
-  height: 10px;
-  background-color: var(--bg-input);
-  border-left: 1px solid var(--color-accent);
-  border-top: 1px solid var(--color-accent);
-  transform: rotate(45deg);
+  inset: -2px;
+  padding: 2px;
+  border-radius: inherit;
+  background: conic-gradient(
+    from var(--hint-angle),
+    transparent 0deg 30deg,
+    rgba(255, 70, 70, 0.95) 90deg,
+    transparent 150deg,
+    transparent 210deg,
+    rgba(255, 70, 70, 0.95) 270deg,
+    transparent 330deg 360deg
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  animation: hint-wave 2.5s linear infinite;
+}
+
+@keyframes hint-wave {
+  to {
+    --hint-angle: 360deg;
+  }
 }
 
 .first-run-hint[hidden] {
@@ -414,6 +437,12 @@ select option {
 
 .first-run-hint button:hover {
   color: var(--text-primary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .first-run-hint::before {
+    display: none;
+  }
 }
 
 /* Toggle Group (Time Format) */
@@ -490,10 +519,6 @@ select:focus-visible,
     padding: 1rem;
   }
 
-  .preset-buttons {
-    flex-direction: column;
-  }
-
   /* Collapse grid to single column on mobile */
   .unit-preferences-grid {
     display: flex;
@@ -532,6 +557,15 @@ select:focus-visible,
 }
 
 @media (max-width: 818px) {
+  .container {
+    max-width: 100%;
+  }
+
+  /* Stack presets once the three buttons no longer fit in one row */
+  .preset-buttons {
+    flex-direction: column;
+  }
+
   /* Stack label and select vertically on mobile */
   .preference-row {
     flex-direction: column;
