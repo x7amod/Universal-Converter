@@ -482,21 +482,29 @@ select option {
 }
 
 /* Scrollbar Styling */
-::-webkit-scrollbar {
-  width: 6px;
+html {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--bg-scrollbar-track);
 }
 
-::-webkit-scrollbar-track {
-  background: var(--bg-scrollbar-track);
-}
+/* Legacy WebKit fallback; Chrome 121+ and Safari 26.2+ ignore these in favor of the standard properties above */
+@supports not (scrollbar-color: auto) {
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
 
-::-webkit-scrollbar-thumb {
-  background: var(--scrollbar-thumb);
-  border-radius: 3px;
-}
+  ::-webkit-scrollbar-track {
+    background: var(--bg-scrollbar-track);
+  }
 
-::-webkit-scrollbar-thumb:hover {
-  background: var(--scrollbar-thumb-hover);
+  ::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--scrollbar-thumb-hover);
+  }
 }
 
 /* Loading State */
