@@ -41,3 +41,6 @@ temp*
 
 # Local OpenCode configuration and skills
 .opencode/
+
+# graphify knowledge graph
+graphify-out/
