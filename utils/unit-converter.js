@@ -336,8 +336,9 @@ window.UnitConverter.UnitConverter = class {
 
       if (fromOffset === null || toOffset === null) return null;
 
-      // Same offset means the clock time does not change
-      if (fromOffset === toOffset) return null;
+      // Same offset means the clock time does not change, unless the selected
+      // text uses a different clock format than the user's setting
+      if (fromOffset === toOffset && Boolean(period) === is12hr) return null;
 
       // Create date object for calculation
       const date = new Date();

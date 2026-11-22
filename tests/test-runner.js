@@ -333,7 +333,9 @@ class JSONUnitConverterTester {
         // Handle timezone conversion tests
         const is12hr = typeof input.is12hr === 'boolean' ? input.is12hr : true;
         const timezoneResult = this.unitConverter.convertTimezone(input.time, input.from, input.to, false, is12hr);
-        if (timezoneResult && timezoneResult.formatted && timezoneResult.timezone) {
+        if (expected === null) {
+          this.assert(timezoneResult === null, name, 'null', timezoneResult ? `${timezoneResult.formatted} ${timezoneResult.timezone}` : 'null');
+        } else if (timezoneResult && timezoneResult.formatted && timezoneResult.timezone) {
           const actualResult = `${timezoneResult.formatted} ${timezoneResult.timezone}`;
           this.assert(actualResult === expected, name, expected, actualResult);
         } else {

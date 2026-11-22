@@ -2638,6 +2638,69 @@
       "tolerance": 0
     },
     {
+      "name": "Timezone: Same offset, 24-hour text reformatted to 12-hour",
+      "type": "timezoneConversion",
+      "input": {
+        "time": "15:30 EST",
+        "from": "EST",
+        "to": "EST"
+      },
+      "expected": "3:30 PM EST",
+      "tolerance": 0
+    },
+    {
+      "name": "Timezone: Same offset, 12-hour text reformatted to 24-hour",
+      "type": "timezoneConversion",
+      "input": {
+        "time": "3:30 PM EST",
+        "from": "EST",
+        "to": "EST",
+        "is12hr": false
+      },
+      "expected": "15:30 EST",
+      "tolerance": 0
+    },
+    {
+      "name": "Timezone: Same offset and same format stays skipped",
+      "type": "timezoneConversion",
+      "input": {
+        "time": "3:30 PM EST",
+        "from": "EST",
+        "to": "EST"
+      },
+      "expected": null,
+      "tolerance": 0
+    },
+    {
+      "name": "Timezone Detection: Same timezone reformatted from 24-hour text",
+      "type": "patternDetection",
+      "input": {
+        "text": "15:30 PST",
+        "userSettings": {
+          "timezoneUnit": "PST"
+        }
+      },
+      "expected": {
+        "minConversions": 1,
+        "type": "timezone"
+      }
+    },
+    {
+      "name": "Timezone Detection: Same timezone reformatted to 24-hour",
+      "type": "patternDetection",
+      "input": {
+        "text": "3:30 PM EST",
+        "userSettings": {
+          "timezoneUnit": "EST",
+          "is12hr": false
+        }
+      },
+      "expected": {
+        "minConversions": 1,
+        "type": "timezone"
+      }
+    },
+    {
       "name": "Area: 1 mi2 = 2.59 km2",
       "type": "conversion",
       "input": {
