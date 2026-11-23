@@ -7,6 +7,7 @@ window.UnitConverter.UnitConverter = class {
   constructor() {
     this.conversions = window.UnitConverterData.CONVERSION_RATIOS;
     this.unitAliases = window.UnitConverterData.UNIT_ALIASES;
+    this.displayNames = window.UnitConverterData.UNIT_DISPLAY_NAMES;
     this.defaultUnits = window.UnitConverterData.DEFAULT_UNITS;
     
     // Build unit-to-type lookup map for O(1) performance instead of O(n) linear search
@@ -433,8 +434,7 @@ window.UnitConverter.UnitConverter = class {
    * @returns {string} - Formatted result string
    */  formatResult(value, unit) {
     const formatted = Math.round(value * 100) / 100;
-    const displayUnit = this.getDisplayUnit(unit);
-    return `${formatted} ${displayUnit}`;
+    return `${formatted} ${this.getDisplayName(unit, formatted)}`;
   }
     /**
    * Get the best unit for displaying a value (auto-size detection)
@@ -482,6 +482,18 @@ window.UnitConverter.UnitConverter = class {
     return { value, unit: defaultUnit };
   }
   
+  /**
+   * Get the singular/plural display name for a unit
+   * @param {string} unit - The normalized unit
+   * @param {number} value - The value, used to pick singular or plural
+   * @returns {string} - Display name, or the symbol when no name is defined
+   */
+  getDisplayName(unit, value = 1) {
+    const names = this.displayNames[unit];
+    if (!names) return this.getDisplayUnit(unit);
+    return Math.abs(value) === 1 ? names[0] : names[1];
+  }
+
   /**
    * Get display-friendly unit name
    * @param {string} unit - The unit to format

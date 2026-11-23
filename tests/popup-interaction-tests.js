@@ -252,8 +252,8 @@ class PopupInteractionTester {
       const popup = this.doc.querySelector('.unit-converter-popup');
       if (!popup) throw new Error('Popup not shown for unit conversion');
 
-      const text = popup.textContent;
-      if (!text.includes('lbs') && !text.includes('lb') && !text.includes('kg')) {
+      const text = popup.textContent.toLowerCase();
+      if (!text.includes('pound') || !text.includes('kilogram')) {
         throw new Error(`Popup content unexpected: "${text.trim().slice(0, 80)}"`);
       }
 

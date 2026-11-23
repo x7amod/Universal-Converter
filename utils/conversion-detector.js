@@ -261,7 +261,7 @@ window.UnitConverter.ConversionDetector = class {
       const match = text.match(pattern);
       if (!match || match.length < 3) continue; // Need at least [fullMatch, value, unit]
       
-      const [fullMatch, value, unit] = match;
+      const [, value, unit] = match;
       
       // Validate that we have all required parts
       if (!value || !unit) continue;
@@ -287,7 +287,7 @@ window.UnitConverter.ConversionDetector = class {
       const convertedText = this.unitConverter.formatResult(bestResult.value, bestResult.unit);
       
       return {
-        original: fullMatch,
+        original: `${value} ${this.unitConverter.getDisplayName(normalizedUnit, parseFloat(value))}`,
         converted: convertedText,
         type: unitType
       };

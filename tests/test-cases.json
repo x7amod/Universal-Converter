@@ -1579,8 +1579,20 @@
           "volumeUnit": "gal"
         }
       },
-      "expected": "3.38 fl oz",
+      "expected": "3.38 fluid ounces",
       "expectedType": "volume"
+    },
+    {
+      "name": "Length: 12 IN displays readable unit names",
+      "type": "detectionResult",
+      "input": {
+        "text": "12 IN",
+        "userSettings": {
+          "lengthUnit": "cm"
+        }
+      },
+      "expected": "30.48 centimeters",
+      "expectedType": "length"
     },
     {
       "name": "Timezone: EST does not convert to an equal-offset timezone",
@@ -2956,40 +2968,49 @@
   ],
   "OtherTests": [
     {
-      "name": "Format: 3.14159 → 3.14 m",
+      "name": "Format: 3.14159 → 3.14 meters",
       "type": "format",
       "input": {
         "value": 3.14159,
         "unit": "m"
       },
-      "expected": "3.14 m"
+      "expected": "3.14 meters"
     },
     {
-      "name": "Format: 1.999 → 2 kg",
+      "name": "Format: 1.999 → 2 kilograms",
       "type": "format",
       "input": {
         "value": 1.999,
         "unit": "kg"
       },
-      "expected": "2 kg"
+      "expected": "2 kilograms"
     },
     {
-      "name": "Format: 0.666666 → 0.67 ft",
+      "name": "Format: 0.666666 → 0.67 feet",
       "type": "format",
       "input": {
         "value": 0.666666,
         "unit": "ft"
       },
-      "expected": "0.67 ft"
+      "expected": "0.67 feet"
     },
     {
-      "name": "Format: 10 → 10 cm",
+      "name": "Format: 10 → 10 centimeters",
       "type": "format",
       "input": {
         "value": 10,
         "unit": "cm"
       },
-      "expected": "10 cm"
+      "expected": "10 centimeters"
+    },
+    {
+      "name": "Format: 1 → 1 inch (singular)",
+      "type": "format",
+      "input": {
+        "value": 1,
+        "unit": "in"
+      },
+      "expected": "1 inch"
     },
     {
       "name": "Edge: 0 m = 0 cm",

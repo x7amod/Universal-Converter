@@ -405,6 +405,84 @@ window.UnitConverterData.UNIT_ALIASES = {
 };
 
 // ============================================================================
+// UNIT DISPLAY NAMES
+// ============================================================================
+
+// [singular, plural] names shown in the popup instead of raw abbreviations
+window.UnitConverterData.UNIT_DISPLAY_NAMES = {
+  // Length
+  m: ['meter', 'meters'], cm: ['centimeter', 'centimeters'], mm: ['millimeter', 'millimeters'],
+  um: ['micrometer', 'micrometers'], nm: ['nanometer', 'nanometers'], km: ['kilometer', 'kilometers'],
+  in: ['inch', 'inches'], ft: ['foot', 'feet'], yd: ['yard', 'yards'], mi: ['mile', 'miles'],
+
+  // Weight
+  kg: ['kilogram', 'kilograms'], g: ['gram', 'grams'], mg: ['milligram', 'milligrams'],
+  lb: ['pound', 'pounds'], oz: ['ounce', 'ounces'], t: ['tonne', 'tonnes'],
+
+  // Temperature
+  c: ['°C', '°C'], f: ['°F', '°F'], k: ['K', 'K'],
+
+  // Volume
+  l: ['liter', 'liters'], ml: ['milliliter', 'milliliters'], gal: ['gallon', 'gallons'],
+  qt: ['quart', 'quarts'], pt: ['pint', 'pints'], cup: ['cup', 'cups'],
+  fl_oz: ['fluid ounce', 'fluid ounces'], tbsp: ['tablespoon', 'tablespoons'],
+  tsp: ['teaspoon', 'teaspoons'],
+
+  // Area
+  m2: ['square meter', 'square meters'], cm2: ['square centimeter', 'square centimeters'],
+  mm2: ['square millimeter', 'square millimeters'], km2: ['square kilometer', 'square kilometers'],
+  ft2: ['square foot', 'square feet'], in2: ['square inch', 'square inches'],
+  yd2: ['square yard', 'square yards'], mi2: ['square mile', 'square miles'],
+  acre: ['acre', 'acres'],
+
+  // Speed
+  ms: ['meter per second', 'meters per second'],
+  cms: ['centimeter per second', 'centimeters per second'],
+  kms: ['kilometer per second', 'kilometers per second'],
+  kmh: ['kilometer per hour', 'kilometers per hour'],
+  mph: ['mile per hour', 'miles per hour'],
+  mis: ['mile per second', 'miles per second'],
+  fps: ['foot per second', 'feet per second'],
+  kn: ['knot', 'knots'], mach: ['Mach', 'Mach'],
+
+  // Acceleration
+  ms2: ['meter per second squared', 'meters per second squared'],
+  cms2: ['centimeter per second squared', 'centimeters per second squared'],
+  kms2: ['kilometer per second squared', 'kilometers per second squared'],
+  fts2: ['foot per second squared', 'feet per second squared'],
+  ins2: ['inch per second squared', 'inches per second squared'],
+  gforce: ['g-force', 'g-force'],
+
+  // Flow rate
+  lmin: ['liter per minute', 'liters per minute'], lpm: ['liter per minute', 'liters per minute'],
+  mlmin: ['milliliter per minute', 'milliliters per minute'],
+  mls: ['milliliter per second', 'milliliters per second'],
+  ls: ['liter per second', 'liters per second'], lh: ['liter per hour', 'liters per hour'],
+  galmin: ['gallon per minute', 'gallons per minute'], gpm: ['gallon per minute', 'gallons per minute'],
+  gals: ['gallon per second', 'gallons per second'], galh: ['gallon per hour', 'gallons per hour'],
+  m3s: ['cubic meter per second', 'cubic meters per second'],
+  m3min: ['cubic meter per minute', 'cubic meters per minute'],
+  m3h: ['cubic meter per hour', 'cubic meters per hour'],
+  cfm: ['cubic foot per minute', 'cubic feet per minute'],
+  cfs: ['cubic foot per second', 'cubic feet per second'],
+  cfh: ['cubic foot per hour', 'cubic feet per hour'],
+
+  // Torque
+  Nm: ['newton-meter', 'newton-meters'], lbft: ['pound-foot', 'pound-feet'],
+  lbin: ['pound-inch', 'pound-inches'], kgm: ['kilogram-meter', 'kilogram-meters'],
+  kgfm: ['kilogram-force meter', 'kilogram-force meters'], ozin: ['ounce-inch', 'ounce-inches'],
+
+  // Pressure
+  pa: ['pascal', 'pascals'], kpa: ['kilopascal', 'kilopascals'], mpa: ['megapascal', 'megapascals'],
+  bar: ['bar', 'bar'], mbar: ['millibar', 'millibars'],
+  psi: ['pound per square inch', 'pounds per square inch'],
+  atm: ['atmosphere', 'atmospheres'],
+  mmhg: ['millimeter of mercury', 'millimeters of mercury'],
+  inhg: ['inch of mercury', 'inches of mercury'], torr: ['torr', 'torr'],
+  psf: ['pound per square foot', 'pounds per square foot']
+};
+
+// ============================================================================
 // DEFAULT UNITS
 // ============================================================================
 
