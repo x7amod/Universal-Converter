@@ -9,10 +9,6 @@ class MockStorage {
     this._errorOnGet = null;
     this._errorOnSet = null;
     this._errorOnRemove = null;
-    this._operationLog = [];
-    this._getCallCount = 0;
-    this._setCallCount = 0;
-    this._removeCallCount = 0;
   }
 
   /**
@@ -21,9 +17,6 @@ class MockStorage {
    * @returns {Promise<Object>} Object with requested keys
    */
   async get(keys) {
-    this._getCallCount++;
-    this._operationLog.push({ operation: 'get', keys, timestamp: Date.now() });
-    
     if (this._errorOnGet) {
       const error = this._errorOnGet;
       this._errorOnGet = null; // Reset after throwing
@@ -54,9 +47,6 @@ class MockStorage {
    * @returns {Promise<void>}
    */
   async set(items) {
-    this._setCallCount++;
-    this._operationLog.push({ operation: 'set', items, timestamp: Date.now() });
-    
     if (this._errorOnSet) {
       const error = this._errorOnSet;
       this._errorOnSet = null; // Reset after throwing
@@ -74,9 +64,6 @@ class MockStorage {
    * @returns {Promise<void>}
    */
   async remove(keys) {
-    this._removeCallCount++;
-    this._operationLog.push({ operation: 'remove', keys, timestamp: Date.now() });
-    
     if (this._errorOnRemove) {
       const error = this._errorOnRemove;
       this._errorOnRemove = null; // Reset after throwing
@@ -94,7 +81,6 @@ class MockStorage {
    * @returns {Promise<void>}
    */
   async clear() {
-    this._operationLog.push({ operation: 'clear', timestamp: Date.now() });
     this._data = {};
   }
 
@@ -141,37 +127,13 @@ class MockStorage {
   }
 
   /**
-   * Get operation log
-   * @returns {Array} Array of logged operations
-   */
-  getOperationLog() {
-    return [...this._operationLog];
-  }
-
-  /**
-   * Get call counts
-   * @returns {Object} Object with get, set, remove counts
-   */
-  getCallCounts() {
-    return {
-      get: this._getCallCount,
-      set: this._setCallCount,
-      remove: this._removeCallCount
-    };
-  }
-
-  /**
-   * Reset storage state and counters
+   * Reset storage state
    */
   reset() {
     this._data = {};
     this._errorOnGet = null;
     this._errorOnSet = null;
     this._errorOnRemove = null;
-    this._operationLog = [];
-    this._getCallCount = 0;
-    this._setCallCount = 0;
-    this._removeCallCount = 0;
   }
 }
 

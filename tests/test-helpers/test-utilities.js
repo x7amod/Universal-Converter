@@ -72,7 +72,6 @@ class CacheBuilder {
     this._rates = { ...SampleRates.fallback };
     this._timestamp = null;
     this._usedFallback = false;
-    this._apiTimestamp = null;
   }
 
   /**
@@ -161,39 +160,15 @@ class CacheBuilder {
   }
 
   /**
-   * Mark as from fallback API
-   * @returns {CacheBuilder} this for chaining
-   */
-  fromFallback() {
-    this._usedFallback = true;
-    return this;
-  }
-
-  /**
-   * Mark as from primary API
-   * @returns {CacheBuilder} this for chaining
-   */
-  fromPrimary() {
-    this._usedFallback = false;
-    return this;
-  }
-
-  /**
    * Build the cache entry object
    * @returns {Object} Cache entry
    */
   build() {
-    const entry = {
+    return {
       rates: this._rates,
       timestamp: this._timestamp !== null ? this._timestamp : this.timeController.now(),
       usedFallback: this._usedFallback
     };
-    
-    if (this._apiTimestamp !== null) {
-      entry.apiTimestamp = this._apiTimestamp;
-    }
-    
-    return entry;
   }
 
   /**
@@ -294,95 +269,12 @@ class TestFixtureFactory {
       }
     };
   }
-
-  /**
-   * Create fixture with fast timeouts for quick tests
-   * @returns {Object} Test fixture
-   */
-  static createFast() {
-    return TestFixtureFactory.create({
-      cacheTimeout: 60 * 1000, // 1 minute
-      inactivityThreshold: 5 * 1000, // 5 seconds
-      staleThreshold: 45 * 1000, // 45 seconds
-      refreshThreshold: 50 * 1000 // 50 seconds
-    });
-  }
 }
 
 /**
  * Assertion Helpers
  */
 const Assertions = {
-  /**
-   * Assert cache is valid
-   * @param {Object} service - CurrencyRateService instance
-   * @param {Object} cached - Cached data
-   * @param {string} message - Error message prefix
-   */
-  assertCacheValid(service, cached, message = '') {
-    if (!service.isCacheValid(cached)) {
-      throw new Error(`${message} Expected cache to be valid, but it was invalid`);
-    }
-  },
-
-  /**
-   * Assert cache is invalid
-   * @param {Object} service - CurrencyRateService instance
-   * @param {Object} cached - Cached data
-   * @param {string} message - Error message prefix
-   */
-  assertCacheInvalid(service, cached, message = '') {
-    if (service.isCacheValid(cached)) {
-      throw new Error(`${message} Expected cache to be invalid, but it was valid`);
-    }
-  },
-
-  /**
-   * Assert should refresh cache
-   * @param {Object} service - CurrencyRateService instance
-   * @param {Object} cached - Cached data
-   * @param {string} message - Error message prefix
-   */
-  assertShouldRefresh(service, cached, message = '') {
-    if (!service.shouldRefreshCache(cached)) {
-      throw new Error(`${message} Expected shouldRefreshCache to be true, but it was false`);
-    }
-  },
-
-  /**
-   * Assert should not refresh cache
-   * @param {Object} service - CurrencyRateService instance
-   * @param {Object} cached - Cached data
-   * @param {string} message - Error message prefix
-   */
-  assertShouldNotRefresh(service, cached, message = '') {
-    if (service.shouldRefreshCache(cached)) {
-      throw new Error(`${message} Expected shouldRefreshCache to be false, but it was true`);
-    }
-  },
-
-  /**
-   * Assert user is active
-   * @param {Object} service - CurrencyRateService instance
-   * @param {string} message - Error message prefix
-   */
-  assertUserActive(service, message = '') {
-    if (!service.isUserActive()) {
-      throw new Error(`${message} Expected user to be active, but they were inactive`);
-    }
-  },
-
-  /**
-   * Assert user is inactive
-   * @param {Object} service - CurrencyRateService instance
-   * @param {string} message - Error message prefix
-   */
-  assertUserInactive(service, message = '') {
-    if (service.isUserActive()) {
-      throw new Error(`${message} Expected user to be inactive, but they were active`);
-    }
-  },
-
   /**
    * Assert equal with detailed message
    * @param {*} actual - Actual value

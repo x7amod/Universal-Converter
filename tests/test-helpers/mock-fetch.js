@@ -6,7 +6,6 @@
 class MockFetch {
   constructor() {
     this._responses = new Map();
-    this._defaultResponse = null;
     this._callLog = [];
     this._callCount = 0;
     this._shouldFail = false;
@@ -44,11 +43,6 @@ class MockFetch {
         }
       }
       
-      // Use default response if set
-      if (self._defaultResponse) {
-        return self._createMockResponse(self._defaultResponse);
-      }
-      
       // No response configured - return 404
       return self._createMockResponse({
         ok: false,
@@ -82,14 +76,6 @@ class MockFetch {
    */
   setResponse(urlPattern, response) {
     this._responses.set(urlPattern, response);
-  }
-
-  /**
-   * Set default response for unmatched URLs
-   * @param {Object} response - Response configuration
-   */
-  setDefaultResponse(response) {
-    this._defaultResponse = response;
   }
 
   /**
@@ -130,18 +116,6 @@ class MockFetch {
    */
   setPrimaryAPIFailure(status = 500) {
     this.setResponse('api.exchangerate.fun', {
-      ok: false,
-      status,
-      data: { error: 'Internal server error' }
-    });
-  }
-
-  /**
-   * Configure fallback API to fail
-   * @param {number} status - HTTP status code
-   */
-  setFallbackAPIFailure(status = 500) {
-    this.setResponse('currency-api@latest', {
       ok: false,
       status,
       data: { error: 'Internal server error' }
@@ -191,20 +165,10 @@ class MockFetch {
   }
 
   /**
-   * Get calls for a specific URL pattern
-   * @param {string} urlPattern - URL pattern to filter by
-   * @returns {Array} Matching calls
-   */
-  getCallsForUrl(urlPattern) {
-    return this._callLog.filter(call => call.url.includes(urlPattern));
-  }
-
-  /**
    * Reset mock state
    */
   reset() {
     this._responses.clear();
-    this._defaultResponse = null;
     this._callLog = [];
     this._callCount = 0;
     this._shouldFail = false;
