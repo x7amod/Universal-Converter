@@ -1595,6 +1595,52 @@
       "expectedType": "length"
     },
     {
+      "name": "Length: 50 nm keeps its value instead of showing 0",
+      "type": "detectionResult",
+      "input": {
+        "text": "50 nm",
+        "userSettings": {
+          "lengthUnit": "m"
+        }
+      },
+      "expected": "0.05 micrometers",
+      "expectedType": "length"
+    },
+    {
+      "name": "Length: 10 nm stays above zero",
+      "type": "detectionResult",
+      "input": {
+        "text": "10 nm",
+        "userSettings": {
+          "lengthUnit": "m"
+        }
+      },
+      "expected": "0.01 micrometers",
+      "expectedType": "length"
+    },
+    {
+      "name": "Weight: 5 mg never shows 0 grams",
+      "type": "noConversion",
+      "input": {
+        "text": "5 mg",
+        "userSettings": {
+          "weightUnit": "kg"
+        }
+      },
+      "expected": true
+    },
+    {
+      "name": "Weight: 1 mg never shows 0 grams",
+      "type": "noConversion",
+      "input": {
+        "text": "1 mg",
+        "userSettings": {
+          "weightUnit": "kg"
+        }
+      },
+      "expected": true
+    },
+    {
       "name": "Timezone: EST does not convert to an equal-offset timezone",
       "type": "noConversion",
       "input": {

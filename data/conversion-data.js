@@ -134,7 +134,9 @@ window.UnitConverterData.UNIT_SCALING_RULES = {
     m: [
       { threshold: 1000, direction: 'up', targetUnit: 'km' },
       { threshold: 1, direction: 'down', targetUnit: 'cm', minValue: 1 },
-      { threshold: 1, direction: 'down', targetUnit: 'mm' }
+      { threshold: 1, direction: 'down', targetUnit: 'mm', minValue: 0.05 },
+      { threshold: 1, direction: 'down', targetUnit: 'um', minValue: 0.01 },
+      { threshold: 1, direction: 'down', targetUnit: 'nm' }
     ],
     ft: [
       { threshold: 5280, direction: 'up', targetUnit: 'mi' },
@@ -156,7 +158,8 @@ window.UnitConverterData.UNIT_SCALING_RULES = {
   weight: {
     kg: [
       { threshold: 1000, direction: 'up', targetUnit: 't' },
-      { threshold: 1, direction: 'down', targetUnit: 'g' }
+      { threshold: 1, direction: 'down', targetUnit: 'g', minValue: 0.05 },
+      { threshold: 1, direction: 'down', targetUnit: 'mg', minValue: 0.01 }
     ],
     lb: [
       { threshold: 1, direction: 'down', targetUnit: 'oz' }
