@@ -435,13 +435,17 @@ const Assertions = {
    * @param {string} message - Error message prefix
    */
   async assertThrows(asyncFn, expectedMessage = null, message = '') {
+    let threw = false;
     try {
       await asyncFn();
-      throw new Error(`${message} Expected function to throw, but it did not`);
     } catch (error) {
+      threw = true;
       if (expectedMessage && !error.message.includes(expectedMessage)) {
         throw new Error(`${message} Expected error message to include "${expectedMessage}", but got "${error.message}"`);
       }
+    }
+    if (!threw) {
+      throw new Error(`${message} Expected function to throw, but it did not`);
     }
   }
 };
