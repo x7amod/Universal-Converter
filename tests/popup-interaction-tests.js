@@ -222,6 +222,7 @@ class PopupInteractionTester {
     await this.testNoPopupForSameUnitCurrency();
     await this.testBlockedSiteSkipsPopupAndRateRequest();
     await this.testClickOnPopupDoesNotDismiss();
+    await this.testMouseupOnPopupDoesNotDismiss();
     await this.testRapidReselectionShowsOnePopup();
 
     // -- Unit tests: PopupManager in isolation --------------------------------
@@ -448,6 +449,38 @@ class PopupInteractionTester {
 
       if (!this.doc.querySelector('.unit-converter-popup')) {
         throw new Error('Popup was dismissed when clicked on itself');
+      }
+
+      this.pass(name);
+    } catch (e) {
+      this.fail(name, e.message);
+    } finally {
+      await this.cleanup(nodes);
+    }
+  }
+
+  async testMouseupOnPopupDoesNotDismiss() {
+    const name  = 'Mouseup on the popup itself does not dismiss it';
+    const nodes = [];
+    try {
+      // 5 miles -> km (us to metric)
+      nodes.push(this.setSelection('5 miles'));
+
+      this.fireMouseup(this.doc);
+      this.fireClick(this.doc.body);
+      await this.wait(300);
+
+      const popup = this.doc.querySelector('.unit-converter-popup');
+      if (!popup) throw new Error('Prerequisite failed: popup did not appear');
+
+      // A plain click inside the popup ends with mouseup; that must not be read
+      // as an empty page selection and dismiss the popup.
+      this.clearSelection();
+      this.fireMouseup(popup);
+      await this.wait(20);
+
+      if (!this.doc.querySelector('.unit-converter-popup')) {
+        throw new Error('Popup was dismissed by mouseup inside it');
       }
 
       this.pass(name);

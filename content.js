@@ -145,6 +145,12 @@ function handleClick(event) {
  * @param {Event} event - Mouse up event
  */
 async function handleTextSelection(event) {
+  // Mouseups inside the popup belong to it: a click or selection there must not
+  // be treated as a new page selection (which would dismiss or reconvert it)
+  if (popupManager.activePopup && event.target instanceof Node && popupManager.activePopup.contains(event.target)) {
+    return;
+  }
+
   // Generate unique operation ID for this conversion
   const operationId = String(Date.now()); currentOperationId = operationId;
 
