@@ -186,7 +186,8 @@ class CrossPlatformTestRunner {
         // Run the actual test
         const testProcess = spawn('node', [scriptPath], {
           stdio: 'pipe',
-          cwd: process.cwd()
+          cwd: process.cwd(),
+          timeout: 120000
         });
         
         testProcess.stdout.on('data', (data) => {
@@ -201,8 +202,9 @@ class CrossPlatformTestRunner {
           error += err.message;
         });
         
-        testProcess.on('close', (exitCode) => {
+        testProcess.on('close', (exitCode, signal) => {
           const duration = (Date.now() - startTime) / 1000;
+          if (signal) error += `Test process timed out or was killed (${signal})`;
           const passed = exitCode === 0;
           
           resolve({
