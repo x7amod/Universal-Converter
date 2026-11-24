@@ -39,17 +39,3 @@ jobs:
       
     - name: Test extension build
       run: npm run build
-      
-    - name: Generate test coverage report
-      run: |
-        echo "Test coverage report:" > coverage.txt
-        npm test >> coverage.txt 2>&1 || true
-        
-    - name: Upload test results
-      uses: actions/upload-artifact@v4
-      if: always() && !env.ACT
-      with:
-        name: test-results-node-24
-        path: |
-          coverage.txt
-          *.log
