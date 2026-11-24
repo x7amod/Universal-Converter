@@ -653,18 +653,6 @@ chrome.runtime.onInstalled.addListener(async (details) => {
 
 // Handle messages from content scripts or popup
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.action === 'getSettings') {
-    chrome.storage.sync.get(['unitSettings'])
-      .then(result => {
-        sendResponse({ settings: result.unitSettings });
-      })
-      .catch(error => {
-        console.error('Error getting settings:', error);
-        sendResponse({ error: error.message });
-      });
-    return true; // Keep message channel open for async response
-  }
-  
   if (request.action === 'getCurrencyRate') {
     // Handle currency rate request from content script
     const { from, to } = request;

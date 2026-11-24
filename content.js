@@ -17,11 +17,6 @@ let currentlyDisplayedText = null;
 // Track latest async conversion operation to avoid stale popup updates
 let currentOperationId = null;
 
-// Flag set synchronously in handleTextSelection when async conversion work is about
-// to start. Consumed once by handleClick so the paired click from the same
-// mouseup->click gesture does not cancel the in-flight popup operation.
-
-
 /**
  * Check if extension context is still valid
  */
@@ -152,7 +147,8 @@ async function handleTextSelection(event) {
   }
 
   // Generate unique operation ID for this conversion
-  const operationId = String(Date.now()); currentOperationId = operationId;
+  const operationId = String(Date.now());
+  currentOperationId = operationId;
 
   if (!isConversionEnabledForCurrentSite()) {
     popupManager.removePopup();

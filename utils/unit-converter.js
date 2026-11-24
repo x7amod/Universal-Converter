@@ -13,7 +13,6 @@ window.UnitConverter.UnitConverter = class {
     // Build unit-to-type lookup map for O(1) performance instead of O(n) linear search
     this.unitToTypeMap = {};
     for (const [type, units] of Object.entries(this.conversions)) {
-      if (type === 'temperature') continue; // Handle temperature separately
       for (const unit of Object.keys(units)) {
         this.unitToTypeMap[unit] = type;
       }

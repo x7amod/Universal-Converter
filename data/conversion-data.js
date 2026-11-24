@@ -29,11 +29,6 @@ window.UnitConverterData.CONVERSION_RATIOS = {
     oz: 35.274,
     t: 0.001
   },
-  temperature: {
-    c: (val) => val,
-    f: (val) => (val * 9/5) + 32,
-    k: (val) => val + 273.15
-  },
   volume: {
     l: 1,
     ml: 1000,
@@ -113,11 +108,6 @@ window.UnitConverterData.CONVERSION_RATIOS = {
     'kpa': 1000,
     'mpa': 1000000,
     'psf': 47.8803 // pounds per square foot
-  },
-  timezone: {
-    // Timezone handling is special - uses offset calculation
-    'utc': (date, offset) => new Date(date.getTime() + (offset * 60000)),
-    'gmt': (date, offset) => new Date(date.getTime() + (offset * 60000))
   }
 };
 

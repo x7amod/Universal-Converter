@@ -88,7 +88,7 @@ window.UnitConverter.PopupManager = class {
     popup.className = 'unit-converter-popup';
     popup.style.position = 'absolute';
     popup.style.left = x + 'px';
-    popup.style.top = y === undefined ? x + 'px' : y + 'px';
+    popup.style.top = y + 'px';
     
     // Prevent clicks inside the popup from bubbling up and closing it
     popup.addEventListener('click', (e) => e.stopPropagation());
@@ -112,11 +112,6 @@ window.UnitConverter.PopupManager = class {
       this.activePopup.remove();
       this.activePopup = null;
     }
-  }
-  
-  destroy() {
-    this.removePopup();
-    document.removeEventListener('click', this.handleGlobalClick);
   }
 };
 
