@@ -195,6 +195,14 @@ class PopupInteractionTester {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 
+  async waitFor(assertion, label) {
+    for (let attempt = 0; attempt < 100; attempt++) {
+      if (assertion()) return;
+      await new Promise(resolve => setTimeout(resolve, 5));
+    }
+    if (!assertion()) throw new Error(`Timed out waiting for ${label}`);
+  }
+
   /**
    * Clean up between tests: clear selection, remove any leftover popups, and
    * fire one click (with cleared selection) to consume any stale
@@ -248,7 +256,7 @@ class PopupInteractionTester {
 
       // Wait for async pipeline: processCurrencyConversions (sync no-op for units)
       // -> showConversionPopup -> chrome.storage.sync.get (10ms mock) -> popup shown
-      await this.wait(300);
+      await this.waitFor(() => this.doc.querySelector('.unit-converter-popup'), 'popup');
 
       const popup = this.doc.querySelector('.unit-converter-popup');
       if (!popup) throw new Error('Popup not shown for unit conversion');
@@ -278,7 +286,7 @@ class PopupInteractionTester {
       await this.fireClickNextTask(this.doc.body);
 
       // Let the async pipeline finish.
-      await this.wait(300);
+      await this.waitFor(() => this.doc.querySelector('.unit-converter-popup'), 'popup');
 
       const popup = this.doc.querySelector('.unit-converter-popup');
       if (!popup) {
@@ -304,7 +312,7 @@ class PopupInteractionTester {
 
       this.fireMouseup(this.doc);
       this.fireClick(this.doc.body); // gesture click -- absorbed
-      await this.wait(300);
+      await this.waitFor(() => this.doc.querySelector('.unit-converter-popup'), 'popup');
 
       if (!this.doc.querySelector('.unit-converter-popup')) {
         throw new Error('Prerequisite failed: popup did not appear');
@@ -337,8 +345,8 @@ class PopupInteractionTester {
       this.fireClick(this.doc.body);
 
       // Currency path: processCurrencyConversions awaits sendMessage (10ms mock)
-      // + showConversionPopup awaits storage (10ms mock) -- allow 150ms total.
-      await this.wait(300);
+      // + showConversionPopup awaits storage (10ms mock).
+      await this.waitFor(() => this.doc.querySelector('.unit-converter-popup'), 'popup');
 
       const popup = this.doc.querySelector('.unit-converter-popup');
       if (!popup) throw new Error('Popup not shown for currency conversion');
@@ -358,7 +366,8 @@ class PopupInteractionTester {
       nodes.push(this.setSelection('hello world'));
 
       this.fireMouseup(this.doc);
-      await this.wait(300);
+      // 'hello world' yields no conversions, so the handler returns before its
+      // first await; there is no later popup to wait for.
 
       const popup = this.doc.querySelector('.unit-converter-popup');
       if (popup) throw new Error('Popup shown for non-convertible text');
@@ -379,7 +388,8 @@ class PopupInteractionTester {
       nodes.push(this.setSelection('50 EUR'));
 
       this.fireMouseup(this.doc);
-      await this.wait(300);
+      // '50 EUR' yields no conversion (same currency), so the handler returns
+      // before its first await; there is no later popup to wait for.
 
       const popup = this.doc.querySelector('.unit-converter-popup');
       if (popup) throw new Error('Popup shown for same-currency conversion (EUR -> EUR)');
@@ -398,7 +408,7 @@ class PopupInteractionTester {
     try {
       nodes.push(this.setSelection('100 lbs'));
       this.fireMouseup(this.doc);
-      await this.wait(300);
+      await this.waitFor(() => this.doc.querySelector('.unit-converter-popup'), 'popup');
       if (!this.doc.querySelector('.unit-converter-popup')) throw new Error('Allowed website did not show its popup');
 
       this.blockedSites = ['localhost'];
@@ -411,7 +421,7 @@ class PopupInteractionTester {
       const requestsBefore = this.currencyRateRequests;
       nodes.push(this.setSelection('$50'));
       this.fireMouseup(this.doc);
-      await this.wait(50);
+      // Blocked sites return synchronously before any conversion or rate request.
 
       if (this.doc.querySelector('.unit-converter-popup')) throw new Error('Popup appeared on a blocked website');
       if (this.currencyRateRequests !== requestsBefore) throw new Error('Currency rate was requested on a blocked website');
@@ -436,7 +446,7 @@ class PopupInteractionTester {
 
       this.fireMouseup(this.doc);
       this.fireClick(this.doc.body);
-      await this.wait(300);
+      await this.waitFor(() => this.doc.querySelector('.unit-converter-popup'), 'popup');
 
       const popup = this.doc.querySelector('.unit-converter-popup');
       if (!popup) throw new Error('Prerequisite failed: popup did not appear');
@@ -468,7 +478,7 @@ class PopupInteractionTester {
 
       this.fireMouseup(this.doc);
       this.fireClick(this.doc.body);
-      await this.wait(300);
+      await this.waitFor(() => this.doc.querySelector('.unit-converter-popup'), 'popup');
 
       const popup = this.doc.querySelector('.unit-converter-popup');
       if (!popup) throw new Error('Prerequisite failed: popup did not appear');
@@ -507,7 +517,9 @@ class PopupInteractionTester {
       this.fireMouseup(this.doc);
       this.fireClick(this.doc.body);
 
-      await this.wait(300);
+      await this.waitFor(() => this.doc.querySelector('.unit-converter-popup'), 'popup');
+      // Give the second pipeline time to land so duplicates would be visible.
+      await this.wait(50);
 
       const popups = this.doc.querySelectorAll('.unit-converter-popup');
       if (popups.length !== 1) {
