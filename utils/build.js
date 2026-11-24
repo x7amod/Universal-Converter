@@ -6,7 +6,7 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const { execSync } = require('child_process');
-const archiver = require('archiver');
+const { ZipArchive } = require('archiver');
 
 // CRX3 = "Cr24" + version + header length + protobuf header + the ZIP bytes verbatim.
 // Chrome only accepts a CRX signed with the key whose hash is the extension ID.
@@ -361,7 +361,7 @@ class ExtensionBuilder {
         
         // Create ZIP using archiver
         const output = fs.createWriteStream(zipPath);
-        const archive = archiver('zip', {
+        const archive = new ZipArchive({
           zlib: { level: 9 } // Maximum compression
         });
         
@@ -656,7 +656,7 @@ if (typeof browser !== 'undefined' && typeof chrome === 'undefined') {
         
         // Create ZIP using archiver
         const output = fs.createWriteStream(zipPath);
-        const archive = archiver('zip', {
+        const archive = new ZipArchive({
           zlib: { level: 9 } // Maximum compression
         });
         
@@ -701,7 +701,7 @@ if (typeof browser !== 'undefined' && typeof chrome === 'undefined') {
         
         // Create XPI using archiver (XPI is just a ZIP with .xpi extension)
         const output = fs.createWriteStream(xpiPath);
-        const archive = archiver('zip', {
+        const archive = new ZipArchive({
           zlib: { level: 9 } // Maximum compression
         });
         
