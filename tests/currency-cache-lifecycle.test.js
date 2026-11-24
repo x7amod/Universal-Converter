@@ -919,13 +919,13 @@ class CurrencyCacheLifecycleTests {
       Assertions.assertTrue(true);
     }, { suppressOutput: true });
 
-    // Test 5: refreshCacheIfNeeded - multiple currencies
-    await this.test('refreshCacheIfNeeded refreshes multiple old currencies', async () => {
+    // Test 5: refreshCacheIfNeeded - derived currencies are covered by the USD refresh
+    await this.test('refreshCacheIfNeeded refreshes only the USD entry', async () => {
       const fixture = TestFixtureFactory.create();
       const service = fixture.createService();
       fixture.setUserActive(service);
       
-      // Setup cache with multiple currencies
+      // Stale USD entry plus a stale derived EUR entry
       fixture.storage.setRawData({
         currencyRatesCache: {
           usd: { rates: SampleRates.fallback, timestamp: fixture.timeController.now() - 55 * 60 * 1000 },
@@ -942,8 +942,8 @@ class CurrencyCacheLifecycleTests {
       
       await service.refreshCacheIfNeeded();
       
-      // Should refresh both currencies
-      Assertions.assertTrue(fixture.mockFetch.getCallCount() >= 2);
+      // One USD fetch keeps every derived pair current
+      Assertions.assertEqual(fixture.mockFetch.getCallCount(), 1);
     }, { suppressOutput: true });
 
     // Test 6: refreshCacheIfNeeded - handles API failure gracefully

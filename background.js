@@ -515,18 +515,15 @@ class CurrencyRateService {
       
       const result = await storage.get(this.cacheStorageKey);
       const cache = result[this.cacheStorageKey] || {};
+      const usdCache = cache.usd;
       
-      for (const [currency, data] of Object.entries(cache)) {
-        const cacheAge = this._getCurrentTime() - data.timestamp;
-        
-        // Refresh if older than refreshThreshold
-        if (cacheAge > this.refreshThreshold) {
-          try {
-            await this.fetchRatesFromPrimaryAPI(currency);
-            console.log(`Refreshed rates for ${currency.toUpperCase()}`);
-          } catch (error) {
-            console.warn(`Failed to refresh ${currency.toUpperCase()}:`, error.message);
-          }
+      // One USD fetch covers every pair; other base currencies are derived from it
+      if (usdCache && this._getCurrentTime() - usdCache.timestamp > this.refreshThreshold) {
+        try {
+          await this.fetchRatesFromPrimaryAPI('usd');
+          console.log('Refreshed rates for USD');
+        } catch (error) {
+          console.warn('Failed to refresh USD:', error.message);
         }
       }
     } catch (error) {
