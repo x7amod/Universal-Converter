@@ -405,8 +405,7 @@ class JSONUnitConverterTester {
         } else if (testCase.text && testCase.expectedTypeNot !== undefined) {
           this.runLegacyNonDimensionTest(testCase);
         } else {
-          console.log(`${colors.yellow}[WARNING] Unknown test type: ${type || 'undefined'}${colors.reset}`);
-          console.log(`   Test case:`, JSON.stringify(testCase, null, 2));
+          this.assert(false, testCase.name, 'known test type', type);
         }
     }
   }
