@@ -4,6 +4,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const vm = require('vm');
 
 const colors = {
   green: '\x1b[32m',
@@ -150,13 +151,8 @@ class ExtensionValidator {
         const filePath = path.join(__dirname, '..', file);
         if (fs.existsSync(filePath)) {
           const content = fs.readFileSync(filePath, 'utf8');
-          // Basic syntax check - look for obvious syntax errors
-          const hasBasicErrors = content.includes('undefined..') || // Double dots after undefined
-                                content.includes('null..') ||      // Double dots after null
-                                content.includes(';;;;;;') ||      // Too many semicolons
-                                content.includes('{{{{');          // Too many opening braces
-          
-          this.check(!hasBasicErrors, `Basic syntax check passed: ${file}`);
+          new vm.Script(content, { filename: file });
+          this.check(true, `Syntax check passed: ${file}`);
         }
       } catch (error) {
         this.check(false, `Syntax error in ${file}: ${error.message}`);
