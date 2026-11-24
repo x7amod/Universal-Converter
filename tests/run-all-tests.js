@@ -2,8 +2,7 @@
 // Cross-platform test runner for Universal Converter Extension
 // Works on Windows, Linux, and macOS
 
-const { spawn, exec } = require('child_process');
-const path = require('path');
+const { spawn } = require('child_process');
 const fs = require('fs');
 const os = require('os');
 
@@ -119,7 +118,7 @@ class CrossPlatformTestRunner {
     // Look for [FAIL] markers
     for (const line of lines) {
       if (line.includes('[FAIL]')) {
-        const testName = line.replace(/\[FAIL\]/g, '').trim();
+        const testName = line.replace(/\[FAIL\]/g, '').replace(/\x1b\[[0-9;]*m/g, '').trim();
         if (testName) {
           failedTests.push(testName);
         }
@@ -155,66 +154,37 @@ class CrossPlatformTestRunner {
       const startTime = Date.now();
       let output = '';
       let error = '';
-      
-      // Check if Node.js is available
-      const nodeProcess = spawn('node', ['--version'], { stdio: 'pipe' });
-      
-      nodeProcess.on('error', () => {
+
+      const testProcess = spawn(process.execPath, [scriptPath], {
+        stdio: 'pipe',
+        cwd: process.cwd(),
+        timeout: 120000
+      });
+
+      testProcess.stdout.on('data', (data) => {
+        output += data.toString();
+      });
+
+      testProcess.stderr.on('data', (data) => {
+        error += data.toString();
+      });
+
+      testProcess.on('error', (err) => {
+        error += err.message;
+      });
+
+      testProcess.on('close', (exitCode, signal) => {
         const duration = (Date.now() - startTime) / 1000;
+        if (signal) error += `Test process timed out or was killed (${signal})`;
+        const passed = exitCode === 0;
+
         resolve({
           name: testName,
-          passed: false,
+          passed,
           duration,
-          output: '',
-          error: 'Node.js is not installed or not in PATH'
-        });
-      });
-      
-      nodeProcess.on('close', (code) => {
-        if (code !== 0) {
-          const duration = (Date.now() - startTime) / 1000;
-          resolve({
-            name: testName,
-            passed: false,
-            duration,
-            output: '',
-            error: 'Node.js is not available'
-          });
-          return;
-        }
-        
-        // Run the actual test
-        const testProcess = spawn('node', [scriptPath], {
-          stdio: 'pipe',
-          cwd: process.cwd(),
-          timeout: 120000
-        });
-        
-        testProcess.stdout.on('data', (data) => {
-          output += data.toString();
-        });
-        
-        testProcess.stderr.on('data', (data) => {
-          error += data.toString();
-        });
-        
-        testProcess.on('error', (err) => {
-          error += err.message;
-        });
-        
-        testProcess.on('close', (exitCode, signal) => {
-          const duration = (Date.now() - startTime) / 1000;
-          if (signal) error += `Test process timed out or was killed (${signal})`;
-          const passed = exitCode === 0;
-          
-          resolve({
-            name: testName,
-            passed,
-            duration,
-            output: output.trim(),
-            error: error.trim(),
-            exitCode
-          });
+          output: output.trim(),
+          error: error.trim(),
+          exitCode
         });
       });
     });

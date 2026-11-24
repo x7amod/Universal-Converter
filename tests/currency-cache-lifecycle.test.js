@@ -401,7 +401,7 @@ class CurrencyCacheLifecycleTests {
       Assertions.assertTrue(fixture.mockFetch.wasUrlCalled('api.exchangerate.fun'));
     });
 
-    // Test 3: Primary API failure - fallback to secondary
+    // Test 4: Primary API failure - fallback to secondary
     await this.test('getCurrencyRate falls back to secondary API on primary failure', async () => {
       const fixture = TestFixtureFactory.create();
       const service = fixture.createService();
@@ -416,7 +416,7 @@ class CurrencyCacheLifecycleTests {
       Assertions.assertTrue(fixture.mockFetch.wasUrlCalled('currency-api@latest'));
     }, { suppressOutput: true });
 
-    // Test 4: Both APIs fail - use stale cache
+    // Test 5: Both APIs fail - use stale cache
     await this.test('getCurrencyRate uses stale cache when all APIs fail', async () => {
       const fixture = TestFixtureFactory.create();
       const service = fixture.createService();
@@ -438,7 +438,7 @@ class CurrencyCacheLifecycleTests {
       Assertions.assertTrue(result.stale, 'Should be marked as stale');
     }, { suppressOutput: true });
 
-    // Test 5: All APIs fail, no cache - throws error
+    // Test 6: All APIs fail, no cache - throws error
     await this.test('getCurrencyRate throws when all APIs fail and no cache', async () => {
       const fixture = TestFixtureFactory.create();
       const service = fixture.createService();
@@ -453,7 +453,7 @@ class CurrencyCacheLifecycleTests {
       );
     }, { suppressOutput: true });
 
-    // Test 6: Request deduplication
+    // Test 7: Request deduplication
     await this.test('Concurrent requests for same pair are deduplicated', async () => {
       const fixture = TestFixtureFactory.create();
       const service = fixture.createService();
@@ -505,7 +505,7 @@ class CurrencyCacheLifecycleTests {
       Assertions.assertEqual(fixture.mockFetch.getCallCount(), 1, 'Only the initial USD fetch is needed');
     });
 
-    // Test 8: Inactive user with stale cache - serves stale without fetching
+    // Test 9: Inactive user with stale cache - serves stale without fetching
     await this.test('Inactive user gets stale cache without API call', async () => {
       const fixture = TestFixtureFactory.create();
       const service = fixture.createService();
@@ -525,7 +525,7 @@ class CurrencyCacheLifecycleTests {
       Assertions.assertEqual(fixture.mockFetch.getCallCount(), 0, 'Should not call API');
     }, { suppressOutput: true });
 
-    // Test 9: Rate normalization - uppercase API keys
+    // Test 10: Rate normalization - uppercase API keys
     await this.test('Primary API rates are normalized to lowercase', async () => {
       const fixture = TestFixtureFactory.create();
       const service = fixture.createService();
@@ -538,7 +538,7 @@ class CurrencyCacheLifecycleTests {
       Assertions.assertEqual(typeof result.rate, 'number');
     });
 
-    // Test 10: Cache stores normalized rates
+    // Test 11: Cache stores normalized rates
     await this.test('Fetched rates are stored in cache', async () => {
       const fixture = TestFixtureFactory.create();
       const service = fixture.createService();
@@ -552,7 +552,7 @@ class CurrencyCacheLifecycleTests {
       Assertions.assertDefined(cached.timestamp, 'Cache should have timestamp');
     });
 
-    // Test 11: clearCache removes cache data
+    // Test 12: clearCache removes cache data
     await this.test('clearCache removes all cached rates', async () => {
       const fixture = TestFixtureFactory.create();
       const service = fixture.createService();
@@ -576,18 +576,13 @@ class CurrencyCacheLifecycleTests {
       Assertions.assertEqual(cached, null, 'Cache should be null after clear');
     }, { suppressOutput: true });
 
-    // Test 12: Network error handling
+    // Test 13: Network error handling
     await this.test('Network error triggers fallback', async () => {
       const fixture = TestFixtureFactory.create();
       const service = fixture.createService();
       fixture.setUserActive(service);
       
       // Configure network failure for primary only
-      fixture.mockFetch.setResponse('api.exchangerate.fun', null);
-      fixture.mockFetch.setNetworkFailure(new Error('Network error'));
-      fixture.mockFetch.reset();
-      
-      // First configure network failure
       fixture.mockFetch.setNetworkFailure(new Error('Network error'));
       
       // Setup stale cache as backup
