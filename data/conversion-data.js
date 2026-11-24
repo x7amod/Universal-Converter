@@ -579,6 +579,16 @@ window.UnitConverterData.getUserTimezone = function() {
 };
 
 /**
+ * Format an offset in hours as +H or -H:MM so fractional offsets keep their minutes
+ */
+window.UnitConverterData.formatOffset = function(offset) {
+  const absolute = Math.abs(offset);
+  const hours = Math.floor(absolute);
+  const minutes = Math.round((absolute - hours) * 60);
+  return `${offset < 0 ? '-' : '+'}${hours}${minutes ? `:${String(minutes).padStart(2, '0')}` : ''}`;
+};
+
+/**
  * Get timezone name from offset
  */
 window.UnitConverterData.getTimezoneFromOffset = function(offset) {
@@ -587,7 +597,7 @@ window.UnitConverterData.getTimezoneFromOffset = function(offset) {
       return tz;
     }
   }
-  return `UTC${offset >= 0 ? '+' : ''}${offset}`;
+  return `UTC${window.UnitConverterData.formatOffset(offset)}`;
 };
 
 /**

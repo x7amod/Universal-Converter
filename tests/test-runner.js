@@ -199,6 +199,11 @@ class JSONUnitConverterTester {
         this.assert(timezoneOffset === expected, name, expected, timezoneOffset);
         break;
 
+      case 'timezoneOffsetLabel':
+        const timezoneOffsetLabel = global.window.UnitConverterData.getTimezoneFromOffset(input.offset);
+        this.assert(timezoneOffsetLabel === expected, name, expected, timezoneOffsetLabel);
+        break;
+
       case 'mappingLookup':
         const mapping = global.window[input.map] || global.window.UnitConverterData[input.map];
         if (!mapping) {

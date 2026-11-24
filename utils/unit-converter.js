@@ -352,9 +352,9 @@ window.UnitConverter.UnitConverter = class {
       // Determine display timezone - use GMT offset format if requested (auto-detected)
       let displayTimezone = toZone;
       if (useOffsetFormat) {
-        displayTimezone = `GMT${toOffset >= 0 ? '+' : ''}${toOffset}`;
+        displayTimezone = `GMT${window.UnitConverterData.formatOffset(toOffset)}`;
       } else if (toZone.startsWith('GMT') || toZone.startsWith('UTC')) {
-        displayTimezone = `GMT${toOffset >= 0 ? '+' : ''}${toOffset}`;
+        displayTimezone = `GMT${window.UnitConverterData.formatOffset(toOffset)}`;
       }
       
       return {

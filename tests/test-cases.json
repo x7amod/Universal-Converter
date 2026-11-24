@@ -2684,6 +2684,28 @@
       "tolerance": 0
     },
     {
+      "name": "Timezone: 10:00 AM NST → GMT+5:45",
+      "type": "timezoneConversion",
+      "input": {
+        "time": "10:00 AM",
+        "from": "NST",
+        "to": "GMT+5:45"
+      },
+      "expected": "7:15 PM GMT+5:45",
+      "tolerance": 0
+    },
+    {
+      "name": "Timezone: 1:00 AM GMT+5:45 → GMT-4:45",
+      "type": "timezoneConversion",
+      "input": {
+        "time": "1:00 AM",
+        "from": "GMT+5:45",
+        "to": "GMT-4:45"
+      },
+      "expected": "2:30 PM GMT-4:45",
+      "tolerance": 0
+    },
+    {
       "name": "Timezone Detection: Same timezone reformatted from 24-hour text",
       "type": "patternDetection",
       "input": {
@@ -3207,6 +3229,30 @@
         "timezone": "-00:30"
       },
       "expected": -0.5
+    },
+    {
+      "name": "Timezone offset: UTC+5:45 keeps its minutes",
+      "type": "timezoneOffset",
+      "input": {
+        "timezone": "UTC+5:45"
+      },
+      "expected": 5.75
+    },
+    {
+      "name": "Timezone label: +5:45 formats as hours:minutes",
+      "type": "timezoneOffsetLabel",
+      "input": {
+        "offset": 5.75
+      },
+      "expected": "UTC+5:45"
+    },
+    {
+      "name": "Timezone label: negative fractional offset keeps its sign",
+      "type": "timezoneOffsetLabel",
+      "input": {
+        "offset": -4.75
+      },
+      "expected": "UTC-4:45"
     },
     {
       "name": "Timezone mapping: IDT is known",
