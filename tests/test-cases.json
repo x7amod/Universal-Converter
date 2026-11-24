@@ -3440,9 +3440,41 @@
       "name": "Currency: extractNumber handles whitespace-grouped prices",
       "type": "currencyExtractNumber",
       "input": {
-        "text": "3 399 ,-"
+        "text": "3 399 ,-"
       },
       "expected": 3399
+    },
+    {
+      "name": "Currency: extractNumber treats 12,50 as a decimal comma",
+      "type": "currencyExtractNumber",
+      "input": {
+        "text": "12,50 EUR"
+      },
+      "expected": 12.5
+    },
+    {
+      "name": "Currency: extractNumber treats 12,5 as thousands (known limitation)",
+      "type": "currencyExtractNumber",
+      "input": {
+        "text": "12,5 EUR"
+      },
+      "expected": 125
+    },
+    {
+      "name": "Currency: extractNumber treats 1,234 as thousands",
+      "type": "currencyExtractNumber",
+      "input": {
+        "text": "1,234 USD"
+      },
+      "expected": 1234
+    },
+    {
+      "name": "Currency: extractNumber handles 1.234,56 European format",
+      "type": "currencyExtractNumber",
+      "input": {
+        "text": "1.234,56 EUR"
+      },
+      "expected": 1234.56
     },
     {
       "name": "Length: 0.029 m should be detected and parsed correctly",
