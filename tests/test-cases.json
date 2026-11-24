@@ -2752,6 +2752,17 @@
       "tolerance": 0
     },
     {
+      "name": "Timezone: 11:30 PM GMT → GMT+2 rolls into the next day",
+      "type": "timezoneConversion",
+      "input": {
+        "time": "11:30 PM",
+        "from": "GMT",
+        "to": "GMT+2"
+      },
+      "expected": "1:30 AM GMT+2",
+      "tolerance": 0
+    },
+    {
       "name": "Timezone Detection: Same timezone reformatted from 24-hour text",
       "type": "patternDetection",
       "input": {

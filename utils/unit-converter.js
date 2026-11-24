@@ -341,13 +341,12 @@ window.UnitConverter.UnitConverter = class {
       // text uses a different clock format than the user's setting
       if (fromOffset === toOffset && Boolean(period) === is12hr) return null;
 
-      // Create date object for calculation
-      const date = new Date();
-      date.setHours(hours, minutes, 0, 0);
-      
-      // Convert timezone
-      const offsetDiff = (toOffset - fromOffset) * 60 * 60 * 1000;
-      const convertedDate = new Date(date.getTime() + offsetDiff);
+      // Shift the wall clock directly; Date arithmetic would follow the user's
+      // local DST rules and land an hour off on clock-change days
+      const shiftedMinutes = Math.round(hours * 60 + minutes + (toOffset - fromOffset) * 60);
+      const totalMinutes = ((shiftedMinutes % 1440) + 1440) % 1440;
+      const resultHours = Math.floor(totalMinutes / 60);
+      const resultMinutes = totalMinutes % 60;
       
       // Determine display timezone - use GMT offset format if requested (auto-detected)
       let displayTimezone = toZone;
@@ -358,9 +357,9 @@ window.UnitConverter.UnitConverter = class {
       }
       
       return {
-        hours: convertedDate.getHours(),
-        minutes: convertedDate.getMinutes(),
-        formatted: this.formatTime(convertedDate.getHours(), convertedDate.getMinutes(), is12hr),
+        hours: resultHours,
+        minutes: resultMinutes,
+        formatted: this.formatTime(resultHours, resultMinutes, is12hr),
         timezone: displayTimezone
       };
     } catch (error) {
