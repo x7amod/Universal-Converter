@@ -21,23 +21,23 @@ Core unit conversion logic tests covering:
 Tests for popup behavior and user interaction:
 
 #### Popup Creation
-- Verifies popup DOM element is created correctly
-- Checks popup content matches conversion data
-- Validates popup positioning (left/top coordinates)
+- `testUnitConversionAppearsAfterMouseup` — unit popup appears with the expected conversion
+- `testCurrencyConversionAppearsAfterMouseup` — currency popup appears after the async rate request
+- `testRapidReselectionShowsOnePopup` — rapid re-selection leaves exactly one popup
 
-#### Popup Dismissal Tests
-- **Dismiss on Click** - Simulates user clicking to dismiss popup
-- **Dismiss on Scroll** - Verifies one-time scroll listener auto-dismisses popup
-- **Dismiss on Resize** - Verifies one-time resize listener auto-dismisses popup
+#### Popup Dismissal
+- `testGestureClickDoesNotDismissPopup` — the click paired with a selection mouseup is absorbed
+- `testStandaloneClickDismissesPopup` — a later click outside the popup dismisses it
+- `testClickOnPopupDoesNotDismiss` — clicking inside the popup keeps it open
+- `testMouseupOnPopupDoesNotDismiss` — mouseup inside the popup keeps it open
+- `testPopupPersistsOnScroll` — scroll does not dismiss the popup
+- `testPopupPersistsOnResize` — window resize does not dismiss the popup
+- `testPopupCleanup` — `removePopup()` removes the element and nulls `activePopup`
 
-#### Selection Rect Capture (DOMException Prevention)
-- **Selection Rect Captured Before Async** - Ensures selection rect is captured synchronously before async operations
-- **Invalid Selection Handling** - Tests that invalid/cleared selections don't crash
-
-#### Temporary Listener Cleanup
-- Verifies scroll/resize listeners are attached when popup shows
-- Confirms listeners are removed when popup is hidden
-- Validates no memory leaks from lingering event listeners
+#### Suppressed Popups
+- `testNoPopupForUnrecognizedText` — no popup for non-convertible text
+- `testNoPopupForSameUnitCurrency` — no popup when source and target currency match
+- `testBlockedSiteSkipsPopupAndRateRequest` — blocked sites show no popup and request no rates
 
 ### 4. **Currency Cache Lifecycle Tests** (`currency-cache-lifecycle.test.js`)
 Comprehensive tests for CurrencyRateService cache behavior (69 tests):
